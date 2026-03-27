@@ -1,0 +1,29 @@
+id: 10
+name: Amendment Immutability
+description: >-
+  Amendment nodes are immutable records of changes to shapes, constraints, or
+  profiles. Once created, an amendment's content must not be modified. This
+  provides an auditable history of how the graph evolved over time.
+profile: 1
+kind: invariant
+rule: >-
+  Amendment nodes are append-only records — once created, their content must
+  not be modified
+enforcement: manual
+status: promoted
+intent:
+  kind: requirement
+  summary: Amendment Immutability
+  source: human
+  rationale: >-
+    Amendments exist to provide a trustworthy change history. If amendments
+    could be edited after creation, the audit trail would be unreliable.
+    The append-only model ensures every change is recorded permanently.
+  impact_if_violated: >-
+    The amendment log becomes untrustworthy. It would be impossible to
+    reconstruct the history of a shape's evolution. Provenance chains
+    would be broken.
+  verification_method: >-
+    Currently enforced by convention. Future versions may add a hash or
+    signature to detect tampering.
+  spec_section: Amendment semantics and immutability guarantees

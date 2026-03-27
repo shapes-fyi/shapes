@@ -1,0 +1,37 @@
+id: 2
+name: Reciprocal Links
+description: >-
+  Parent-child relationships must be declared on both sides. If shape A lists
+  shape B as a child, then B must list A as a parent. This ensures the DAG is
+  traversable in both directions and prevents orphaned or dangling edges.
+  Enforced as a warning by the validate command.
+profile: 1
+kind: invariant
+rule: >-
+  If node A lists node B as a child, then B must list A as a parent, and
+  vice versa
+enforcement: machine
+status: promoted
+intent:
+  kind: requirement
+  summary: Reciprocal Links
+  source: human
+  rationale: >-
+    One-sided links create inconsistent traversal results — walking down from
+    a parent would find a child, but walking up from that child would not find
+    the parent. Agents rely on bidirectional traversal for context discovery.
+  impact_if_violated: >-
+    Ancestor queries would miss parents. Effective-constraints would skip
+    constraints from unlinked ancestors. Tree visualization would show
+    incomplete hierarchies.
+  verification_method: >-
+    Validation iterates all parent/child references and checks the reciprocal
+    exists. Produces a warning-level ValidationIssue for each missing reciprocal.
+  spec_section: DAG edge consistency requirements
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: Reciprocal link checks in validate() — iterates parent/child refs, verifies matching entries exist
+    role: primary

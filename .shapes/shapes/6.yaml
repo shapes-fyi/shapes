@@ -1,0 +1,70 @@
+id: 6
+name: Claude Code Plugin
+description: >-
+  Plugin and skills for Claude Code that teach AI agents the Shapes Context
+  Protocol and the context-first workflow. Includes three skills: context
+  (auto-loaded when .shapes/ exists, teaches protocol concepts), init
+  (bootstraps shapes through code analysis and engineer interview), and
+  maintain (audits existing graph for quality and coverage). The plugin
+  registers via plugin.json and skills via SKILL.md files.
+profile: 1
+status: promoted
+intent:
+  kind: module
+  summary: >-
+    Plugin and skills that teach AI agents the context-first workflow: discover
+    shapes before writing code
+  source: human
+  goals: >-
+    Make agents shapes-aware without requiring explicit user instructions. The
+    context skill should activate automatically when a .shapes/ directory is
+    present, teaching the agent to query the graph before making changes. Init
+    and maintain skills should produce high-quality shapes through interactive
+    collaboration with the engineer.
+  rationale: >-
+    The plugin is the bridge between the CLI tool and the AI agent ecosystem.
+    Without it, agents would need manual instruction to use shapes. Skills are
+    the mechanism Claude Code uses for domain-specific agent behaviors.
+constraints:
+  - 7
+parents:
+  - id: 1
+    role: component
+children:
+  - shape: 14
+    role: feature
+  - shape: 15
+    role: feature
+  - shape: 16
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: .claude-plugin/plugin.json
+        metadata:
+          summary: Plugin registration — name, description, version, repository URL
+    role: primary
+  - bindings:
+      - scheme: path
+        value: skills/context/SKILL.md
+        metadata:
+          summary: Context skill — protocol knowledge, four node types, two DAGs, context-first workflow
+    role: primary
+  - bindings:
+      - scheme: path
+        value: skills/init/SKILL.md
+        metadata:
+          summary: Init skill — project exploration, engineer interview, Profile creation, shape/constraint generation
+    role: primary
+  - bindings:
+      - scheme: path
+        value: skills/maintain/SKILL.md
+        metadata:
+          summary: Maintain skill — graph audit, validation fixes, coverage checks, stale realization detection
+    role: primary
+  - bindings:
+      - scheme: path
+        value: CLAUDE.md
+        metadata:
+          summary: Agent instructions — context-first workflow, maintain-before-commit, CLI reference
+    role: supporting

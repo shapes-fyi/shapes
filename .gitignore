@@ -1,0 +1,43 @@
+# Rust
+/target
+
+# Benchmarks
+benchmarks/
+bench-eval.md
+benchmark-b1.md
+
+# Dependencies
+node_modules
+
+# Local env files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Testing
+coverage
+
+# Turbo
+.turbo
+
+# Vercel
+.vercel
+
+# Build Outputs
+dist
+.output
+.nitro
+.tanstack
+.vinxi
+
+# Debug
+npm-debug.log*
+
+# Playwright MCP
+.playwright-mcp
+
+# Misc
+.DS_Store
+*.pem

@@ -1,0 +1,39 @@
+id: 8
+name: Status Lifecycle
+description: >-
+  Every node has a Status that tracks its lifecycle. Three progressive states
+  (Proposed, Promoted, Canonical) represent increasing confidence. Four terminal
+  states (Rejected, Superseded, Abandoned, Reverted) end a node's active life.
+  Progressive states carry optional StatusDetail (reason, URIs, metadata).
+  Terminal states carry TerminalDetail with required reason and optional
+  successors list. Custom serde serialization outputs bare strings for default
+  details and tagged maps otherwise, matching the spec's YAML format.
+profile: 1
+status: promoted
+intent:
+  kind: pattern
+  summary: >-
+    Seven-state lifecycle: three progressive (Proposed, Promoted, Canonical) and
+    four terminal (Rejected, Superseded, Abandoned, Reverted)
+  source: human
+  goals: >-
+    Model the full lifecycle of shapes and constraints so agents can distinguish
+    active context from historical decisions. Terminal states with successors
+    allow tracing the evolution of ideas.
+  rationale: >-
+    A simple active/inactive flag would lose the nuance of why something changed.
+    The seven-state model captures both confidence level (proposed vs canonical)
+    and termination reason (rejected vs superseded vs abandoned).
+  spec_section: Status lifecycle and state transitions
+parents:
+  - id: 1
+    role: pattern
+  - id: 2
+    role: pattern
+realization:
+  - bindings:
+      - scheme: path
+        value: src/model/common.rs
+        metadata:
+          summary: Status enum (7 states), StatusDetail, TerminalDetail, custom serde for bare string vs tagged map
+    role: primary

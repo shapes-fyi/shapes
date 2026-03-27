@@ -1,0 +1,42 @@
+id: 7
+name: Intent Open Map
+description: >-
+  The Intent struct is the protocol's extensibility mechanism. It has three
+  required fields (kind, summary, source) and a flattened extra HashMap that
+  accepts arbitrary YAML key-value pairs. Profiles govern which extra fields
+  are required vs optional for a given project, and validation enforces these
+  declarations. This pattern allows the same protocol to serve software
+  engineering, research, editorial, and other domains without changing the
+  core data model.
+profile: 1
+status: promoted
+intent:
+  kind: pattern
+  summary: >-
+    Intent is an open map with required fields (kind, summary, source) and
+    arbitrary extra fields governed by Profiles
+  source: human
+  goals: >-
+    Allow domain-specific metadata without schema changes. Any project can
+    declare its own intent fields (e.g., goals, rationale, hypotheses,
+    spec_section) and have them validated by the Profile.
+  rationale: >-
+    A fixed schema would force every project to use the same vocabulary.
+    The open-map pattern with Profile-driven validation gives flexibility
+    while maintaining structure. Serde's flatten attribute makes this ergonomic
+    in Rust.
+  spec_section: Intent definition and open-map semantics
+constraints:
+  - 6
+parents:
+  - id: 1
+    role: pattern
+  - id: 2
+    role: pattern
+realization:
+  - bindings:
+      - scheme: path
+        value: src/model/common.rs
+        metadata:
+          summary: Intent struct — kind/summary/source required fields + flattened BTreeMap for arbitrary extra fields
+    role: primary

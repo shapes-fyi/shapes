@@ -1,0 +1,31 @@
+id: 9
+name: Minimal Complexity
+description: >-
+  The codebase should use the simplest correct implementation for every feature.
+  Abstractions, generic type parameters, and configurability should only be
+  introduced when a concrete, demonstrated need exists — not speculatively.
+  Three similar lines of code are better than a premature abstraction.
+profile: 1
+kind: guideline
+rule: >-
+  Prefer the simplest correct implementation — do not add abstractions,
+  generics, or configurability until a concrete need exists
+enforcement: manual
+status: promoted
+intent:
+  kind: requirement
+  summary: Minimal Complexity
+  source: human
+  rationale: >-
+    The project is young and the spec is still evolving. Premature abstractions
+    would constrain future changes and add cognitive overhead for contributors.
+    Keeping the code direct and readable makes it easier to understand, modify,
+    and contribute to.
+  impact_if_violated: >-
+    Code becomes harder to understand and change. New contributors face a
+    steeper learning curve. Abstractions calcify around assumptions that may
+    not hold as the spec evolves.
+  exceptions: >-
+    The DagType enum and generic Store load/save are justified complexity —
+    they prevent actual duplication of graph algorithms and I/O code across
+    node types.

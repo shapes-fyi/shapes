@@ -1,0 +1,18 @@
+[package]
+name = "shapes-cli"
+version = "0.1.0"
+edition = "2024"
+description = "Shapes Context Protocol CLI — structured intent, constraints, and boundaries for software projects"
+repository = "https://github.com/shapes-fyi/shapes"
+license = "MIT"
+
+[[bin]]
+name = "shapes"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.9"
+serde_json = "1"
+anyhow = "1"

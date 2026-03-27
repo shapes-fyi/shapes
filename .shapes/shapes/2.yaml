@@ -1,0 +1,76 @@
+id: 2
+name: Data Model
+description: >-
+  Serde-backed Rust data structures defining the four node types of the Shapes
+  protocol: Shape, Constraint, Amendment, and Profile. Also includes shared
+  types like Intent (open map), Status (seven-state lifecycle), Realization
+  (code bindings), Evidence (constraint proofs), and Provenance (decision
+  history). All types derive Serialize/Deserialize for YAML and JSON output.
+profile: 1
+status: promoted
+intent:
+  kind: module
+  summary: >-
+    Serde-backed data structures for all four node types: Shape, Constraint,
+    Amendment, Profile
+  source: human
+  goals: >-
+    Provide a faithful Rust representation of every Shapes protocol concept.
+    Types must round-trip through YAML serialization without data loss. The
+    Intent open-map pattern must allow arbitrary extra fields while keeping
+    required fields typed. Untagged enums (ShapeRef, ConstraintRef) must allow
+    both ID references and inline node definitions.
+  rationale: >-
+    Separating data structures from I/O and business logic keeps the model
+    testable and spec-aligned. Using serde with custom serialization for Status
+    and Intent ensures the YAML output matches the shapes.fyi spec format while
+    remaining ergonomic in Rust code.
+  spec_section: Core Data Model (Shape, Constraint, Amendment, Profile nodes)
+constraints:
+  - 5
+  - 6
+parents:
+  - id: 1
+    role: component
+children:
+  - shape: 7
+    role: pattern
+  - shape: 8
+    role: pattern
+realization:
+  - bindings:
+      - scheme: path
+        value: src/model/mod.rs
+        metadata:
+          summary: Module root — type aliases (ShapeId, ConstraintId, etc.), NodeType enum, public re-exports
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/model/shape.rs
+        metadata:
+          summary: Shape struct — id, name, status, intent, constraints, parents/children, realization, evidence
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/model/constraint.rs
+        metadata:
+          summary: Constraint struct — id, name, kind, rule, enforcement, parents/children, evidence
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/model/amendment.rs
+        metadata:
+          summary: Amendment struct — targets (shape/constraint/profile IDs), version_impact, InitiatedBy
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/model/profile.rs
+        metadata:
+          summary: Profile struct — Lifecycle, FieldDef, ProfileFields, FieldSection, Versioning, AmendmentRules
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/model/common.rs
+        metadata:
+          summary: Shared types — Status enum (7 states), Intent (open map), Binding, Realization, Evidence, Provenance, ParentRef
+    role: primary

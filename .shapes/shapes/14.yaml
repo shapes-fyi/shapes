@@ -1,0 +1,37 @@
+id: 14
+name: Context Skill
+description: >-
+  Auto-loaded Claude Code skill that activates when a .shapes/ directory is
+  detected in the project. Teaches the agent the Shapes Context Protocol
+  concepts (four node types, two DAGs, Intent open map, Profiles, lifecycle,
+  bindings, evidence, provenance) and the context-first workflow: run tree
+  to get an overview, list to find relevant shapes, get to read details, and
+  query constraints to discover what rules apply before doing any work.
+profile: 1
+status: promoted
+intent:
+  kind: feature
+  summary: >-
+    Auto-loaded skill that teaches agents the Shapes protocol concepts and
+    context-first workflow when a .shapes/ directory is detected
+  source: human
+  goals: >-
+    Make every agent interaction shapes-aware without user intervention. The
+    agent should automatically discover project context before writing code,
+    following the workflow: tree -> list -> get -> query constraints -> work.
+  rationale: >-
+    Without the context skill, agents would ignore the .shapes/ directory
+    entirely. Auto-loading on directory detection ensures the agent is always
+    context-aware in shapes-enabled projects.
+constraints:
+  - 7
+parents:
+  - id: 6
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: skills/context/SKILL.md
+        metadata:
+          summary: Protocol reference — node types, DAGs, Intent open map, Profiles, bindings, context-first workflow
+    role: primary
