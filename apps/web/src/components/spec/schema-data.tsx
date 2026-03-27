@@ -803,28 +803,6 @@ export const BINDING_SCHEMA: SchemaDefinition = {
       lines: "  value: string",
     },
     {
-      key: "resolver",
-      label: "resolver",
-      description: (
-        <p>
-          Optional identifier of the system or service that can resolve this
-          binding to a concrete artifact.
-        </p>
-      ),
-      lines: "  resolver: string?",
-    },
-    {
-      key: "revision",
-      label: "revision",
-      description: (
-        <p>
-          Optional revision or version identifier for the referenced artifact,
-          pinning the binding to a specific point in time.
-        </p>
-      ),
-      lines: "  revision: string?",
-    },
-    {
       key: "metadata",
       label: "metadata",
       description: (
