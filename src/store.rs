@@ -10,33 +10,18 @@ const SHAPES_DIR: &str = ".shapes";
 const META_FILE: &str = "meta.yaml";
 
 // ---------------------------------------------------------------------------
-// Meta — tracks next IDs and spec version
+// Meta — protocol version marker
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Meta {
     pub version: String,
-    pub next_ids: NextIds,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct NextIds {
-    pub shape: u64,
-    pub constraint: u64,
-    pub amendment: u64,
-    pub profile: u64,
 }
 
 impl Meta {
     fn new() -> Self {
         Meta {
             version: "0.1.0".into(),
-            next_ids: NextIds {
-                shape: 1,
-                constraint: 1,
-                amendment: 1,
-                profile: 1,
-            },
         }
     }
 }
@@ -101,35 +86,12 @@ impl Store {
         Ok(Store { root })
     }
 
-    // -- Meta operations ----------------------------------------------------
+    // -- ID allocation ------------------------------------------------------
 
-    fn meta_path(&self) -> PathBuf {
-        self.root.join(META_FILE)
-    }
-
-    fn load_meta(&self) -> Result<Meta> {
-        let content = fs::read_to_string(self.meta_path()).context("failed to read meta.yaml")?;
-        Ok(serde_yaml::from_str(&content)?)
-    }
-
-    fn save_meta(&self, meta: &Meta) -> Result<()> {
-        let yaml = serde_yaml::to_string(meta)?;
-        fs::write(self.meta_path(), yaml).context("failed to write meta.yaml")
-    }
-
-    /// Allocate and return the next ID for the given node type.
+    /// Allocate the next ID for a node type by scanning existing nodes.
     pub fn next_id(&self, node_type: NodeType) -> Result<u64> {
-        let mut meta = self.load_meta()?;
-        let id = match node_type {
-            NodeType::Shape => &mut meta.next_ids.shape,
-            NodeType::Constraint => &mut meta.next_ids.constraint,
-            NodeType::Amendment => &mut meta.next_ids.amendment,
-            NodeType::Profile => &mut meta.next_ids.profile,
-        };
-        let current = *id;
-        *id += 1;
-        self.save_meta(&meta)?;
-        Ok(current)
+        let ids = self.list_ids(node_type)?;
+        Ok(ids.into_iter().max().unwrap_or(0) + 1)
     }
 
     // -- Directory scanning -------------------------------------------------
@@ -216,7 +178,6 @@ impl Store {
         ids.sort();
         Ok(ids)
     }
-
 }
 
 // ---------------------------------------------------------------------------
