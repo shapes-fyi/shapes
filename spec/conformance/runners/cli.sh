@@ -12,8 +12,8 @@
 #   - invalid vectors: `shapes validate` exits 2
 #
 # Usage:
-#   ./run.sh                     # uses 'shapes' from PATH
-#   ./run.sh /path/to/shapes     # uses specific binary
+#   ./runners/cli.sh                     # uses 'shapes' from PATH
+#   ./runners/cli.sh /path/to/shapes     # uses specific binary
 #
 # Exit code:
 #   0 — all tests passed
@@ -23,7 +23,7 @@ set -euo pipefail
 
 SHAPES="${1:-shapes}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-VECTORS="$SCRIPT_DIR/test-vectors"
+VECTORS="$SCRIPT_DIR/../test-vectors"
 
 passed=0
 failed=0

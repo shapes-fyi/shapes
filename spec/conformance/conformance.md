@@ -85,13 +85,13 @@ for fixture in test-vectors/invalid/*:
 ### CLI Binding Runner
 
 ```bash
-./run.sh                     # uses 'shapes' from PATH
-./run.sh /path/to/shapes     # uses specific binary
+./runners/cli.sh                     # uses 'shapes' from PATH
+./runners/cli.sh /path/to/shapes     # uses specific binary
 ```
 
 The CLI runner checks only exit codes (0 vs. 2) since that is the CLI
 binding's contract for the `validate` operation. It does not parse output
-text.
+text. Other bindings add their own runner to `runners/`.
 
 ## Test Vector Structure
 
