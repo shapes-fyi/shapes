@@ -1,0 +1,50 @@
+id: 12
+name: Content-Based Identity
+description: >-
+  Node identity is determined by the id field in the data, not by filename or
+  storage location. Filenames are a storage detail of the filesystem binding.
+  The id field in node data is the canonical identifier.
+profile: 1
+kind: invariant
+rule: >-
+  Node identity is determined by the id field in the data, not by filename or
+  storage location
+enforcement: machine
+status: proposed
+intent:
+  kind: requirement
+  summary: >-
+    Filenames are a storage detail of the filesystem binding. The id field in
+    node data is the canonical identifier.
+  source: human
+  rationale: >-
+    An MCP server or HTTP API has no filenames. The protocol is
+    storage-agnostic — identity must come from the data itself, not from how it
+    is stored.
+  impact_if_violated: >-
+    Implementations that derive identity from filenames break when the same
+    graph is served over non-filesystem transports.
+  verification_method: >-
+    Store scans all files in a type directory and matches by the id field.
+    Filenames are generated from node names as human-readable slugs.
+realization:
+  - bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: >-
+            find_file() scans all YAML files in a type directory and matches by
+            the id field inside the data, not by filename. Filenames are
+            generated as human-readable slugs from node names.
+    role: primary
+evidence:
+  - id: find-file-scan
+    type: implementation
+    bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: >-
+            find_file() method reads each file and deserializes to match the id
+            field — filename is never used for identity resolution
+    trusted: true

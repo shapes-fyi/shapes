@@ -1,0 +1,35 @@
+id: 25
+name: Transport Bindings
+description: >-
+  CLI and MCP binding specifications mapping abstract operations to
+  transport-specific interfaces. Defines how abstract protocol operations map
+  to CLI commands and MCP tools.
+profile: 1
+status: proposed
+intent:
+  kind: feature
+  summary: >-
+    CLI and MCP binding specifications mapping abstract operations to
+    transport-specific interfaces
+  source: human
+  goals: >-
+    Define how abstract protocol operations map to CLI commands and MCP tools.
+  rationale: >-
+    Operations are transport-agnostic. Bindings translate them to specific
+    mechanisms.
+parents:
+  - id: 23
+    role: component
+realization:
+  - bindings:
+      - scheme: path
+        value: spec/bindings/cli.md
+        metadata:
+          summary: CLI binding — maps abstract operations to shapes CLI commands and flags
+    role: primary
+  - bindings:
+      - scheme: path
+        value: spec/bindings/mcp.md
+        metadata:
+          summary: MCP binding — maps abstract operations to MCP tools and resources
+    role: primary

@@ -44,5 +44,5 @@ realization:
       - scheme: path
         value: src/commands/mod.rs
         metadata:
-          summary: Command handlers — init(), create(), get(), list(), tree(), query(), validate(), output serialization
+          summary: Command handlers — init(), create(), get(), list(), tree(), query(), validate() with --format json outputting structured ValidationIssue array with invariant IDs, output serialization
     role: primary

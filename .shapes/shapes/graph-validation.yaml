@@ -20,9 +20,12 @@ intent:
   source: human
   goals: >-
     Catch all graph integrity issues that could cause incorrect agent behavior.
-    An agent relying on constraint inheritance must be able to trust that the
-    DAG is acyclic and all references resolve. Validation is the foundation of
-    graph trustworthiness.
+    Each ValidationIssue now carries an `invariant` field identifying which
+    protocol invariant (INV-001 through INV-011) was violated. INV-011
+    (duplicate ID detection) was added. INV-009 (reciprocal links) upgraded
+    from warning to error. An agent relying on constraint inheritance must be
+    able to trust that the DAG is acyclic and all references resolve.
+    Validation is the foundation of graph trustworthiness.
   rationale: >-
     Machine-enforced validation is essential because manual review of YAML files
     does not scale. The validation suite was built to match the invariants in
@@ -46,5 +49,5 @@ realization:
       - scheme: path
         value: src/commands/dag.rs
         metadata:
-          summary: validate() — cycle detection (three-color DFS), dangling refs, reciprocal links, amendment targets, profile fields
+          summary: validate() — cycle detection (three-color DFS), dangling refs, reciprocal links (error severity), amendment targets, profile fields, duplicate ID detection (INV-011). Each ValidationIssue carries an `invariant` field (INV-001 through INV-011)
     role: primary

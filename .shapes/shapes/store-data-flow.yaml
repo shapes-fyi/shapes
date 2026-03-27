@@ -18,9 +18,11 @@ intent:
     output to stdout
   source: human
   goals: >-
-    Keep the data flow simple and stateless. Each command invocation is
-    self-contained: open store, do work, output result. No caching, no
-    background processes, no state between invocations.
+    Keep the data flow simple and stateless. Store scans directory, reads each
+    YAML file, matches by `id` field. Filenames are human-readable slugs. ID
+    allocation derives from scanning existing nodes (max + 1). Each command
+    invocation is self-contained: open store, do work, output result. No
+    caching, no background processes, no state between invocations.
   rationale: >-
     Stateless design was chosen because agents invoke the CLI as a subprocess
     for each query. There is no long-running process to maintain state between
@@ -44,7 +46,7 @@ realization:
       - scheme: path
         value: src/store.rs
         metadata:
-          summary: Store I/O layer — loads YAML from .shapes/ into Rust structs, saves back
+          summary: Store I/O layer — scans YAML files by id field, generates slug filenames from names, derives next ID by max + 1. Loads into Rust structs, saves back
     role: supporting
   - bindings:
       - scheme: path

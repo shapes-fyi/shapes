@@ -18,9 +18,10 @@ intent:
   source: human
   goals: >-
     Provide a complete, predictable CLI surface that agents can invoke
-    programmatically. Every command should have consistent output format, clear
-    error messages, and documented exit codes so agents can handle success and
-    failure cases.
+    programmatically. `tree` defaults to shape DAG when no node_type is given.
+    `validate` supports `--format json` for structured output. Every command
+    should have consistent output format, clear error messages, and documented
+    exit codes so agents can handle success and failure cases.
   rationale: >-
     The command set was designed around the agent workflow: tree for overview,
     list/get for drill-down, query for constraint discovery, validate for
@@ -41,5 +42,5 @@ realization:
       - scheme: path
         value: src/main.rs
         metadata:
-          summary: Cli struct (clap), Command enum with 7 subcommands, DagType enum, OutputFormat enum
+          summary: Cli struct (clap), Command enum with 7 subcommands, DagType enum, OutputFormat enum. tree defaults to shape DAG when no node_type given, validate supports --format json
     role: primary

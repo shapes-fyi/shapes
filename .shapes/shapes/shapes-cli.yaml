@@ -63,6 +63,8 @@ children:
     role: component
   - shape: 21
     role: component
+  - shape: 23
+    role: component
 realization:
   - bindings:
       - scheme: path
