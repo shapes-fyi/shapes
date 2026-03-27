@@ -879,17 +879,6 @@ export const REALIZATION_SCHEMA: SchemaDefinition = {
       ),
       lines: "  role: string",
     },
-    {
-      key: "revision",
-      label: "revision",
-      description: (
-        <p>
-          Optional revision identifier pinning this realization to a specific
-          version of the deliverables.
-        </p>
-      ),
-      lines: "  revision: string?",
-    },
   ],
 }
 
