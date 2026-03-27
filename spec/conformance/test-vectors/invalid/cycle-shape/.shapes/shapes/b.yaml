@@ -1,0 +1,13 @@
+id: 2
+name: B
+description: Shape B in a cycle with shape A.
+status: proposed
+intent:
+  kind: feature
+  summary: Shape B
+  source: human
+children:
+  - shape: 1
+    role: component
+parents:
+  - id: 1

@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-009"],
+  "description": "Shape lists child that does not list it as parent"
+}

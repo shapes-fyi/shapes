@@ -1,0 +1,11 @@
+id: 1
+name: Empty Amendment
+description: An amendment that targets nothing.
+targets: {}
+status: proposed
+intent:
+  kind: feature
+  summary: Amendment with empty targets
+  source: human
+initiated_by:
+  type: human

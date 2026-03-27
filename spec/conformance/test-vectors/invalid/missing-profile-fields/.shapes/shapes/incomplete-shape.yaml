@@ -1,0 +1,9 @@
+id: 1
+name: Incomplete Shape
+description: Shape governed by a profile but missing the required goals field.
+profile: 1
+status: proposed
+intent:
+  kind: feature
+  summary: Missing goals field
+  source: human

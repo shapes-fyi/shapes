@@ -1,0 +1,11 @@
+id: 1
+name: Parent
+description: Shape with dangling child reference
+status: proposed
+intent:
+  kind: feature
+  summary: References child 99 which does not exist
+  source: human
+children:
+  - shape: 99
+    role: component

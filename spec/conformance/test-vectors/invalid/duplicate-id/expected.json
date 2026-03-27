@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-011"],
+  "description": "Two shape files contain the same id field value"
+}

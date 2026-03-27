@@ -1,0 +1,39 @@
+id: 1
+name: Platform
+description: Root shape representing the platform system.
+profile: 1
+status: proposed
+intent:
+  kind: system
+  summary: Top-level platform system
+  source: human
+  goals: Provide a stable platform for all downstream services
+  rationale: >-
+    Centralizing shared infrastructure in a single system boundary reduces
+    duplication and ensures consistent operational standards
+constraints:
+  - 1
+children:
+  - shape: 2
+    role: component
+realization:
+  - bindings:
+      - scheme: path
+        value: src/main.rs
+        metadata:
+          summary: Platform entry point
+    role: primary
+evidence:
+  - id: platform-design-review
+    type: review
+    bindings:
+      - scheme: url
+        value: https://example.com/reviews/platform
+    trusted: true
+provenance:
+  - type: decision
+    bindings:
+      - scheme: url
+        value: https://example.com/adrs/001-platform
+    metadata:
+      author: engineer@example.com

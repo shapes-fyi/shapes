@@ -1,0 +1,11 @@
+id: 2
+name: Rate Limiting
+description: Requests to the service must be rate-limited.
+kind: requirement
+rule: Requests limited to 100/min
+enforcement: machine
+status: proposed
+intent:
+  kind: requirement
+  summary: Rate Limiting
+  source: human

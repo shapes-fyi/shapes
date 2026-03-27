@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/realization.json",
+  "title": "Realization",
+  "description": "Maps a node to its code or deliverable artifacts through a set of bindings and a semantic role.",
+  "type": "object",
+  "properties": {
+    "bindings": {
+      "type": "array",
+      "items": { "$ref": "binding.json" },
+      "description": "External artifact references that constitute this realization."
+    },
+    "role": {
+      "type": "string",
+      "description": "Semantic role of this realization (e.g. \"implementation\", \"test\", \"documentation\")."
+    }
+  },
+  "required": ["bindings", "role"],
+  "additionalProperties": false
+}

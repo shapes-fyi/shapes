@@ -1,0 +1,11 @@
+id: 1
+name: Parent
+description: Lists shape 2 as child
+status: proposed
+intent:
+  kind: system
+  summary: Parent shape with non-reciprocal child link
+  source: human
+children:
+  - shape: 2
+    role: component

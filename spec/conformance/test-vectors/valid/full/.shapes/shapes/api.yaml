@@ -1,0 +1,23 @@
+id: 2
+name: API
+description: Child shape representing the public API service.
+profile: 1
+status: proposed
+intent:
+  kind: service
+  summary: Public API service
+  source: human
+  goals: Expose platform capabilities through a versioned HTTP API
+  rationale: >-
+    A dedicated API layer decouples consumers from internal implementation
+    and allows independent versioning
+parents:
+  - id: 1
+    role: component
+realization:
+  - bindings:
+      - scheme: path
+        value: src/api/mod.rs
+        metadata:
+          summary: API module root
+    role: primary

@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/binding.json",
+  "title": "Binding",
+  "description": "Reference to an external artifact. The scheme identifies the type of artifact (e.g. \"file\", \"url\", \"git\") and the value locates it within that scheme.",
+  "type": "object",
+  "properties": {
+    "scheme": {
+      "type": "string",
+      "description": "Identifier for the binding scheme (e.g. \"file\", \"url\", \"git\")."
+    },
+    "value": {
+      "type": "string",
+      "description": "Locator within the scheme (e.g. a file path, URL, or git ref)."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Arbitrary key-value metadata associated with this binding."
+    }
+  },
+  "required": ["scheme", "value"],
+  "additionalProperties": false
+}

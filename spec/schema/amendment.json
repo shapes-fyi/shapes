@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/amendment.json",
+  "title": "Amendment",
+  "description": "Immutable change record in the Shapes Context Protocol. Captures who changed what, why, and with what impact. Once created, amendments are append-only — they are never modified or deleted.",
+  "type": "object",
+  "required": ["id", "name", "description", "targets", "status", "intent", "initiated_by"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "$ref": "node-id.json",
+      "description": "Unique numeric identifier for this amendment."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name summarizing this amendment."
+    },
+    "description": {
+      "type": "string",
+      "description": "Prose description of what was changed and why."
+    },
+    "targets": {
+      "$ref": "#/$defs/AmendmentTargets",
+      "description": "The set of nodes affected by this amendment. At least one target array must be present and non-empty."
+    },
+    "status": {
+      "$ref": "status.json",
+      "description": "Current lifecycle status of this amendment (e.g. proposed, canonical)."
+    },
+    "version_impact": {
+      "type": "string",
+      "enum": ["major", "minor", "patch"],
+      "description": "Semantic versioning impact level of this change on its targets."
+    },
+    "intent": {
+      "$ref": "intent.json",
+      "description": "Structured declaration of what this amendment is meant to achieve and why."
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "$ref": "node-id.json" },
+      "description": "References to Constraint nodes that govern or were introduced by this amendment."
+    },
+    "realization": {
+      "type": "array",
+      "items": { "$ref": "realization.json" },
+      "description": "Bindings that map this amendment to concrete change artifacts (commits, PRs, etc.)."
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "evidence.json" },
+      "description": "Verification records proving that this amendment was applied correctly."
+    },
+    "provenance": {
+      "type": "array",
+      "items": { "$ref": "provenance.json" },
+      "description": "Origin and authorship records for this amendment."
+    },
+    "initiated_by": {
+      "$ref": "#/$defs/InitiatedBy",
+      "description": "Identity and context of the actor who initiated this amendment."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Arbitrary key-value metadata attached to this amendment."
+    }
+  },
+  "$defs": {
+    "AmendmentTargets": {
+      "title": "AmendmentTargets",
+      "description": "Specifies which nodes are affected by an amendment. All fields are optional, but at least one array must be present and non-empty for the amendment to be valid. This invariant is enforced at the application level since JSON Schema cannot express cross-field 'at least one non-empty' constraints cleanly.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shape_ids": {
+          "type": "array",
+          "items": { "$ref": "node-id.json" },
+          "description": "Shape IDs targeted by this amendment."
+        },
+        "constraint_ids": {
+          "type": "array",
+          "items": { "$ref": "node-id.json" },
+          "description": "Constraint IDs targeted by this amendment."
+        },
+        "profile_ids": {
+          "type": "array",
+          "items": { "$ref": "node-id.json" },
+          "description": "Profile IDs targeted by this amendment."
+        }
+      }
+    },
+    "InitiatedBy": {
+      "title": "InitiatedBy",
+      "description": "Identity of the actor who initiated an amendment.",
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "The kind of actor (e.g. 'human', 'agent', 'ci', 'system')."
+        },
+        "identity": {
+          "type": "string",
+          "description": "Identifier for the specific actor (e.g. username, agent name, service account)."
+        },
+        "provenance": {
+          "type": "string",
+          "description": "URI or description of the context in which this actor initiated the amendment."
+        }
+      }
+    }
+  }
+}

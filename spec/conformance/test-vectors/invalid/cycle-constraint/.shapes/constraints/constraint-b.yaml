@@ -1,0 +1,16 @@
+id: 2
+name: Constraint B
+description: Constraint B in a cycle with constraint A.
+kind: invariant
+rule: Placeholder rule B
+enforcement: manual
+status: proposed
+intent:
+  kind: requirement
+  summary: Constraint B
+  source: human
+children:
+  - constraint: 1
+    role: sub-rule
+parents:
+  - id: 1

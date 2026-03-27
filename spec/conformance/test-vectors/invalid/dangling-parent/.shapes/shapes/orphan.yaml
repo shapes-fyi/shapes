@@ -1,0 +1,10 @@
+id: 1
+name: Orphan
+description: Shape referencing a parent that does not exist.
+status: proposed
+intent:
+  kind: feature
+  summary: Shape with dangling parent reference
+  source: human
+parents:
+  - id: 99

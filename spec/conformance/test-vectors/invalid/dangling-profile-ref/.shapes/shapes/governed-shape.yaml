@@ -1,0 +1,9 @@
+id: 1
+name: Governed Shape
+description: Shape referencing non-existent profile
+profile: 99
+status: proposed
+intent:
+  kind: feature
+  summary: References profile 99 which does not exist
+  source: human

@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-003"],
+  "description": "Shape references non-existent constraint 99"
+}

@@ -1,0 +1,26 @@
+id: 1
+name: No Breaking Changes
+description: Public API must not introduce breaking changes without a version bump.
+profile: 1
+kind: invariant
+rule: No breaking changes to public API without a major version bump
+enforcement: manual
+status: proposed
+intent:
+  kind: requirement
+  summary: No Breaking Changes
+  source: human
+realization:
+  - bindings:
+      - scheme: path
+        value: tests/api_compat.rs
+        metadata:
+          summary: API compatibility test suite
+    role: primary
+evidence:
+  - id: api-compat-tests
+    type: test-result
+    bindings:
+      - scheme: path
+        value: tests/api_compat.rs
+    trusted: true

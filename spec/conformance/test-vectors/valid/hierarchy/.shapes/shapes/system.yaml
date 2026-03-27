@@ -1,0 +1,13 @@
+id: 1
+name: System
+description: Root shape representing the top-level system boundary.
+status: proposed
+intent:
+  kind: system
+  summary: Top-level system shape
+  source: human
+constraints:
+  - 1
+children:
+  - shape: 2
+    role: component

@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-010"],
+  "description": "Shape missing required 'goals' field declared by its profile"
+}

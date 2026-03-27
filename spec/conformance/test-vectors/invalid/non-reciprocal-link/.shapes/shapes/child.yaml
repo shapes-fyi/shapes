@@ -1,0 +1,8 @@
+id: 2
+name: Child
+description: Does NOT list shape 1 as parent
+status: proposed
+intent:
+  kind: feature
+  summary: Child shape missing parent back-reference
+  source: human

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/parent-ref.json",
+  "title": "ParentRef",
+  "description": "Reference to a parent node with optional semantic metadata explaining the relationship.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "node-id.json",
+      "description": "Identifier of the parent node."
+    },
+    "role": {
+      "type": "string",
+      "description": "Semantic role of this parent relationship (e.g. \"owner\", \"dependency\")."
+    },
+    "reason": {
+      "type": "string",
+      "description": "Human-readable explanation of why this parent relationship exists."
+    }
+  },
+  "required": ["id"],
+  "additionalProperties": false
+}

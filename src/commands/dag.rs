@@ -464,6 +464,29 @@ pub fn validate(store: &Store) -> Result<Vec<ValidationIssue>> {
         })
         .collect();
 
+    // --- ID uniqueness (INV-011) ---
+    // No two nodes of the same type may share the same id field value.
+    // Check the raw list_ids() output which preserves duplicates — the
+    // BTreeMap loading step silently deduplicates, so we must check before it.
+    fn check_duplicate_ids(ids: &[u64], type_name: &str, issues: &mut Vec<ValidationIssue>) {
+        let mut seen = HashSet::new();
+        for &id in ids {
+            if !seen.insert(id) {
+                issues.push(ValidationIssue {
+                    severity: "error".into(),
+                    node_type: type_name.into(),
+                    node_id: id.to_string(),
+                    message: format!("duplicate id {id}"),
+                });
+            }
+        }
+    }
+
+    check_duplicate_ids(&shape_ids, "shape", &mut issues);
+    check_duplicate_ids(&constraint_ids, "constraint", &mut issues);
+    check_duplicate_ids(&amendment_ids, "amendment", &mut issues);
+    check_duplicate_ids(&profile_ids, "profile", &mut issues);
+
     // --- Cycle detection (DFS three-color) ---
     detect_cycles_in(
         &shapes,
@@ -623,7 +646,7 @@ pub fn validate(store: &Store) -> Result<Vec<ValidationIssue>> {
                     .is_some_and(|ps| ps.iter().any(|p| p.id == id));
                 if !child_lists_parent {
                     issues.push(ValidationIssue {
-                        severity: "warning".into(),
+                        severity: "error".into(),
                         node_type: "shape".into(),
                         node_id: id.to_string(),
                         message: format!(
@@ -644,7 +667,7 @@ pub fn validate(store: &Store) -> Result<Vec<ValidationIssue>> {
                     .is_some_and(|ps| ps.iter().any(|p| p.id == id));
                 if !child_lists_parent {
                     issues.push(ValidationIssue {
-                        severity: "warning".into(),
+                        severity: "error".into(),
                         node_type: "constraint".into(),
                         node_id: id.to_string(),
                         message: format!(

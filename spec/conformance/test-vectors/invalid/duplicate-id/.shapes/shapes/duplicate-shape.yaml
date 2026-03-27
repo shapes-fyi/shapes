@@ -1,0 +1,8 @@
+id: 1
+name: Duplicate Shape
+description: Also claims id 1 — duplicate
+status: proposed
+intent:
+  kind: feature
+  summary: Second shape also claiming id 1
+  source: human

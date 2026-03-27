@@ -1,0 +1,40 @@
+id: 1
+name: Project Profile
+description: Governance profile requiring goals and rationale in shape intent fields.
+status: proposed
+intent:
+  kind: governance
+  summary: Project Profile
+  source: human
+lifecycle:
+  statuses:
+    - name: proposed
+      description: Initial state for new nodes
+      type: progressive
+    - name: promoted
+      description: Node has been reviewed and accepted
+      type: progressive
+    - name: canonical
+      description: Node is the authoritative definition
+      type: terminal
+  gates:
+    - from: proposed
+      to: promoted
+      preconditions:
+        - All required fields must be present
+    - from: promoted
+      to: canonical
+      preconditions:
+        - Node must have at least one realization binding
+fields:
+  shape:
+    intent:
+      fields:
+        - name: goals
+          description: What this shape must achieve
+          required: true
+        - name: rationale
+          description: Why this approach was chosen
+          required: true
+amendment_rules:
+  application: merge

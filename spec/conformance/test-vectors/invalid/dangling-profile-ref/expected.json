@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-006"],
+  "description": "Shape references non-existent profile"
+}

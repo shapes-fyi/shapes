@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/meta.json",
+  "title": "Meta",
+  "description": "Schema for the .shapes/meta.yaml file. Tracks the protocol version and the next available ID for each node type, ensuring unique ID allocation across the shapes graph.",
+  "type": "object",
+  "required": ["version", "next_ids"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(-(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?$",
+      "description": "Semantic version of the Shapes Context Protocol used by this project."
+    },
+    "next_ids": {
+      "$ref": "#/$defs/NextIds",
+      "description": "Monotonically increasing counters for the next available ID of each node type."
+    }
+  },
+  "$defs": {
+    "NextIds": {
+      "title": "NextIds",
+      "description": "ID counters for each node type. Each value represents the next ID to be assigned when creating a new node of that type.",
+      "type": "object",
+      "required": ["shape", "constraint", "amendment", "profile"],
+      "additionalProperties": false,
+      "properties": {
+        "shape": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Next available Shape ID."
+        },
+        "constraint": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Next available Constraint ID."
+        },
+        "amendment": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Next available Amendment ID."
+        },
+        "profile": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Next available Profile ID."
+        }
+      }
+    }
+  }
+}

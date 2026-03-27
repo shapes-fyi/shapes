@@ -99,11 +99,11 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: None,
                 }
             };
-            store.save(NodeType::Shape, id, &shape)?;
+            let path = store.save(NodeType::Shape, id, &shape)?;
             if id_only {
                 println!("{id}");
             } else {
-                eprintln!("Created {}", store.node_file_path(NodeType::Shape, id).display());
+                eprintln!("Created {}", path.display());
                 output(&shape, format)?;
             }
         }
@@ -151,14 +151,11 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: None,
                 }
             };
-            store.save(NodeType::Constraint, id, &constraint)?;
+            let path = store.save(NodeType::Constraint, id, &constraint)?;
             if id_only {
                 println!("{id}");
             } else {
-                eprintln!(
-                    "Created {}",
-                    store.node_file_path(NodeType::Constraint, id).display()
-                );
+                eprintln!("Created {}", path.display());
                 output(&constraint, format)?;
             }
         }
@@ -218,14 +215,11 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: None,
                 }
             };
-            store.save(NodeType::Amendment, id, &amendment)?;
+            let path = store.save(NodeType::Amendment, id, &amendment)?;
             if id_only {
                 println!("{id}");
             } else {
-                eprintln!(
-                    "Created {}",
-                    store.node_file_path(NodeType::Amendment, id).display()
-                );
+                eprintln!("Created {}", path.display());
                 output(&amendment, format)?;
             }
         }
@@ -269,14 +263,11 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: None,
                 }
             };
-            store.save(NodeType::Profile, id, &profile)?;
+            let path = store.save(NodeType::Profile, id, &profile)?;
             if id_only {
                 println!("{id}");
             } else {
-                eprintln!(
-                    "Created {}",
-                    store.node_file_path(NodeType::Profile, id).display()
-                );
+                eprintln!("Created {}", path.display());
                 output(&profile, format)?;
             }
         }

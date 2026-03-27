@@ -42,6 +42,22 @@ impl Meta {
 }
 
 // ---------------------------------------------------------------------------
+// Minimal struct to extract just the id from a YAML file
+// ---------------------------------------------------------------------------
+
+#[derive(Deserialize)]
+struct IdOnly {
+    id: u64,
+}
+
+#[derive(Deserialize)]
+struct IdAndName {
+    #[allow(dead_code)]
+    id: u64,
+    name: String,
+}
+
+// ---------------------------------------------------------------------------
 // Store — file-based .shapes/ directory operations
 // ---------------------------------------------------------------------------
 
@@ -116,52 +132,125 @@ impl Store {
         Ok(current)
     }
 
-    // -- Node CRUD ----------------------------------------------------------
+    // -- Directory scanning -------------------------------------------------
 
-    fn node_path(&self, node_type: NodeType, id: u64) -> PathBuf {
-        self.root
-            .join(node_type.dir_name())
-            .join(format!("{id}.yaml"))
+    /// Return the directory for a given node type.
+    fn type_dir(&self, node_type: NodeType) -> PathBuf {
+        self.root.join(node_type.dir_name())
     }
 
-    /// Save a node to disk as YAML.
-    pub fn save<T: Serialize>(&self, node_type: NodeType, id: u64, node: &T) -> Result<()> {
-        let path = self.node_path(node_type, id);
+    /// List all .yaml files in a node type directory.
+    fn yaml_files(&self, node_type: NodeType) -> Result<Vec<PathBuf>> {
+        let dir = self.type_dir(node_type);
+        let mut files = Vec::new();
+        for entry in
+            fs::read_dir(&dir).with_context(|| format!("failed to read {}", dir.display()))?
+        {
+            let entry = entry?;
+            let path = entry.path();
+            if path.extension().is_some_and(|e| e == "yaml") {
+                files.push(path);
+            }
+        }
+        files.sort();
+        Ok(files)
+    }
+
+    /// Find the file path for a node with the given id.
+    fn find_file(&self, node_type: NodeType, id: u64) -> Result<PathBuf> {
+        for path in self.yaml_files(node_type)? {
+            let content = fs::read_to_string(&path)
+                .with_context(|| format!("failed to read {}", path.display()))?;
+            if let Ok(parsed) = serde_yaml::from_str::<IdOnly>(&content) {
+                if parsed.id == id {
+                    return Ok(path);
+                }
+            }
+        }
+        bail!("{} {} not found", node_type, id)
+    }
+
+    // -- Node CRUD ----------------------------------------------------------
+
+    /// Save a node to disk as YAML, generating a descriptive filename.
+    pub fn save<T: Serialize>(&self, node_type: NodeType, id: u64, node: &T) -> Result<PathBuf> {
+        // If a file with this id already exists, overwrite it.
+        if let Ok(existing) = self.find_file(node_type, id) {
+            let yaml = serde_yaml::to_string(node)?;
+            fs::write(&existing, yaml)
+                .with_context(|| format!("failed to write {}", existing.display()))?;
+            return Ok(existing);
+        }
+
+        // New node — serialize to extract the name for the filename.
         let yaml = serde_yaml::to_string(node)?;
-        fs::write(&path, yaml)
-            .with_context(|| format!("failed to write {}", path.display()))
+        let slug = if let Ok(parsed) = serde_yaml::from_str::<IdAndName>(&yaml) {
+            slugify(&parsed.name)
+        } else {
+            id.to_string()
+        };
+
+        let path = self.type_dir(node_type).join(format!("{slug}.yaml"));
+        fs::write(&path, &yaml).with_context(|| format!("failed to write {}", path.display()))?;
+        Ok(path)
     }
 
     /// Load a single node by type and ID.
     pub fn load<T: DeserializeOwned>(&self, node_type: NodeType, id: u64) -> Result<T> {
-        let path = self.node_path(node_type, id);
+        let path = self.find_file(node_type, id)?;
         let content = fs::read_to_string(&path)
-            .with_context(|| format!("{} {} not found", node_type, id))?;
+            .with_context(|| format!("failed to read {}", path.display()))?;
         Ok(serde_yaml::from_str(&content)?)
     }
 
     /// List all IDs for a given node type (sorted).
     pub fn list_ids(&self, node_type: NodeType) -> Result<Vec<u64>> {
-        let dir = self.root.join(node_type.dir_name());
         let mut ids = Vec::new();
-        for entry in fs::read_dir(&dir)
-            .with_context(|| format!("failed to read {}", dir.display()))?
-        {
-            let entry = entry?;
-            let name = entry.file_name();
-            let name = name.to_string_lossy();
-            if let Some(stem) = name.strip_suffix(".yaml")
-                && let Ok(id) = stem.parse::<u64>()
-            {
-                ids.push(id);
+        for path in self.yaml_files(node_type)? {
+            let content = fs::read_to_string(&path)
+                .with_context(|| format!("failed to read {}", path.display()))?;
+            if let Ok(parsed) = serde_yaml::from_str::<IdOnly>(&content) {
+                ids.push(parsed.id);
             }
         }
         ids.sort();
         Ok(ids)
     }
 
-    /// Return the file path for a node (for display to user).
-    pub fn node_file_path(&self, node_type: NodeType, id: u64) -> PathBuf {
-        self.node_path(node_type, id)
+}
+
+// ---------------------------------------------------------------------------
+// Slugify — turn a name into a filename-safe slug
+// ---------------------------------------------------------------------------
+
+fn slugify(name: &str) -> String {
+    let slug: String = name
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '-' })
+        .collect();
+
+    // Collapse multiple hyphens, trim leading/trailing
+    let mut result = String::new();
+    let mut prev_hyphen = true; // treat start as hyphen to trim leading
+    for c in slug.chars() {
+        if c == '-' {
+            if !prev_hyphen {
+                result.push('-');
+            }
+            prev_hyphen = true;
+        } else {
+            result.push(c);
+            prev_hyphen = false;
+        }
+    }
+    // Trim trailing hyphen
+    if result.ends_with('-') {
+        result.pop();
+    }
+    if result.is_empty() {
+        "node".into()
+    } else {
+        result
     }
 }

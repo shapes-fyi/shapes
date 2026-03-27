@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/shape.json",
+  "title": "Shape",
+  "description": "Primary work node in the Shapes Context Protocol. Represents a unit of intent — a feature, component, task, or any decomposable piece of work.",
+  "type": "object",
+  "required": ["id", "name", "description", "status", "intent"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "$ref": "node-id.json",
+      "description": "Unique numeric identifier for this shape."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for this shape."
+    },
+    "description": {
+      "type": "string",
+      "description": "Prose description of what this shape represents and why it exists."
+    },
+    "profile": {
+      "$ref": "node-id.json",
+      "description": "Reference to the governance profile that controls this shape's lifecycle and field requirements."
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version string tracking the evolution of this shape."
+    },
+    "predecessors": {
+      "type": "array",
+      "items": { "$ref": "node-id.json" },
+      "description": "Shape IDs that this shape supersedes or evolves from."
+    },
+    "status": {
+      "$ref": "status.json",
+      "description": "Current lifecycle status of this shape (e.g. proposed, canonical, superseded)."
+    },
+    "intent": {
+      "$ref": "intent.json",
+      "description": "Structured declaration of what this shape is meant to achieve and why."
+    },
+    "constraints": {
+      "type": "array",
+      "items": { "$ref": "node-id.json" },
+      "description": "References to Constraint nodes that apply to this shape."
+    },
+    "realization": {
+      "type": "array",
+      "items": { "$ref": "realization.json" },
+      "description": "Bindings that map this shape's intent to concrete artifacts (files, modules, endpoints, etc.)."
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "evidence.json" },
+      "description": "Verification records proving that this shape's intent has been satisfied."
+    },
+    "provenance": {
+      "type": "array",
+      "items": { "$ref": "provenance.json" },
+      "description": "Origin and authorship records for this shape."
+    },
+    "amendment_log": {
+      "type": "array",
+      "items": { "$ref": "node-id.json" },
+      "description": "Ordered list of Amendment IDs that have modified this shape."
+    },
+    "parents": {
+      "type": "array",
+      "items": { "$ref": "parent-ref.json" },
+      "description": "References to parent shapes in the decomposition hierarchy."
+    },
+    "children": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ShapeChildRef" },
+      "description": "Child shapes nested under this shape, forming a decomposition tree."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Arbitrary key-value metadata attached to this shape. Profile field declarations may constrain which keys are expected."
+    }
+  },
+  "$defs": {
+    "ShapeChildRef": {
+      "title": "ShapeChildRef",
+      "description": "Reference to a child shape, either by ID or as a fully inline shape definition.",
+      "type": "object",
+      "required": ["shape"],
+      "additionalProperties": false,
+      "properties": {
+        "shape": {
+          "$ref": "#/$defs/ShapeRef",
+          "description": "The child shape, specified as either a numeric ID reference or a full inline Shape."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role this child plays within its parent (e.g. 'component', 'subtask', 'dependency')."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Explanation of why this child exists under this parent."
+        }
+      }
+    },
+    "ShapeRef": {
+      "title": "ShapeRef",
+      "description": "Untagged union: either a numeric Shape ID for referencing an existing shape, or a full inline Shape definition.",
+      "oneOf": [
+        {
+          "$ref": "node-id.json",
+          "description": "Numeric ID referencing an existing shape defined elsewhere."
+        },
+        {
+          "$ref": "#",
+          "description": "Full inline Shape definition nested directly in the parent."
+        }
+      ]
+    }
+  }
+}
