@@ -1,6 +1,6 @@
 # Shapes
 
-**Capture the meaning behind the code — the intent, constraints, and decisions that live in engineers' heads but not in the codebase.**
+**Record the intent, constraints, and decisions that shape a project.**
 
 ## The Problem
 
