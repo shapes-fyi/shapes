@@ -35,7 +35,7 @@ parents:
 realization:
   - bindings:
       - scheme: path
-        value: skills/context/SKILL.md
+        value: skills/shapes-context/SKILL.md
         metadata:
           summary: Protocol reference — node types, DAGs, Intent open map, Profiles, bindings, context-first workflow
     role: primary

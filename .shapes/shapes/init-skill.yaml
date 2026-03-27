@@ -36,7 +36,7 @@ parents:
 realization:
   - bindings:
       - scheme: path
-        value: skills/init/SKILL.md
+        value: skills/shapes-init/SKILL.md
         metadata:
           summary: Bootstrap workflow — 8-step process from init through exploration, interview, Profile, shapes, constraints, validation
     role: primary
