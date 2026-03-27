@@ -1,0 +1,45 @@
+id: 19
+name: Mermaid Visualization
+description: >-
+  Server-side Mermaid diagram rendering using the beautiful-mermaid library.
+  Produces static SVG that respects the current theme via CSS custom properties.
+  Used in the examples section to visualize protocol relationships — shape
+  composition DAGs, constraint hierarchies, and data flows. Includes error
+  boundary that shows a user-friendly message on render failure.
+profile: 1
+status: proposed
+intent:
+  kind: feature
+  summary: >-
+    Theme-aware Mermaid diagram rendering for protocol relationship visualization
+  source: human
+  goals: >-
+    Render protocol relationships as visual diagrams so readers can see DAG
+    structures, constraint hierarchies, and data flows without mentally parsing
+    YAML. Diagrams must respect the current theme (dark/light) and render as
+    static SVG for performance.
+  rationale: >-
+    DAG relationships are inherently visual — text descriptions of parent/child
+    hierarchies are harder to understand than a rendered graph. Server-side SVG
+    rendering avoids client-side Mermaid JS overhead and ensures diagrams appear
+    instantly on page load.
+  non_goals: >-
+    Not an interactive graph editor. Does not render live shapes data from a
+    .shapes/ directory — diagrams are defined in the spec content.
+  spec_section: Examples
+parents:
+  - id: 17
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/mermaid-diagram.tsx
+        metadata:
+          summary: MermaidDiagram component — SSR SVG rendering, theme-aware color mapping
+    role: primary
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/example-toggle.tsx
+        metadata:
+          summary: ExampleToggle — multi-domain YAML examples with integrated Mermaid diagrams
+    role: supporting

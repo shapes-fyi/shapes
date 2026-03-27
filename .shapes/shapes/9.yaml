@@ -1,0 +1,43 @@
+id: 9
+name: Constraint Inheritance
+description: >-
+  Constraints on a parent shape automatically apply to all descendant shapes.
+  The effective-constraints query (shapes query constraints <id>) walks the
+  shape DAG upward from a given node, collecting all constraint references
+  encountered along the way. Results distinguish direct constraints (on the
+  queried shape itself) from inherited constraints (from ancestors), allowing
+  agents to understand both what rules apply and where they come from.
+profile: 1
+status: promoted
+intent:
+  kind: pattern
+  summary: >-
+    Constraints on a parent shape automatically apply to all descendants via
+    DAG traversal — the effective-constraints query walks ancestors
+  source: human
+  goals: >-
+    Enable hierarchical constraint application so project-wide rules don't need
+    to be repeated on every leaf shape. Agents querying constraints on a feature
+    should automatically see system-level and module-level rules.
+  rationale: >-
+    Without inheritance, every shape would need to explicitly list all applicable
+    constraints, which would be error-prone and violate DRY. The ancestor-walk
+    approach mirrors how real projects work — a security constraint on the system
+    applies to every component.
+  non_goals: >-
+    Does not traverse the Constraint DAG for sub-constraints — inheritance only
+    follows the Shape DAG. Does not evaluate whether a constraint is actually
+    satisfied — only reports which constraints apply.
+  spec_section: Constraint inheritance and effective-constraint computation
+parents:
+  - id: 1
+    role: pattern
+  - id: 5
+    role: pattern
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: effective_constraints() — BFS ancestor walk collecting constraint refs, ConstraintWithSource struct
+    role: primary

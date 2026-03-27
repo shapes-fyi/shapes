@@ -1,0 +1,39 @@
+id: 16
+name: Maintain Skill
+description: >-
+  Audit skill that reviews an existing shapes graph for quality, consistency,
+  and coverage. Loads the full graph, fixes validation errors, checks for
+  duplicates, flags shallow nodes (one-liners, missing realizations, vague
+  constraint rules), verifies realization bindings point to existing files,
+  checks for uncovered source files and orphan nodes, reviews structural
+  organization, presents findings by severity, and applies approved changes.
+profile: 1
+status: promoted
+intent:
+  kind: feature
+  summary: >-
+    Audit skill that reviews existing shapes graph for quality, consistency,
+    coverage gaps, and stale realizations
+  source: human
+  goals: >-
+    Keep the shapes graph accurate as the project evolves. Code changes over
+    time — files get renamed, features get removed, new modules appear. The
+    maintain skill detects when shapes drift from reality and helps the
+    engineer fix it.
+  non_goals: >-
+    Does not auto-commit changes — presents findings and waits for approval.
+    Does not create new shapes from scratch — use the init skill for that.
+  rationale: >-
+    A shapes graph that drifts from reality is worse than no graph at all —
+    agents would make decisions based on stale context. Periodic maintenance
+    keeps the graph trustworthy.
+parents:
+  - id: 6
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: skills/maintain/SKILL.md
+        metadata:
+          summary: Audit workflow — 9-step process covering validation, duplicates, shallow nodes, coverage, structure
+    role: primary

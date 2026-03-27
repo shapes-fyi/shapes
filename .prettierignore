@@ -1,0 +1,9 @@
+dist/
+node_modules/
+.turbo/
+.output/
+.nitro/
+.tanstack/
+.vinxi/
+coverage/
+bun.lock

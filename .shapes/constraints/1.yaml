@@ -1,0 +1,45 @@
+id: 1
+name: No Cycles in DAGs
+description: >-
+  Neither the Shape DAG nor the Constraint DAG may contain cycles. A cycle
+  would make ancestor traversal and constraint inheritance non-terminating,
+  breaking the fundamental trust model agents rely on. Enforced by three-color
+  DFS in the validate command.
+profile: 1
+kind: invariant
+rule: >-
+  Neither the Shape DAG nor the Constraint DAG may contain cycles — validated
+  by three-color DFS
+enforcement: machine
+status: promoted
+intent:
+  kind: requirement
+  summary: No Cycles in DAGs
+  source: human
+  rationale: >-
+    DAG algorithms (ancestor/descendant traversal, effective-constraints,
+    tree rendering) assume acyclicity. A cycle would cause infinite loops
+    in BFS traversal and make constraint inheritance undefined.
+  impact_if_violated: >-
+    Agent queries would hang or produce incorrect results. Effective-constraint
+    computation would loop forever. Tree visualization would not terminate.
+  verification_method: >-
+    Three-color DFS algorithm in dag.rs — white (unvisited), gray (in progress),
+    black (complete). A back edge to a gray node indicates a cycle.
+  spec_section: DAG integrity requirements
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: detect_cycles_in() — three-color DFS marking nodes white/gray/black, back edge to gray = cycle
+    role: primary
+evidence:
+  - id: cycle-detection-impl
+    type: implementation
+    bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: detect_cycles_in() — three-color DFS marking nodes white/gray/black, back edge to gray = cycle
+    trusted: true

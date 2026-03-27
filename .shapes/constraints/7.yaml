@@ -1,0 +1,43 @@
+id: 7
+name: Agent CLI Discovery
+description: >-
+  Agents must discover shapes context by running CLI commands on demand during
+  their workflow. Shapes content must never be pre-injected or dumped into
+  agent prompts. This ensures agents query what they need when they need it,
+  keeping prompt sizes manageable and context relevant.
+profile: 1
+kind: requirement
+rule: >-
+  Agents must query shapes context via CLI commands on demand — shapes content
+  must never be pre-injected into agent prompts
+enforcement: manual
+status: promoted
+intent:
+  kind: requirement
+  summary: Agent CLI Discovery
+  source: human
+  rationale: >-
+    Pre-injecting shapes content into prompts was tried and failed — it
+    bloats the prompt with irrelevant context, wastes tokens, and agents
+    ignore most of it. On-demand CLI queries let agents pull exactly the
+    context they need for the task at hand.
+  impact_if_violated: >-
+    Agent prompts become bloated with irrelevant shapes data. Token budgets
+    are wasted. Agents may hallucinate based on context that doesn't apply
+    to their current task.
+  verification_method: >-
+    Review skill SKILL.md files to ensure they teach CLI-based discovery
+    workflow, not prompt injection. The context skill should instruct agents
+    to run shapes commands, not read YAML files directly.
+evidence:
+  - id: skill-teaches-cli-workflow
+    type: review
+    bindings:
+      - scheme: path
+        value: skills/context/SKILL.md
+        metadata:
+          summary: Context skill teaches agents to run CLI commands (tree, list, get, query) — does not inject shapes content into prompts
+      - scheme: path
+        value: CLAUDE.md
+        metadata:
+          summary: Agent instructions reference CLI commands for context discovery, not YAML file reading

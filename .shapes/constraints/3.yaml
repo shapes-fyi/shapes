@@ -1,0 +1,46 @@
+id: 3
+name: Valid References
+description: >-
+  Every ID referenced by a node must resolve to an existing node of the
+  expected type. This includes constraint IDs on shapes, profile IDs, parent
+  and child shape/constraint IDs, and amendment target IDs. Dangling references
+  would cause runtime errors or silently incorrect query results.
+profile: 1
+kind: invariant
+rule: >-
+  Every constraint ID, profile ID, parent ID, and child ID referenced by any
+  node must resolve to an existing node of the correct type
+enforcement: machine
+status: promoted
+intent:
+  kind: requirement
+  summary: Valid References
+  source: human
+  rationale: >-
+    The graph is only useful if all edges actually connect to real nodes. A
+    shape referencing constraint ID 42 when no constraint 42 exists would
+    mislead agents into thinking a rule applies when it doesn't (or crash
+    when trying to load it).
+  impact_if_violated: >-
+    Agent queries would fail with file-not-found errors. Constraint inheritance
+    would silently skip missing constraints. Profile validation would be
+    impossible for nodes referencing deleted profiles.
+  verification_method: >-
+    Validation loads all node IDs per type, then checks every reference against
+    those sets. Produces an error-level ValidationIssue for each dangling ref.
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: Dangling reference checks in validate() — verifies constraint, parent, child, profile IDs resolve
+    role: primary
+evidence:
+  - id: dangling-ref-check-impl
+    type: implementation
+    bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: Dangling reference checks in validate() — verifies constraint, parent, child, profile, and amendment target IDs resolve
+    trusted: true

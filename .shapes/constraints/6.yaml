@@ -1,0 +1,44 @@
+id: 6
+name: Spec Conformance
+description: >-
+  The CLI implements the shapes.fyi specification and must not diverge from it.
+  All node types, fields, lifecycle states, and graph semantics must match the
+  spec. The CLI may add convenience features (like ASCII tree rendering) but
+  must not redefine protocol semantics.
+profile: 1
+kind: requirement
+rule: >-
+  The CLI must faithfully implement the shapes.fyi specification — it must not
+  invent new semantics or node types beyond the spec
+enforcement: manual
+status: promoted
+intent:
+  kind: requirement
+  summary: Spec Conformance
+  source: human
+  rationale: >-
+    The CLI is one of many possible implementations of the shapes.fyi spec.
+    If it diverges, shapes created by the CLI won't be interoperable with
+    other tools, and agents trained on the spec will make wrong assumptions.
+  impact_if_violated: >-
+    Shapes created by the CLI would be invalid per the spec. Other tools
+    consuming .shapes/ directories would fail or misinterpret the data.
+    Agent behavior based on spec documentation would be incorrect.
+  verification_method: >-
+    Review data model types against spec definitions. Ensure serialization
+    output matches spec YAML examples.
+  spec_section: Full specification at shapes.fyi
+evidence:
+  - id: model-spec-alignment
+    type: review
+    bindings:
+      - scheme: path
+        value: src/model/mod.rs
+        metadata:
+          summary: NodeType enum matches spec's four node types; field names match spec YAML format
+      - scheme: path
+        value: src/model/common.rs
+        metadata:
+          summary: Status enum implements spec's 7-state lifecycle; serde serialization matches spec YAML examples
+    metadata:
+      note: Spec conformance currently verified by manual review against shapes.fyi; no automated spec-compliance test suite exists

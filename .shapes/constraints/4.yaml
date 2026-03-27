@@ -1,0 +1,44 @@
+id: 4
+name: Append-Only IDs
+description: >-
+  Node IDs are allocated by incrementing a per-type counter in meta.yaml.
+  Once an ID is allocated, it is never reused even if the node is later
+  deleted. This prevents confusion when amendments or other nodes reference
+  historical IDs.
+profile: 1
+kind: invariant
+rule: >-
+  Once allocated, a node ID is never reused — the next_id counter in meta.yaml
+  only increments
+enforcement: machine
+status: promoted
+intent:
+  kind: requirement
+  summary: Append-Only IDs
+  source: human
+  rationale: >-
+    ID reuse would break amendment targets and historical references. If shape
+    5 is deleted and a new shape gets ID 5, amendments targeting the original
+    shape 5 would now point to the wrong node.
+  impact_if_violated: >-
+    Historical references become ambiguous. Amendments could target wrong nodes.
+    Provenance trails would be corrupted.
+  verification_method: >-
+    The Store.next_id() method reads the counter, increments it, and saves
+    meta.yaml atomically. There is no decrement or reset operation.
+realization:
+  - bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: next_id() — reads counter from meta.yaml, increments, saves back; no decrement/reset operation
+    role: primary
+evidence:
+  - id: monotonic-id-impl
+    type: implementation
+    bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: next_id() — reads counter, increments, saves; no decrement path exists in codebase
+    trusted: true
