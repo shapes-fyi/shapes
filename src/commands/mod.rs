@@ -404,20 +404,28 @@ pub fn query(op: QueryCommand, format: OutputFormat) -> Result<()> {
 // validate
 // ---------------------------------------------------------------------------
 
-pub fn validate() -> Result<()> {
+pub fn validate(format: OutputFormat) -> Result<()> {
     let store = open_store()?;
     let issues = dag::validate(&store)?;
     if issues.is_empty() {
-        eprintln!("No issues found.");
+        match format {
+            OutputFormat::Json => println!("[]"),
+            OutputFormat::Yaml => eprintln!("No issues found."),
+        }
         Ok(())
     } else {
-        for issue in &issues {
-            eprintln!(
-                "[{}] {}: {} — {}",
-                issue.severity, issue.node_type, issue.node_id, issue.message
-            );
+        match format {
+            OutputFormat::Json => {
+                let json = serde_json::to_string_pretty(&issues)?;
+                println!("{json}");
+            }
+            OutputFormat::Yaml => {
+                for issue in &issues {
+                    eprintln!("{issue}");
+                }
+                eprintln!("{} validation issue(s) found", issues.len());
+            }
         }
-        eprintln!("{} validation issue(s) found", issues.len());
         std::process::exit(2);
     }
 }

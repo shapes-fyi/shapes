@@ -291,6 +291,6 @@ fn run(cli: Cli) -> Result<()> {
 
         Command::Query { operation } => commands::query(operation, cli.format),
 
-        Command::Validate => commands::validate(),
+        Command::Validate => commands::validate(cli.format),
     }
 }

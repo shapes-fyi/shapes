@@ -6,10 +6,9 @@
 # Other bindings (MCP, HTTP) need their own harness that reads the same
 # test vector fixtures.
 #
-# The test vectors (`.shapes/` directories) are transport-agnostic.
-# This script only checks the CLI binding's contract:
-#   - valid vectors: `shapes validate` exits 0
-#   - invalid vectors: `shapes validate` exits 2
+# Uses `--format json` to get structured output with invariant IDs, then
+# verifies that the expected invariants from expected.json appear in the
+# validation output.
 #
 # Usage:
 #   ./runners/cli.sh                     # uses 'shapes' from PATH
@@ -29,11 +28,11 @@ passed=0
 failed=0
 errors=()
 
-# ── Valid vectors: validate MUST exit 0 ───────────────────────────────────
+# ── Valid vectors: validate MUST exit 0 with empty array ──────────────────
 
 for fixture in "$VECTORS"/valid/*/; do
   name="$(basename "$fixture")"
-  exit_code=$(cd "$fixture" && "$SHAPES" validate > /dev/null 2>&1; echo $?)
+  exit_code=$(cd "$fixture" && "$SHAPES" validate --format json > /dev/null 2>&1; echo $?)
 
   if [ "$exit_code" -eq 0 ]; then
     printf "  PASS  valid/%s\n" "$name"
@@ -45,7 +44,7 @@ for fixture in "$VECTORS"/valid/*/; do
   fi
 done
 
-# ── Invalid vectors: validate MUST exit 2 ─────────────────────────────────
+# ── Invalid vectors: validate MUST exit 2 with expected invariants ────────
 
 for fixture in "$VECTORS"/invalid/*/; do
   name="$(basename "$fixture")"
@@ -55,15 +54,36 @@ for fixture in "$VECTORS"/invalid/*/; do
     continue
   fi
 
-  exit_code=$(cd "$fixture" && "$SHAPES" validate > /dev/null 2>&1; echo $?)
+  # Run validate and capture JSON output
+  json_output=$(cd "$fixture" && "$SHAPES" validate --format json 2>/dev/null) || true
+  exit_code=$(cd "$fixture" && "$SHAPES" validate --format json > /dev/null 2>&1; echo $?)
 
-  if [ "$exit_code" -eq 2 ]; then
-    printf "  PASS  invalid/%s\n" "$name"
-    passed=$((passed + 1))
-  else
+  if [ "$exit_code" -ne 2 ]; then
     printf "  FAIL  invalid/%s (expected exit 2, got %s)\n" "$name" "$exit_code"
-    errors+=("invalid/$name")
+    errors+=("invalid/$name: wrong exit code")
     failed=$((failed + 1))
+    continue
+  fi
+
+  # Check that each expected invariant appears in the output
+  # Extract expected invariants from expected.json
+  expected_invs=$(grep -o '"INV-[0-9]*"' "$fixture/expected.json" | tr -d '"')
+  all_found=true
+
+  for inv in $expected_invs; do
+    if echo "$json_output" | grep -q "\"$inv\""; then
+      : # found
+    else
+      printf "  FAIL  invalid/%s (missing invariant %s in output)\n" "$name" "$inv"
+      errors+=("invalid/$name: missing $inv")
+      all_found=false
+      failed=$((failed + 1))
+    fi
+  done
+
+  if [ "$all_found" = true ]; then
+    printf "  PASS  invalid/%s [%s]\n" "$name" "$expected_invs"
+    passed=$((passed + 1))
   fi
 done
 
