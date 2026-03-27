@@ -33,7 +33,7 @@ parents:
 realization:
   - bindings:
       - scheme: path
-        value: skills/maintain/SKILL.md
+        value: skills/shapes-maintain/SKILL.md
         metadata:
           summary: Audit workflow — 9-step process covering validation, duplicates, shallow nodes, coverage, structure
     role: primary

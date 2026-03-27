@@ -1,5 +1,5 @@
 ---
-name: init
+name: shapes-init
 description: >
   Bootstrap the Shapes Context Protocol for an existing project. Explores the
   codebase, interviews the engineer about architecture and constraints, creates

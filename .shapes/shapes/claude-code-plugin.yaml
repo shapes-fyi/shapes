@@ -49,19 +49,19 @@ realization:
     role: primary
   - bindings:
       - scheme: path
-        value: skills/context/SKILL.md
+        value: skills/shapes-context/SKILL.md
         metadata:
           summary: Context skill — protocol knowledge, four node types, two DAGs, context-first workflow
     role: primary
   - bindings:
       - scheme: path
-        value: skills/init/SKILL.md
+        value: skills/shapes-init/SKILL.md
         metadata:
           summary: Init skill — project exploration, engineer interview, Profile creation, shape/constraint generation
     role: primary
   - bindings:
       - scheme: path
-        value: skills/maintain/SKILL.md
+        value: skills/shapes-maintain/SKILL.md
         metadata:
           summary: Maintain skill — graph audit, validation fixes, coverage checks, stale realization detection
     role: primary

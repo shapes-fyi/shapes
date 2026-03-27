@@ -6,6 +6,15 @@ Shapes stores a queryable graph of your project's intent and constraints as plai
 
 Read the full specification at **[shapes.fyi](https://shapes.fyi)**.
 
+## Table of Contents
+
+- [Quick Start](#quick-start)
+  - [Install the CLI](#install-the-cli)
+  - [Install the Claude Code plugin](#install-the-claude-code-plugin)
+  - [Use it](#use-it)
+- [CLI Reference](#cli-reference)
+- [Repository Structure](#repository-structure)
+
 ## Quick Start
 
 ### Install the CLI
@@ -14,7 +23,16 @@ Read the full specification at **[shapes.fyi](https://shapes.fyi)**.
 cargo install --git https://github.com/shapes-fyi/shapes
 ```
 
-### Install the Claude Code skills
+### Install the Claude Code plugin
+
+In Claude Code, run:
+
+```
+/plugin marketplace add shapes-fyi/shapes
+/plugin install shapes
+```
+
+Or install via skills:
 
 ```bash
 npx skills add shapes-fyi/shapes
@@ -22,7 +40,7 @@ npx skills add shapes-fyi/shapes
 
 ### Use it
 
-In any project, run `/shapes:init` in Claude Code. The agent will:
+In any project, run `/shapes:shapes-init` in Claude Code. The agent will:
 
 1. Explore your project structure and source code
 2. Interview you about architecture, constraints, and domain knowledge
@@ -32,7 +50,7 @@ In any project, run `/shapes:init` in Claude Code. The agent will:
 
 After initialization, the agent automatically discovers and uses shapes context before doing any work.
 
-Run `/shapes:maintain` periodically to audit the graph for consistency, duplicates, coverage gaps, and stale realizations.
+Run `/shapes:shapes-maintain` periodically to audit the graph for consistency, duplicates, coverage gaps, and stale realizations.
 
 ## CLI Reference
 
@@ -56,5 +74,5 @@ This is a monorepo containing:
 - **`src/`** — `shapes-cli`, a Rust CLI to create and query the context graph
 - **`apps/web/`** — the [shapes.fyi](https://shapes.fyi) specification website (TanStack Start, React 19, Vite)
 - **`packages/ui/`** — shared UI component library (shadcn/ui, Base UI, Tailwind CSS v4)
-- **`skills/`** — Claude Code skills (`/shapes:init`, `/shapes:context`, `/shapes:maintain`)
+- **`skills/`** — Claude Code skills (`/shapes:shapes-init`, `/shapes:shapes-context`, `/shapes:shapes-maintain`)
 - **`.shapes/`** — the project's own context graph (shapes eating its own dog food)

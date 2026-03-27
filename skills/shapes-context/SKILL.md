@@ -1,12 +1,12 @@
 ---
-name: context
+name: shapes-context
 description: >
   Shapes Context Protocol knowledge. Loaded automatically when a project has
   a .shapes/ directory or the user mentions shapes, context, or constraints.
   Teaches the protocol concepts, context-first workflow, and how to use the
   shapes-cli to discover intent and constraints before doing any work. Use
-  /shapes:init to bootstrap a new project. Use /shapes:maintain to audit and
-  organize an existing shapes graph.
+  /shapes:shapes-init to bootstrap a new project. Use /shapes:shapes-maintain
+  to audit and organize an existing shapes graph.
 user-invocable: false
 ---
 

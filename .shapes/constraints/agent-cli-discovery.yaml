@@ -34,7 +34,7 @@ evidence:
     type: review
     bindings:
       - scheme: path
-        value: skills/context/SKILL.md
+        value: skills/shapes-context/SKILL.md
         metadata:
           summary: Context skill teaches agents to run CLI commands (tree, list, get, query) — does not inject shapes content into prompts
       - scheme: path

@@ -5,7 +5,7 @@
 Before doing any work in this project, load the shapes context skill:
 
 ```
-/shapes:context
+/shapes:shapes-context
 ```
 
 Then follow the context-first workflow: run `shapes tree shape` to see the
@@ -17,7 +17,7 @@ and only then start working. Never skip context discovery.
 Before creating any git commit, load the shapes maintain skill:
 
 ```
-/shapes:maintain
+/shapes:shapes-maintain
 ```
 
 Audit the shapes graph to ensure it reflects the current state of the code.

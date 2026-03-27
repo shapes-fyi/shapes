@@ -1,5 +1,5 @@
 ---
-name: maintain
+name: shapes-maintain
 description: >
   Audit and organize an existing shapes graph. Checks for inconsistencies,
   deduplication opportunities, coverage gaps, stale realizations, and
