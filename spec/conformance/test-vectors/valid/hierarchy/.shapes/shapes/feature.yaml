@@ -1,0 +1,11 @@
+id: 3
+name: Feature
+description: Leaf shape representing a feature within the service.
+status: proposed
+intent:
+  kind: feature
+  summary: Leaf feature shape
+  source: human
+parents:
+  - id: 2
+    role: component

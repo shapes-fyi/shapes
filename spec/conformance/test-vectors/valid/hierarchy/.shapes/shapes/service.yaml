@@ -1,0 +1,16 @@
+id: 2
+name: Service
+description: Mid-level shape representing a service within the system.
+status: proposed
+intent:
+  kind: service
+  summary: Service layer shape
+  source: human
+constraints:
+  - 2
+parents:
+  - id: 1
+    role: component
+children:
+  - shape: 3
+    role: component

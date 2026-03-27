@@ -1,0 +1,46 @@
+id: 4
+name: Append-Only IDs
+description: >-
+  Node IDs are derived by scanning existing nodes and computing max + 1.
+  Once an ID is allocated, it is never reused even if the node is later
+  deleted. This prevents confusion when amendments or other nodes reference
+  historical IDs.
+profile: 1
+kind: invariant
+rule: >-
+  Once allocated, a node ID is never reused — IDs are derived by scanning
+  existing nodes and computing max + 1. The invariant (monotonically
+  increasing, never reused) holds via computed derivation rather than a
+  persisted counter
+enforcement: machine
+status: promoted
+intent:
+  kind: requirement
+  summary: Append-Only IDs
+  source: human
+  rationale: >-
+    ID reuse would break amendment targets and historical references. If shape
+    5 is deleted and a new shape gets ID 5, amendments targeting the original
+    shape 5 would now point to the wrong node.
+  impact_if_violated: >-
+    Historical references become ambiguous. Amendments could target wrong nodes.
+    Provenance trails would be corrupted.
+  verification_method: >-
+    The Store.next_id() method scans existing node IDs and computes max + 1.
+    There is no decrement or reset operation.
+realization:
+  - bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: next_id() — scans existing node IDs, computes max + 1; no decrement/reset operation. ID allocation derived from scanning, not a persisted counter
+    role: primary
+evidence:
+  - id: monotonic-id-impl
+    type: implementation
+    bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: next_id() — scans existing node IDs, computes max + 1; no decrement path exists in codebase
+    trusted: true

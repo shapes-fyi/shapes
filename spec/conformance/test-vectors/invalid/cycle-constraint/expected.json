@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-002"],
+  "description": "Constraint cycle: constraint 1 is child of 2, constraint 2 is child of 1"
+}

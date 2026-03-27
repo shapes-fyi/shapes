@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/status.json",
+  "title": "Status",
+  "description": "Seven-state lifecycle status. Serializes as a bare string when the detail is empty, or as a single-key object when detail fields are present.",
+  "oneOf": [
+    {
+      "type": "string",
+      "enum": [
+        "proposed",
+        "promoted",
+        "canonical",
+        "rejected",
+        "superseded",
+        "abandoned",
+        "reverted"
+      ],
+      "description": "Bare status string with no additional detail."
+    },
+    {
+      "type": "object",
+      "description": "Progressive status with detail fields.",
+      "oneOf": [
+        {
+          "properties": {
+            "proposed": { "$ref": "#/$defs/status-detail" }
+          },
+          "required": ["proposed"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "promoted": { "$ref": "#/$defs/status-detail" }
+          },
+          "required": ["promoted"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "canonical": { "$ref": "#/$defs/status-detail" }
+          },
+          "required": ["canonical"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "rejected": { "$ref": "#/$defs/terminal-detail" }
+          },
+          "required": ["rejected"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "superseded": { "$ref": "#/$defs/terminal-detail" }
+          },
+          "required": ["superseded"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "abandoned": { "$ref": "#/$defs/terminal-detail" }
+          },
+          "required": ["abandoned"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "reverted": { "$ref": "#/$defs/terminal-detail" }
+          },
+          "required": ["reverted"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  ],
+  "$defs": {
+    "status-detail": {
+      "type": "object",
+      "description": "Detail for progressive states (proposed, promoted, canonical).",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "description": "Human-readable reason for the status transition."
+        },
+        "uris": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "URIs supporting or documenting this status."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Arbitrary key-value metadata associated with this status."
+        }
+      },
+      "additionalProperties": false
+    },
+    "terminal-detail": {
+      "type": "object",
+      "description": "Detail for terminal states (rejected, superseded, abandoned, reverted).",
+      "properties": {
+        "reason": {
+          "type": "string",
+          "description": "Human-readable reason for the terminal transition."
+        },
+        "uris": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "URIs supporting or documenting this status."
+        },
+        "successors": {
+          "type": "array",
+          "items": { "$ref": "node-id.json" },
+          "description": "Node IDs of successor nodes that replace this one."
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Arbitrary key-value metadata associated with this status."
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

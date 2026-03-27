@@ -1,0 +1,123 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/constraint.json",
+  "title": "Constraint",
+  "description": "Enforcement rule in the Shapes Context Protocol. Defines a verifiable condition that shapes must satisfy — covering code style, architecture boundaries, testing requirements, or any other governance rule.",
+  "type": "object",
+  "required": ["id", "name", "description", "kind", "rule", "enforcement", "status", "intent"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "$ref": "node-id.json",
+      "description": "Unique numeric identifier for this constraint."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for this constraint."
+    },
+    "description": {
+      "type": "string",
+      "description": "Prose description of what this constraint enforces and why."
+    },
+    "kind": {
+      "type": "string",
+      "description": "Classification of the constraint (e.g. 'testing', 'architecture', 'style', 'security')."
+    },
+    "rule": {
+      "type": "string",
+      "description": "The concrete rule statement that must hold. Should be precise enough to verify."
+    },
+    "enforcement": {
+      "type": "string",
+      "description": "How this constraint is enforced (e.g. 'ci', 'manual-review', 'lint', 'test')."
+    },
+    "profile": {
+      "$ref": "node-id.json",
+      "description": "Reference to the governance profile that controls this constraint's lifecycle and field requirements."
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version string tracking the evolution of this constraint."
+    },
+    "status": {
+      "$ref": "status.json",
+      "description": "Current lifecycle status of this constraint (e.g. proposed, canonical, superseded)."
+    },
+    "intent": {
+      "$ref": "intent.json",
+      "description": "Structured declaration of what this constraint is meant to achieve and why."
+    },
+    "realization": {
+      "type": "array",
+      "items": { "$ref": "realization.json" },
+      "description": "Bindings that map this constraint to concrete enforcement artifacts (lint configs, CI scripts, etc.)."
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "$ref": "evidence.json" },
+      "description": "Verification records proving that this constraint is being enforced."
+    },
+    "provenance": {
+      "type": "array",
+      "items": { "$ref": "provenance.json" },
+      "description": "Origin and authorship records for this constraint."
+    },
+    "amendment_log": {
+      "type": "array",
+      "items": { "$ref": "node-id.json" },
+      "description": "Ordered list of Amendment IDs that have modified this constraint."
+    },
+    "parents": {
+      "type": "array",
+      "items": { "$ref": "parent-ref.json" },
+      "description": "References to parent constraints in a constraint hierarchy."
+    },
+    "children": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ConstraintChildRef" },
+      "description": "Child constraints nested under this constraint."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Arbitrary key-value metadata attached to this constraint. Profile field declarations may constrain which keys are expected."
+    }
+  },
+  "$defs": {
+    "ConstraintChildRef": {
+      "title": "ConstraintChildRef",
+      "description": "Reference to a child constraint, either by ID or as a fully inline constraint definition.",
+      "type": "object",
+      "required": ["constraint"],
+      "additionalProperties": false,
+      "properties": {
+        "constraint": {
+          "$ref": "#/$defs/ConstraintRef",
+          "description": "The child constraint, specified as either a numeric ID reference or a full inline Constraint."
+        },
+        "role": {
+          "type": "string",
+          "description": "The role this child plays within its parent (e.g. 'sub-rule', 'refinement')."
+        },
+        "reason": {
+          "type": "string",
+          "description": "Explanation of why this child exists under this parent."
+        }
+      }
+    },
+    "ConstraintRef": {
+      "title": "ConstraintRef",
+      "description": "Untagged union: either a numeric Constraint ID for referencing an existing constraint, or a full inline Constraint definition.",
+      "oneOf": [
+        {
+          "$ref": "node-id.json",
+          "description": "Numeric ID referencing an existing constraint defined elsewhere."
+        },
+        {
+          "$ref": "#",
+          "description": "Full inline Constraint definition nested directly in the parent."
+        }
+      ]
+    }
+  }
+}

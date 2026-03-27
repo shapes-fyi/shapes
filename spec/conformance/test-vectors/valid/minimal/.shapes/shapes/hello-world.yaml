@@ -1,0 +1,8 @@
+id: 1
+name: Hello World
+description: A minimal shape with no constraints, no profile, and no children.
+status: proposed
+intent:
+  kind: feature
+  summary: A single shape
+  source: human

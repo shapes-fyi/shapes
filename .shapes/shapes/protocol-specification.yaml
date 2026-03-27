@@ -1,0 +1,62 @@
+id: 23
+name: Protocol Specification
+description: >-
+  Formal, implementation-agnostic protocol specification with JSON schemas,
+  typed operations, invariants, discovery mechanisms, transport bindings, and
+  conformance tests. Defines what any Shapes implementation must satisfy
+  independent of transport or language.
+profile: 1
+status: proposed
+intent:
+  kind: module
+  summary: >-
+    Formal, implementation-agnostic protocol specification with JSON schemas,
+    typed operations, invariants, discovery mechanisms, transport bindings, and
+    conformance tests
+  source: human
+  goals: >-
+    Define what any Shapes implementation must satisfy independent of transport.
+    Enable alternative implementations (Python, Go, MCP server) without
+    reverse-engineering the Rust CLI.
+  rationale: >-
+    The protocol was implicit in the CLI. Making it explicit separates the
+    abstract protocol from concrete implementation.
+  non_goals: >-
+    Not a tutorial or user guide. Not implementation advice.
+parents:
+  - id: 1
+    role: component
+constraints:
+  - 6
+children:
+  - shape: 24
+    role: component
+  - shape: 25
+    role: component
+  - shape: 26
+    role: component
+realization:
+  - bindings:
+      - scheme: path
+        value: spec/protocol.md
+        metadata:
+          summary: Core protocol definition — node types, fields, lifecycle states, graph semantics
+    role: primary
+  - bindings:
+      - scheme: path
+        value: spec/operations.md
+        metadata:
+          summary: Typed abstract operations — create, read, update, list, validate, query
+    role: primary
+  - bindings:
+      - scheme: path
+        value: spec/invariants.md
+        metadata:
+          summary: Formal invariant definitions with IDs, descriptions, and detection rules
+    role: primary
+  - bindings:
+      - scheme: path
+        value: spec/discovery.md
+        metadata:
+          summary: Discovery mechanisms — how agents find and navigate the shapes graph
+    role: primary

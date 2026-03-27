@@ -1,0 +1,53 @@
+id: 12
+name: Graph Validation
+description: >-
+  The validate command runs a comprehensive suite of integrity checks on both
+  DAGs. Cycle detection uses a three-color DFS algorithm (white/gray/black).
+  Dangling reference checks verify all parent, child, constraint, and profile
+  IDs resolve to existing nodes. Reciprocal link checks ensure parent-child
+  relationships are mirrored on both sides. Amendment validation confirms
+  targets exist and are non-empty. Profile field validation checks that
+  required fields declared in the Profile are present in governed nodes.
+  Returns a list of ValidationIssue structs with severity, node type, ID,
+  and message. Exit code 2 when issues are found.
+profile: 1
+status: promoted
+intent:
+  kind: feature
+  summary: >-
+    Validates both DAGs for cycles, dangling references, reciprocal link
+    consistency, amendment targets, and Profile field requirements
+  source: human
+  goals: >-
+    Catch all graph integrity issues that could cause incorrect agent behavior.
+    Each ValidationIssue now carries an `invariant` field identifying which
+    protocol invariant (INV-001 through INV-011) was violated. INV-011
+    (duplicate ID detection) was added. INV-009 (reciprocal links) upgraded
+    from warning to error. An agent relying on constraint inheritance must be
+    able to trust that the DAG is acyclic and all references resolve.
+    Validation is the foundation of graph trustworthiness.
+  rationale: >-
+    Machine-enforced validation is essential because manual review of YAML files
+    does not scale. The validation suite was built to match the invariants in
+    the shapes.fyi spec — each check corresponds to a spec requirement.
+  non_goals: >-
+    Does not fix issues automatically — reports issues for humans or agents to
+    resolve. Does not validate semantic quality of intent text — only structural
+    integrity.
+  spec_section: Graph integrity rules and validation requirements
+constraints:
+  - 1
+  - 2
+  - 3
+parents:
+  - id: 4
+    role: feature
+  - id: 5
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: validate() — cycle detection (three-color DFS), dangling refs, reciprocal links (error severity), amendment targets, profile fields, duplicate ID detection (INV-011). Each ValidationIssue carries an `invariant` field (INV-001 through INV-011)
+    role: primary

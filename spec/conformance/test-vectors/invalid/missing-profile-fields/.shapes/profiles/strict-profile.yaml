@@ -1,0 +1,15 @@
+id: 1
+name: Strict Profile
+description: Profile requiring a goals field in shape intent.
+status: proposed
+intent:
+  kind: governance
+  summary: Strict Profile
+  source: human
+fields:
+  shape:
+    intent:
+      fields:
+        - name: goals
+          description: What to achieve
+          required: true

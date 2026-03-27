@@ -1,0 +1,46 @@
+id: 3
+name: File Store
+description: >-
+  YAML-based persistence layer that manages the .shapes/ directory structure.
+  Handles ID allocation via an auto-incrementing counter in meta.yaml, generic
+  load/save operations for any node type, and directory listing. Each node type
+  gets its own subdirectory (shapes/, constraints/, amendments/, profiles/) with
+  files named by ID (e.g., 1.yaml, 2.yaml).
+profile: 1
+status: promoted
+intent:
+  kind: module
+  summary: >-
+    YAML-based persistence layer managing .shapes/ directory, ID allocation,
+    and node serialization
+  source: human
+  goals: >-
+    Provide reliable, atomic-ish file I/O for the shapes graph. Store resolves
+    nodes by scanning files and matching the `id` field inside. Filenames are
+    descriptive slugs derived from node names. Next ID is computed by
+    `max(existing_ids) + 1`. meta.yaml contains only `version`. Generic
+    load/save must work for any serde-compatible node type without per-type
+    boilerplate.
+  rationale: >-
+    A file-based store was chosen over a database for three reasons: YAML files
+    diff well in git, there are zero runtime dependencies, and agents can
+    read/write files directly. The Store abstraction isolates all filesystem
+    operations so commands and DAG algorithms never touch files directly.
+  non_goals: >-
+    Not designed for concurrent access — relies on git for conflict resolution.
+    Not optimized for large graphs (hundreds of thousands of nodes).
+constraints:
+  - 4
+  - 5
+  - 8
+  - 12
+parents:
+  - id: 1
+    role: component
+realization:
+  - bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: Store implementation — scans YAML files by id field content, generates slug filenames from names, derives next ID by scanning (max + 1). Meta tracks only protocol version.
+    role: primary

@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-005"],
+  "description": "Shape references non-existent child shape"
+}

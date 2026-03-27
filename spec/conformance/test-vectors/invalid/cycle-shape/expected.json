@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-001"],
+  "description": "Shape A is child of B, B is child of A"
+}

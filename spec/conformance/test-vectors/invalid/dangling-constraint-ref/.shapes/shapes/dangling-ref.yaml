@@ -1,0 +1,10 @@
+id: 1
+name: Dangling Ref
+description: Shape referencing a constraint that does not exist.
+status: proposed
+intent:
+  kind: feature
+  summary: Shape with dangling constraint reference
+  source: human
+constraints:
+  - 99

@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-008"],
+  "description": "Amendment targets non-existent shape"
+}

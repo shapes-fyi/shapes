@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/provenance.json",
+  "title": "Provenance",
+  "description": "Records the decision history and origin of a node, linking to supporting artifacts that document how and why it was created or changed.",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "description": "Classification of the provenance record (e.g. \"decision\", \"migration\", \"import\")."
+    },
+    "bindings": {
+      "type": "array",
+      "items": { "$ref": "binding.json" },
+      "description": "External artifact references documenting this provenance."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Arbitrary key-value metadata associated with this provenance record."
+    }
+  },
+  "required": ["type", "bindings"],
+  "additionalProperties": false
+}

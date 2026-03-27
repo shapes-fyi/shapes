@@ -1,0 +1,8 @@
+id: 1
+name: First Shape
+description: Claims id 1
+status: proposed
+intent:
+  kind: feature
+  summary: First shape with id 1
+  source: human

@@ -1,0 +1,11 @@
+id: 1
+name: Security Policy
+description: All endpoints must require authentication.
+kind: policy
+rule: All endpoints must require auth
+enforcement: manual
+status: proposed
+intent:
+  kind: requirement
+  summary: Security Policy
+  source: human

@@ -1,0 +1,37 @@
+id: 26
+name: JSON Schemas
+description: >-
+  Formal JSON Schema Draft 2020-12 definitions for all protocol node types and
+  shared types. Machine-readable schema definitions that any implementation can
+  validate against. 13 schema files covering shapes, constraints, amendments,
+  profiles, and all shared types.
+profile: 1
+status: proposed
+intent:
+  kind: feature
+  summary: >-
+    Formal JSON Schema Draft 2020-12 definitions for all protocol node types
+    and shared types
+  source: human
+  goals: >-
+    Machine-readable schema definitions that any implementation can validate
+    against. 13 schema files covering shapes, constraints, amendments,
+    profiles, and all shared types.
+  rationale: >-
+    JSON Schema is language-agnostic and widely tooled. It replaces the
+    prose-only type descriptions in the website.
+parents:
+  - id: 23
+    role: component
+realization:
+  - bindings:
+      - scheme: path
+        value: spec/schema/
+        metadata:
+          summary: >-
+            JSON Schema directory — shape.schema.json, constraint.schema.json,
+            amendment.schema.json, profile.schema.json, plus shared type
+            schemas (intent.schema.json, realization.schema.json,
+            evidence.schema.json, status.schema.json, binding.schema.json,
+            etc.)
+    role: primary

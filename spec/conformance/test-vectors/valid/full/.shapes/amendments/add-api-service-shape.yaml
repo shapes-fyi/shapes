@@ -1,0 +1,14 @@
+id: 1
+name: Add API service shape
+description: Initial amendment adding the API service shape to the platform.
+targets:
+  shape_ids:
+    - 1
+status: proposed
+intent:
+  kind: feature
+  summary: Add API service shape
+  source: human
+initiated_by:
+  type: human
+  identity: engineer@example.com

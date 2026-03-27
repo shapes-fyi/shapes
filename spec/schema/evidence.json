@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/evidence.json",
+  "title": "Evidence",
+  "description": "Proof that a constraint has been satisfied. Links an evidence record to its supporting artifacts via bindings.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for this evidence record."
+    },
+    "type": {
+      "type": "string",
+      "description": "Classification of the evidence (e.g. \"test-result\", \"review\", \"audit\")."
+    },
+    "bindings": {
+      "type": "array",
+      "items": { "$ref": "binding.json" },
+      "description": "External artifact references that substantiate this evidence."
+    },
+    "trusted": {
+      "type": "boolean",
+      "description": "Whether this evidence is from a trusted source and may bypass further verification."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Arbitrary key-value metadata associated with this evidence."
+    }
+  },
+  "required": ["id", "type", "bindings"],
+  "additionalProperties": false
+}

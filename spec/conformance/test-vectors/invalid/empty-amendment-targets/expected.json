@@ -1,0 +1,4 @@
+{
+  "invariants": ["INV-007"],
+  "description": "Amendment with no targets — all target arrays are absent or empty"
+}

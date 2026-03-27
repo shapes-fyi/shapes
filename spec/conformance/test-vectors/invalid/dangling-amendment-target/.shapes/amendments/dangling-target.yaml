@@ -1,0 +1,13 @@
+id: 1
+name: Dangling Target
+description: Amendment targeting non-existent shape
+targets:
+  shape_ids:
+    - 99
+status: proposed
+intent:
+  kind: amendment
+  summary: Targets shape 99 which does not exist
+  source: human
+initiated_by:
+  type: human

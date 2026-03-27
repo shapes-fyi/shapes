@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://shapes.fyi/schema/v0.1.0/profile.json",
+  "title": "Profile",
+  "description": "Governance configuration in the Shapes Context Protocol. Profiles define lifecycle statuses, gate conditions, field requirements, versioning schemes, and amendment rules that shapes and constraints must follow.",
+  "type": "object",
+  "required": ["id", "name", "description", "status", "intent"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "$ref": "node-id.json",
+      "description": "Unique numeric identifier for this profile."
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name for this profile."
+    },
+    "description": {
+      "type": "string",
+      "description": "Prose description of the governance policy this profile represents."
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version string tracking the evolution of this profile."
+    },
+    "status": {
+      "$ref": "status.json",
+      "description": "Current lifecycle status of this profile (e.g. proposed, canonical)."
+    },
+    "intent": {
+      "$ref": "intent.json",
+      "description": "Structured declaration of what governance goals this profile serves."
+    },
+    "provenance": {
+      "type": "array",
+      "items": { "$ref": "provenance.json" },
+      "description": "Origin and authorship records for this profile."
+    },
+    "lifecycle": {
+      "$ref": "#/$defs/Lifecycle",
+      "description": "Custom lifecycle definition: which statuses exist and what gates control transitions between them."
+    },
+    "fields": {
+      "$ref": "#/$defs/ProfileFields",
+      "description": "Field declarations that shapes and constraints governed by this profile must or may include."
+    },
+    "versioning": {
+      "$ref": "#/$defs/Versioning",
+      "description": "Versioning scheme and bump rules for nodes governed by this profile."
+    },
+    "amendment_rules": {
+      "$ref": "#/$defs/AmendmentRules",
+      "description": "Rules governing how amendments are applied to nodes under this profile."
+    },
+    "amendment_log": {
+      "type": "array",
+      "items": { "$ref": "node-id.json" },
+      "description": "Ordered list of Amendment IDs that have modified this profile."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Arbitrary key-value metadata attached to this profile."
+    }
+  },
+  "$defs": {
+    "Lifecycle": {
+      "title": "Lifecycle",
+      "description": "Defines the set of statuses a node can occupy and the gates that control transitions between them.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "statuses": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/StatusDef" },
+          "description": "Custom status definitions available to nodes governed by this profile."
+        },
+        "gates": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Gate" },
+          "description": "Transition rules controlling when a node may move from one status to another."
+        }
+      }
+    },
+    "StatusDef": {
+      "title": "StatusDef",
+      "description": "Definition of a custom lifecycle status.",
+      "type": "object",
+      "required": ["name", "description", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Machine-readable status name (e.g. 'in-review', 'deployed')."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable explanation of what this status means."
+        },
+        "type": {
+          "type": "string",
+          "description": "Classification of the status (e.g. 'progressive', 'terminal')."
+        }
+      }
+    },
+    "Gate": {
+      "title": "Gate",
+      "description": "A transition rule between two lifecycle statuses. Defines preconditions that must hold before the transition and postconditions that must hold after.",
+      "type": "object",
+      "required": ["from", "to"],
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "type": "string",
+          "description": "Source status name for the transition."
+        },
+        "to": {
+          "type": "string",
+          "description": "Target status name for the transition."
+        },
+        "preconditions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditions that must be satisfied before this transition is allowed."
+        },
+        "postconditions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Conditions that must hold after the transition completes."
+        }
+      }
+    },
+    "ProfileFields": {
+      "title": "ProfileFields",
+      "description": "Field declarations for shapes and constraints governed by this profile. Specifies which fields are required, optional, or have constrained values.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "shape": {
+          "$ref": "#/$defs/FieldSection",
+          "description": "Field declarations that apply to shapes governed by this profile."
+        },
+        "constraint": {
+          "$ref": "#/$defs/FieldSection",
+          "description": "Field declarations that apply to constraints governed by this profile."
+        }
+      }
+    },
+    "FieldSection": {
+      "title": "FieldSection",
+      "description": "Field declarations grouped by the section of a node they apply to.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "intent": {
+          "$ref": "#/$defs/FieldGroup",
+          "description": "Field declarations for the intent section."
+        },
+        "status": {
+          "$ref": "#/$defs/FieldGroup",
+          "description": "Field declarations for the status section."
+        },
+        "constraints": {
+          "$ref": "#/$defs/FieldGroup",
+          "description": "Field declarations for the constraints section."
+        },
+        "realization": {
+          "$ref": "#/$defs/FieldGroup",
+          "description": "Field declarations for the realization section."
+        },
+        "evidence": {
+          "$ref": "#/$defs/FieldGroup",
+          "description": "Field declarations for the evidence section."
+        },
+        "provenance": {
+          "$ref": "#/$defs/FieldGroup",
+          "description": "Field declarations for the provenance section."
+        },
+        "metadata": {
+          "$ref": "#/$defs/FieldGroup",
+          "description": "Field declarations for the metadata section."
+        }
+      }
+    },
+    "FieldGroup": {
+      "title": "FieldGroup",
+      "description": "A group of field definitions within a section, covering fields, kinds, and sources.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/FieldDef" },
+          "description": "Individual field definitions."
+        },
+        "kinds": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/FieldDef" },
+          "description": "Allowed kind/type values for this section."
+        },
+        "sources": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/FieldDef" },
+          "description": "Allowed source values for this section."
+        }
+      }
+    },
+    "FieldDef": {
+      "title": "FieldDef",
+      "description": "Definition of a single field within a profile's field declarations.",
+      "type": "object",
+      "required": ["name", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Machine-readable field name."
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable explanation of what this field is for."
+        },
+        "type": {
+          "type": "string",
+          "description": "Expected data type for this field (e.g. 'string', 'integer', 'array')."
+        },
+        "required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether this field must be present on governed nodes. Defaults to false."
+        }
+      }
+    },
+    "Versioning": {
+      "title": "Versioning",
+      "description": "Versioning scheme configuration for nodes governed by this profile.",
+      "type": "object",
+      "required": ["scheme"],
+      "additionalProperties": false,
+      "properties": {
+        "scheme": {
+          "type": "string",
+          "description": "The versioning scheme to use (e.g. 'semver', 'calver', 'integer')."
+        },
+        "bump_rules": {
+          "type": "string",
+          "description": "Rules describing when and how version numbers should be incremented."
+        }
+      }
+    },
+    "AmendmentRules": {
+      "title": "AmendmentRules",
+      "description": "Rules governing how amendments are applied to nodes under this profile.",
+      "type": "object",
+      "required": ["application"],
+      "additionalProperties": false,
+      "properties": {
+        "application": {
+          "type": "string",
+          "enum": ["merge", "overlay", "edition", "append-only"],
+          "description": "Strategy for applying amendments: 'merge' deep-merges changes, 'overlay' replaces top-level fields, 'edition' creates a new version, 'append-only' only allows additive changes."
+        }
+      }
+    }
+  }
+}

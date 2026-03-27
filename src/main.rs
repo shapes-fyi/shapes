@@ -84,12 +84,12 @@ enum Command {
     /// Display the DAG as an ASCII tree.
     /// Shows parent-child hierarchy with status and kind for each node.
     /// Shape trees also show constraint references inline.
+    /// Defaults to showing the Shape composition graph when no node type is given.
     /// Use this to understand the overall structure before diving into details.
     Tree {
-        /// Which DAG to display: 'shape' for the Shape composition graph,
-        /// 'constraint' for the Constraint composition graph
-        #[arg(value_enum)]
-        dag: DagType,
+        /// Which node type to display: 'shape' (default) or 'constraint'
+        #[arg(value_enum, default_value = "shape")]
+        node_type: DagType,
 
         /// Show only the subtree rooted at this node ID (default: show all roots)
         #[arg(long)]
@@ -283,10 +283,14 @@ fn run(cli: Cli) -> Result<()> {
             kind,
         } => commands::list(node_type, status, kind, cli.format),
 
-        Command::Tree { dag, root, depth } => commands::tree(dag, root, depth),
+        Command::Tree {
+            node_type,
+            root,
+            depth,
+        } => commands::tree(node_type, root, depth),
 
         Command::Query { operation } => commands::query(operation, cli.format),
 
-        Command::Validate => commands::validate(),
+        Command::Validate => commands::validate(cli.format),
     }
 }

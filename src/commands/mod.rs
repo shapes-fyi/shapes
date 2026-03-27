@@ -99,11 +99,11 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: None,
                 }
             };
-            store.save(NodeType::Shape, id, &shape)?;
+            let path = store.save(NodeType::Shape, id, &shape)?;
             if id_only {
                 println!("{id}");
             } else {
-                eprintln!("Created {}", store.node_file_path(NodeType::Shape, id).display());
+                eprintln!("Created {}", path.display());
                 output(&shape, format)?;
             }
         }
@@ -151,14 +151,11 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: None,
                 }
             };
-            store.save(NodeType::Constraint, id, &constraint)?;
+            let path = store.save(NodeType::Constraint, id, &constraint)?;
             if id_only {
                 println!("{id}");
             } else {
-                eprintln!(
-                    "Created {}",
-                    store.node_file_path(NodeType::Constraint, id).display()
-                );
+                eprintln!("Created {}", path.display());
                 output(&constraint, format)?;
             }
         }
@@ -218,14 +215,11 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: None,
                 }
             };
-            store.save(NodeType::Amendment, id, &amendment)?;
+            let path = store.save(NodeType::Amendment, id, &amendment)?;
             if id_only {
                 println!("{id}");
             } else {
-                eprintln!(
-                    "Created {}",
-                    store.node_file_path(NodeType::Amendment, id).display()
-                );
+                eprintln!("Created {}", path.display());
                 output(&amendment, format)?;
             }
         }
@@ -269,14 +263,11 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: None,
                 }
             };
-            store.save(NodeType::Profile, id, &profile)?;
+            let path = store.save(NodeType::Profile, id, &profile)?;
             if id_only {
                 println!("{id}");
             } else {
-                eprintln!(
-                    "Created {}",
-                    store.node_file_path(NodeType::Profile, id).display()
-                );
+                eprintln!("Created {}", path.display());
                 output(&profile, format)?;
             }
         }
@@ -413,20 +404,28 @@ pub fn query(op: QueryCommand, format: OutputFormat) -> Result<()> {
 // validate
 // ---------------------------------------------------------------------------
 
-pub fn validate() -> Result<()> {
+pub fn validate(format: OutputFormat) -> Result<()> {
     let store = open_store()?;
     let issues = dag::validate(&store)?;
     if issues.is_empty() {
-        eprintln!("No issues found.");
+        match format {
+            OutputFormat::Json => println!("[]"),
+            OutputFormat::Yaml => eprintln!("No issues found."),
+        }
         Ok(())
     } else {
-        for issue in &issues {
-            eprintln!(
-                "[{}] {}: {} — {}",
-                issue.severity, issue.node_type, issue.node_id, issue.message
-            );
+        match format {
+            OutputFormat::Json => {
+                let json = serde_json::to_string_pretty(&issues)?;
+                println!("{json}");
+            }
+            OutputFormat::Yaml => {
+                for issue in &issues {
+                    eprintln!("{issue}");
+                }
+                eprintln!("{} validation issue(s) found", issues.len());
+            }
         }
-        eprintln!("{} validation issue(s) found", issues.len());
         std::process::exit(2);
     }
 }
