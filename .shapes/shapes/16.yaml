@@ -20,6 +20,9 @@ intent:
     time — files get renamed, features get removed, new modules appear. The
     maintain skill detects when shapes drift from reality and helps the
     engineer fix it.
+  non_goals: >-
+    Does not auto-commit changes — presents findings and waits for approval.
+    Does not create new shapes from scratch — use the init skill for that.
   rationale: >-
     A shapes graph that drifts from reality is worse than no graph at all —
     agents would make decisions based on stale context. Periodic maintenance

@@ -35,3 +35,12 @@ realization:
         metadata:
           summary: Reciprocal link checks in validate() — iterates parent/child refs, verifies matching entries exist
     role: primary
+evidence:
+  - id: reciprocal-check-impl
+    type: implementation
+    bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: Reciprocal link checks in validate() — iterates shape and constraint children, verifies parent back-links exist
+    trusted: true

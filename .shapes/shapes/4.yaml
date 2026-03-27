@@ -23,6 +23,11 @@ intent:
     evolve independently. The command layer acts as a thin orchestrator — it
     parses flags, opens the store, delegates to the right function, and
     serializes the result.
+  non_goals: >-
+    Not responsible for graph algorithm correctness — delegates to DAG Engine.
+    Not a shell or REPL — each invocation is stateless. Does not define the
+    data model or serialization format.
+  spec_section: CLI command semantics
 constraints:
   - 6
   - 9

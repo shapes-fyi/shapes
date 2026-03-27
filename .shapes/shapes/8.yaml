@@ -24,6 +24,10 @@ intent:
     A simple active/inactive flag would lose the nuance of why something changed.
     The seven-state model captures both confidence level (proposed vs canonical)
     and termination reason (rejected vs superseded vs abandoned).
+  non_goals: >-
+    Does not enforce valid transitions — any status can be set directly. The
+    Profile lifecycle gates define valid transitions but are advisory, not
+    enforced at write time.
   spec_section: Status lifecycle and state transitions
 parents:
   - id: 1

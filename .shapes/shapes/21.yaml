@@ -1,0 +1,60 @@
+id: 21
+name: Shared UI Library
+description: >-
+  Shared React component library built on shadcn/ui patterns, Base UI
+  primitives, and Tailwind CSS v4. Provides OKLCH-based design tokens with
+  light/dark theme palettes, a cn() utility for class merging (clsx +
+  tailwind-merge), and reusable components. Consumed by the web app via
+  workspace imports (@workspace/ui/*). Lives in packages/ui/ as a shared
+  monorepo package independent from any specific app.
+profile: 1
+status: proposed
+intent:
+  kind: module
+  summary: >-
+    Shared component library with design tokens, utilities, and shadcn/ui
+    components for the monorepo
+  source: human
+  goals: >-
+    Provide a single source of truth for UI components, design tokens, and
+    styling utilities across the monorepo. Keep the component library lean
+    and consistent with shadcn/ui patterns so new components integrate cleanly.
+  rationale: >-
+    Centralizing UI components in a shared package avoids duplication across
+    apps and ensures consistent styling. shadcn/ui was chosen for its
+    copy-paste ownership model — components live in the project, not in
+    node_modules. OKLCH color space provides perceptually uniform color
+    manipulation. Tailwind v4 CSS-native config eliminates tailwind.config.js.
+  non_goals: >-
+    Not a published npm package — consumed only within this monorepo via
+    workspace imports. Not a design system documentation site.
+constraints:
+  - 9
+parents:
+  - id: 1
+    role: component
+realization:
+  - bindings:
+      - scheme: path
+        value: packages/ui/src/styles/globals.css
+        metadata:
+          summary: Tailwind v4 theme config — OKLCH design tokens, light/dark palettes, animations, typography scale
+    role: primary
+  - bindings:
+      - scheme: path
+        value: packages/ui/src/components/button.tsx
+        metadata:
+          summary: Button component with class-variance-authority (CVA) variants
+    role: primary
+  - bindings:
+      - scheme: path
+        value: packages/ui/src/lib/utils.ts
+        metadata:
+          summary: cn() class merge utility — clsx + tailwind-merge
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: packages/ui/package.json
+        metadata:
+          summary: Package manifest — workspace exports, dependencies, shadcn integration
+    role: supporting

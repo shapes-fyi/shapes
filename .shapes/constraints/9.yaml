@@ -29,3 +29,17 @@ intent:
     The DagType enum and generic Store load/save are justified complexity —
     they prevent actual duplication of graph algorithms and I/O code across
     node types.
+evidence:
+  - id: architecture-simplicity-review
+    type: review
+    bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: Store is ~170 lines with direct filesystem operations — no ORM, no caching layer, no connection pooling
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: DAG algorithms use standard BFS/DFS with BTreeMap — no external graph library, no generic trait abstractions beyond DagType
+    metadata:
+      note: Guideline — not mechanically enforced; verified through code review culture

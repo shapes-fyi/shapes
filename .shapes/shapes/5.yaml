@@ -26,6 +26,10 @@ intent:
     complex code in the CLI and benefit from independent testing. The DagType
     enum allows the same algorithms to operate on both Shape and Constraint
     graphs without duplication.
+  non_goals: >-
+    Does not handle file I/O — operates on in-memory node collections provided
+    by callers. Does not enforce constraints at write time — validation is a
+    separate read-only operation invoked explicitly.
   spec_section: DAG traversal and constraint inheritance semantics
 constraints:
   - 1

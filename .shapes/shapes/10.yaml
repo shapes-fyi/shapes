@@ -26,6 +26,10 @@ intent:
     list/get for drill-down, query for constraint discovery, validate for
     integrity checking. The --format json option exists specifically for
     machine parsing by agents.
+  non_goals: >-
+    Not an interactive TUI or REPL — the CLI is designed for scripted agent
+    invocation. Does not provide a watch mode or daemon process.
+  spec_section: CLI command reference
 constraints:
   - 6
   - 7

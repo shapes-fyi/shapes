@@ -33,3 +33,12 @@ realization:
         metadata:
           summary: next_id() — reads counter from meta.yaml, increments, saves back; no decrement/reset operation
     role: primary
+evidence:
+  - id: monotonic-id-impl
+    type: implementation
+    bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: next_id() — reads counter, increments, saves; no decrement path exists in codebase
+    trusted: true

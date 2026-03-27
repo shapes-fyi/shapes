@@ -25,6 +25,10 @@ intent:
     The open-map pattern with Profile-driven validation gives flexibility
     while maintaining structure. Serde's flatten attribute makes this ergonomic
     in Rust.
+  non_goals: >-
+    Does not enforce field types beyond the three required fields — extra fields
+    are untyped serde_yaml::Value. Profile validation checks presence, not
+    schema conformance of values.
   spec_section: Intent definition and open-map semantics
 constraints:
   - 6

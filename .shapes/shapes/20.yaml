@@ -1,0 +1,64 @@
+id: 20
+name: Spec Content & Navigation
+description: >-
+  Structured specification content organized as typed section/subsection arrays,
+  rendered from a central data source. Provides a minimap sidebar for section
+  navigation with dot indicators and hover-reveal table of contents,
+  intersection-observer-based active section tracking, scroll progress
+  indicator, and linked headings with anchor URLs for deep linking.
+profile: 1
+status: proposed
+intent:
+  kind: feature
+  summary: >-
+    Spec section rendering with minimap navigation, scroll progress, and deep linking
+  source: human
+  goals: >-
+    Make the specification easy to navigate despite its length. Readers should
+    always know where they are in the document (scroll progress, active section
+    highlight), be able to jump to any section (minimap, anchor links), and
+    share links to specific sections (deep linking via URL hash).
+  rationale: >-
+    Long single-page specs need navigation aids to remain usable. A minimap
+    provides spatial awareness without taking up screen space. Intersection
+    Observer API provides accurate section tracking without scroll event
+    performance issues. Data-driven section definitions keep content and
+    rendering logic separated.
+  non_goals: >-
+    Not a multi-page documentation site — the spec is intentionally a single
+    scrollable document. Does not support user-contributed content or comments.
+  spec_section: Navigation
+parents:
+  - id: 17
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/sections.tsx
+        metadata:
+          summary: Section and subsection data arrays — all spec prose content, SPEC_META, typed section structure
+    role: primary
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/section-minimap.tsx
+        metadata:
+          summary: SectionMinimap — dot indicators, hover-reveal TOC, active section highlighting
+    role: primary
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/linked-heading.tsx
+        metadata:
+          summary: LinkedHeading — section headings with anchor link icons for deep linking
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/use-active-section.ts
+        metadata:
+          summary: useActiveSection hook — IntersectionObserver-based active section tracking
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/use-scroll-progress.ts
+        metadata:
+          summary: useScrollProgress hook — scroll position as 0-1 progress value
+    role: supporting

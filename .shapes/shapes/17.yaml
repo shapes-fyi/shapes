@@ -1,0 +1,76 @@
+id: 17
+name: Specification Website
+description: >-
+  TanStack Start (React 19) web application serving as the public specification
+  reference at shapes.fyi. Combines structured spec documentation with
+  interactive schema exploration, Mermaid diagram visualization, section minimap
+  navigation, and dark/light theme support. Built with Vite + Nitro for SSR,
+  file-based routing via TanStack Router. Independent from the CLI at runtime —
+  shares the monorepo but not code or data.
+profile: 1
+status: proposed
+intent:
+  kind: module
+  summary: >-
+    Public specification website for the Shapes Context Protocol — reference
+    docs plus interactive schema exploration
+  source: human
+  goals: >-
+    Provide an authoritative, readable reference for the Shapes Context Protocol
+    that makes the spec accessible to anyone, not just CLI users. Enable
+    interactive schema exploration so readers can understand the data model
+    without reading Rust source code. Render protocol relationships as Mermaid
+    diagrams for visual learners.
+  rationale: >-
+    A dedicated website lowers the barrier to understanding the protocol. The
+    spec is the primary artifact — the CLI is one implementation, but the
+    protocol itself needs a home that is tool-agnostic. TanStack Start was
+    chosen for modern SSR with React 19 features, file-based routing simplicity,
+    and Vite's fast dev experience.
+  non_goals: >-
+    Not a shapes management tool — the website is read-only and does not create
+    or edit shapes. Not a CLI playground or REPL. Not a dashboard for monitoring
+    shapes graphs across projects.
+  spec_section: Full specification
+constraints:
+  - 6
+parents:
+  - id: 1
+    role: component
+children:
+  - shape: 18
+    role: feature
+  - shape: 19
+    role: feature
+  - shape: 20
+    role: feature
+  - shape: 22
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: apps/web/src/routes/index.tsx
+        metadata:
+          summary: Main spec page — section rendering, table of contents, scroll progress
+    role: primary
+  - bindings:
+      - scheme: path
+        value: apps/web/src/routes/__root.tsx
+        metadata:
+          summary: Root layout — HTML shell, font loading, theme hydration script
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/router.tsx
+        metadata:
+          summary: TanStack Router configuration
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/package.json
+        metadata:
+          summary: Web app dependencies and build scripts
+    role: supporting
+metadata:
+  team: core
+  url: shapes.fyi

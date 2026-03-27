@@ -24,6 +24,10 @@ intent:
     constraints, which would be error-prone and violate DRY. The ancestor-walk
     approach mirrors how real projects work — a security constraint on the system
     applies to every component.
+  non_goals: >-
+    Does not traverse the Constraint DAG for sub-constraints — inheritance only
+    follows the Shape DAG. Does not evaluate whether a constraint is actually
+    satisfied — only reports which constraints apply.
   spec_section: Constraint inheritance and effective-constraint computation
 parents:
   - id: 1

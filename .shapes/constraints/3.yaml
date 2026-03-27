@@ -35,3 +35,12 @@ realization:
         metadata:
           summary: Dangling reference checks in validate() — verifies constraint, parent, child, profile IDs resolve
     role: primary
+evidence:
+  - id: dangling-ref-check-impl
+    type: implementation
+    bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: Dangling reference checks in validate() — verifies constraint, parent, child, profile, and amendment target IDs resolve
+    trusted: true

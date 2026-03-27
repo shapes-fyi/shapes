@@ -25,6 +25,9 @@ intent:
     The plugin is the bridge between the CLI tool and the AI agent ecosystem.
     Without it, agents would need manual instruction to use shapes. Skills are
     the mechanism Claude Code uses for domain-specific agent behaviors.
+  non_goals: >-
+    Not a general-purpose agent framework — skills are specific to Claude Code.
+    Does not implement the protocol itself — skills teach agents to use the CLI.
 constraints:
   - 7
 parents:

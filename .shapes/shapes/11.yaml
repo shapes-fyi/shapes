@@ -26,6 +26,10 @@ intent:
     for each query. There is no long-running process to maintain state between
     calls. This also means the CLI is safe to run concurrently (reads are safe;
     writes should be serialized by the caller).
+  non_goals: >-
+    No caching or memoization between invocations. No background indexing or
+    file watching. Does not support concurrent writes — callers must serialize
+    write operations.
 parents:
   - id: 1
     role: data-flow

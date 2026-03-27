@@ -23,6 +23,10 @@ intent:
     Without the context skill, agents would ignore the .shapes/ directory
     entirely. Auto-loading on directory detection ensures the agent is always
     context-aware in shapes-enabled projects.
+  non_goals: >-
+    Does not create or modify shapes — only teaches agents how to read them.
+    Does not replace the engineer's judgment — shapes provide context, not
+    instructions.
 constraints:
   - 7
 parents:

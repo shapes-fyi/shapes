@@ -27,3 +27,13 @@ intent:
     Currently enforced by convention. Future versions may add a hash or
     signature to detect tampering.
   spec_section: Amendment semantics and immutability guarantees
+evidence:
+  - id: no-amendment-mutation-path
+    type: structural
+    bindings:
+      - scheme: path
+        value: src/commands/mod.rs
+        metadata:
+          summary: create command can create amendments; no update/edit/patch command exists for amendments — immutability enforced by absence of mutation API
+    metadata:
+      note: Enforced by convention — no technical mechanism prevents direct YAML file editing; future versions may add hash-based tamper detection

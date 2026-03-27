@@ -25,6 +25,10 @@ intent:
     testable and spec-aligned. Using serde with custom serialization for Status
     and Intent ensures the YAML output matches the shapes.fyi spec format while
     remaining ergonomic in Rust code.
+  non_goals: >-
+    Not responsible for I/O or persistence — the Store layer handles YAML
+    reading and writing. Not responsible for graph algorithms — the DAG Engine
+    operates on loaded instances.
   spec_section: Core Data Model (Shape, Constraint, Amendment, Profile nodes)
 constraints:
   - 5

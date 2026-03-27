@@ -22,6 +22,9 @@ intent:
     A visual tree is faster to scan than a flat list. Unicode box-drawing
     characters work in all modern terminals and look better than ASCII dashes.
     Inline constraint counts help agents decide which shapes to query further.
+  non_goals: >-
+    Not a graph visualization tool — produces text output only, not interactive
+    diagrams. Does not show full node details — use get for that.
 parents:
   - id: 4
     role: feature

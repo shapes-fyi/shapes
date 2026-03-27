@@ -29,3 +29,15 @@ intent:
     If a future MCP server mode is added, it may maintain an in-memory index
     for performance, but the YAML files remain canonical and the index must
     be derivable from them.
+evidence:
+  - id: no-json-write-path
+    type: structural
+    bindings:
+      - scheme: path
+        value: src/store.rs
+        metadata:
+          summary: Store only writes YAML via serde_yaml::to_string — no JSON write path exists in save()
+      - scheme: path
+        value: src/commands/mod.rs
+        metadata:
+          summary: JSON output is ephemeral — generated on stdout by serde_json::to_string, never written to .shapes/ files

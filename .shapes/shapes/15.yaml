@@ -26,6 +26,10 @@ intent:
     knowledge. An interactive skill that combines code analysis with engineer
     interview produces better results faster. The interview rounds are ordered
     to build understanding progressively.
+  non_goals: >-
+    Does not run autonomously — requires interactive engineer collaboration.
+    Does not read minds — the interview is necessary because code analysis
+    alone cannot capture intent and constraints.
 parents:
   - id: 6
     role: feature

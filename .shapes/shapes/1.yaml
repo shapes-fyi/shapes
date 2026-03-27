@@ -1,10 +1,11 @@
 id: 1
 name: Shapes CLI
 description: >-
-  Rust CLI implementing the Shapes Context Protocol. Provides AI coding agents
-  with structured, queryable access to project intent, constraints, and
-  boundaries stored as two directed acyclic graphs (shapes for what-to-build,
-  constraints for rules-to-follow). Designed for zero-dependency, file-based
+  Monorepo implementing the Shapes Context Protocol. Contains a Rust CLI that
+  provides AI coding agents with structured, queryable access to project intent,
+  constraints, and boundaries stored as two directed acyclic graphs, plus a web
+  specification site (shapes.fyi) with interactive schema exploration, and a
+  shared UI component library. Designed for zero-dependency, file-based
   operation so agents can discover context via CLI commands on demand without
   needing a running server or pre-loaded prompts.
 profile: 1
@@ -57,6 +58,10 @@ children:
     role: interface
   - shape: 11
     role: data-flow
+  - shape: 17
+    role: component
+  - shape: 21
+    role: component
 realization:
   - bindings:
       - scheme: path

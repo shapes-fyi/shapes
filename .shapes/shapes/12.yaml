@@ -27,6 +27,10 @@ intent:
     Machine-enforced validation is essential because manual review of YAML files
     does not scale. The validation suite was built to match the invariants in
     the shapes.fyi spec — each check corresponds to a spec requirement.
+  non_goals: >-
+    Does not fix issues automatically — reports issues for humans or agents to
+    resolve. Does not validate semantic quality of intent text — only structural
+    integrity.
   spec_section: Graph integrity rules and validation requirements
 constraints:
   - 1
