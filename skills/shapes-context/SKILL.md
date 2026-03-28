@@ -7,7 +7,7 @@ description: >
   shapes-cli to discover intent and constraints before doing any work. Use
   /shapes:shapes-init to bootstrap a new project. Use /shapes:shapes-maintain
   to audit and organize an existing shapes graph.
-user-invocable: false
+user-invocable: true
 ---
 
 # Shapes Context Protocol

@@ -65,17 +65,13 @@ npx skills add shapes-fyi/shapes
 
 ### Use It
 
-In any project, run `/shapes:shapes-init`. The agent will:
+The plugin provides three skills:
 
-1. Explore your project structure and source code
-2. Interview you about architecture, constraints, and domain knowledge
-3. Create a Profile defining what fields matter for your project
-4. Generate a context graph of shapes and constraints
-5. Validate the graph and show you the result
-
-After initialization, the agent automatically discovers and uses shapes context before doing any work.
-
-Run `/shapes:shapes-maintain` periodically to audit the graph for consistency, duplicates, coverage gaps, and stale realizations.
+| Skill | When to use |
+| ----- | ----------- |
+| `/shapes:shapes-init` | Bootstrap shapes for a new project. Explores your codebase, interviews you about architecture and constraints, then generates a full context graph. |
+| `/shapes:shapes-context` | Load the protocol knowledge before working. Auto-loads when a `.shapes/` directory exists, or invoke manually to teach the agent the context-first workflow. |
+| `/shapes:shapes-maintain` | Audit an existing graph. Run periodically to catch drift — stale realizations, coverage gaps, shallow nodes, and structural issues. |
 
 ## Key Concepts
 
@@ -276,17 +272,9 @@ Run `shapes --help` or `shapes <command> --help` for full flag reference.
 
 ## Agent Skills
 
-The shapes plugin includes three skills that any compatible agent can use:
-
-| Skill | Invocation | Purpose |
-| ----- | ---------- | ------- |
-| **shapes-context** | Auto-loaded | Activates when `.shapes/` exists. Teaches the agent protocol concepts and the context-first workflow |
-| **shapes-init** | `/shapes:shapes-init` | Bootstraps shapes for a new project through code analysis and engineer interview |
-| **shapes-maintain** | `/shapes:shapes-maintain` | Audits the graph for consistency, coverage gaps, stale realizations, and structural issues |
-
-**shapes-context** loads automatically — no action needed. When a project has a `.shapes/` directory, the agent learns to run `shapes tree` before working, `shapes query constraints` before writing code, and `shapes get` to understand intent.
-
 **shapes-init** is interactive. The agent explores your codebase, then interviews you in rounds covering purpose, architecture, constraints, domain knowledge, and project history. It creates a Profile, generates shapes and constraints, links them with realizations, and validates the result.
+
+**shapes-context** teaches the agent the protocol and the context-first workflow: run `shapes tree` to see the big picture, `shapes query constraints` to discover rules, and `shapes get` to read intent — before doing any work. Auto-loads when a `.shapes/` directory exists, or invoke manually with `/shapes:shapes-context`.
 
 **shapes-maintain** catches drift. Files get renamed, features get removed, new modules appear. The maintain skill detects when shapes no longer match reality and helps you fix it.
 
