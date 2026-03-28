@@ -13,12 +13,12 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "Shapes Specification",
+        title: "Shapes",
       },
       {
         name: "description",
         content:
-          "Shapes is an open Context Protocol for capturing the intent, structure, and constraints of any project — a shared surface for AI agents.",
+          "An Open Context Protocol for capturing the intent, structure, and constraints of any project — a shared surface for AI agents and humans.",
       },
     ],
     links: [

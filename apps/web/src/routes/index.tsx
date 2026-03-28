@@ -1,180 +1,347 @@
-import { Fragment, useMemo } from "react"
-import { RiArrowUpLine } from "@remixicon/react"
-import { createFileRoute } from "@tanstack/react-router"
+import { useState } from "react"
+import {
+  RiArrowRightLine,
+  RiCheckLine,
+  RiFileCopyLine,
+  RiGithubFill,
+} from "@remixicon/react"
+import { Link, createFileRoute } from "@tanstack/react-router"
 import { Button } from "@workspace/ui/components/button"
-import { LinkedHeading } from "@/components/spec/linked-heading"
-import { SectionMinimap } from "@/components/spec/section-minimap"
-import { SPEC_META, sections } from "@/components/spec/sections"
-import { ThemeToggle } from "@/components/spec/theme-toggle"
-import { useActiveSection } from "@/components/spec/use-active-section"
-import { useScrollProgress } from "@/components/spec/use-scroll-progress"
+import { CodeBlock } from "@/components/spec/code-block"
+import { Nav } from "@/components/nav"
 
-export const Route = createFileRoute("/")({ component: SpecPage })
+export const Route = createFileRoute("/")({ component: HomePage })
 
-function SpecPage() {
-  const allSectionIds = useMemo(
-    () =>
-      sections.flatMap((s) => [
-        s.id,
-        ...(s.subsections?.map((sub) => sub.id) ?? []),
-      ]),
-    []
+const TREE_EXAMPLE = `shape:1 Platform [canonical]
+├── shape:3 Auth Service [promoted]
+│   ├── constraint:5 Security Policy
+│   ├── shape:7 OAuth Login [promoted]
+│   │   └── constraint:8 Rate Limiting
+│   └── shape:8 MFA [proposed]
+└── shape:4 API Gateway [promoted]
+    └── constraint:6 Uptime SLA`
+
+const SHAPE_EXAMPLE = `shape:
+  id: 12
+  name: User Authentication
+  kind: feature
+  status: promoted
+
+  intent:
+    summary: "OAuth2 login flow with MFA support"
+    source: human
+    acceptance:
+      - Users can sign in with Google or GitHub
+      - MFA is required for admin accounts
+
+  parent: 3        # → Auth Service
+  constraints:
+    - 5            # → Security Policy
+    - 8            # → Rate Limiting
+
+  realization:
+    - bindings:
+        - scheme: path
+          value: src/auth/oauth.rs
+      role: primary`
+
+/* ── Grid infrastructure ── */
+
+const BORDER = "border-border/40"
+
+function GridLines() {
+  return (
+    <div
+      className="pointer-events-none fixed inset-0 z-0 hidden sm:block"
+      aria-hidden="true"
+    >
+      <div className="mx-auto h-full max-w-5xl px-6 sm:px-10 lg:px-16">
+        <div className={`h-full border-x ${BORDER}`} />
+      </div>
+    </div>
   )
-  const activeId = useActiveSection(allSectionIds)
-  const scrollProgress = useScrollProgress()
+}
+
+function SectionDivider() {
+  return (
+    <div className="relative mx-auto my-6 max-w-5xl px-6 sm:my-8 sm:px-10 lg:px-16">
+      <div className={`relative border-t ${BORDER}`}>
+        <div className="absolute -top-[3px] -left-[3px] hidden size-1.5 rounded-full bg-border/40 sm:block" />
+        <div className="absolute -top-[3px] left-1/2 -ml-[3px] hidden size-1.5 rounded-full bg-border/40 sm:block" />
+        <div className="absolute -top-[3px] -right-[3px] hidden size-1.5 rounded-full bg-border/40 sm:block" />
+      </div>
+    </div>
+  )
+}
+
+/* ── Helpers ── */
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  function handleCopy() {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   return (
-    <main className="relative min-h-screen overflow-x-clip bg-background text-foreground">
-      <div
-        className="fixed top-0 left-0 z-50 h-[2px] bg-primary transition-[width] duration-150 ease-out"
-        style={{ width: `${scrollProgress}%` }}
-        role="progressbar"
-        aria-valuenow={Math.round(scrollProgress)}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label="Reading progress"
-      />
-      <div className="fixed top-4 right-4 z-20 sm:top-6 sm:right-6">
-        <div className="rounded-full border border-border/80 bg-background/85 p-1 shadow-[var(--shadow-elevated)] backdrop-blur">
-          <ThemeToggle />
-        </div>
-      </div>
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="rounded-md p-1 text-muted-foreground transition hover:text-foreground"
+      aria-label={copied ? "Copied" : "Copy to clipboard"}
+    >
+      {copied ? (
+        <RiCheckLine className="size-3.5" />
+      ) : (
+        <RiFileCopyLine className="size-3.5" />
+      )}
+    </button>
+  )
+}
 
-      <SectionMinimap activeId={activeId} />
+/* ── Page ── */
 
-      <article className="relative mx-auto max-w-[78rem] px-6 py-12 sm:px-10 lg:px-16 lg:py-16">
-        <div className="mx-auto max-w-3xl">
-          <header className="space-y-14">
-            <div className="space-y-8">
-              <h1 className="font-serif text-3xl leading-none font-semibold tracking-[-0.04em] sm:text-5xl">
-                Shapes Specification
+const primitives = [
+  {
+    name: "Shape",
+    desc: "The primary work node. Captures what to build and why — intent, acceptance criteria, status, and bindings to code.",
+  },
+  {
+    name: "Constraint",
+    desc: "A rule that must hold true. Falsifiable invariants inherited downward through the graph, each with evidence requirements.",
+  },
+  {
+    name: "Amendment",
+    desc: "An immutable change record. Once promoted, shapes evolve only through amendments — the full history is always preserved.",
+  },
+  {
+    name: "Profile",
+    desc: "Governance configuration. Defines lifecycle gates, custom fields, allowed kinds, and amendment models for each domain.",
+  },
+]
+
+function HomePage() {
+  return (
+    <main className="relative min-h-screen bg-background text-foreground">
+      <GridLines />
+      <Nav variant="transparent" />
+
+      {/* ─── Hero ─── */}
+      <section className="flex min-h-svh items-center py-20">
+        <div className="mx-auto w-full max-w-5xl px-6 sm:px-10 lg:px-16">
+          <div className={`grid grid-cols-1 border-y ${BORDER} md:grid-cols-2`}>
+            <div className={`p-8 md:border-r ${BORDER} md:p-12 lg:p-14`}>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                Open Context Protocol
+              </p>
+              <h1 className="mt-5 font-serif text-5xl leading-[0.9] font-semibold tracking-[-0.04em] sm:text-6xl lg:text-7xl">
+                Shapes
               </h1>
-
-              <dl className="space-y-1.5 text-[length:var(--spec-meta)] leading-7 text-muted-foreground">
-                {SPEC_META.map((item) => (
-                  <div key={item.label}>
-                    <dt className="mr-2 inline font-semibold text-foreground">
-                      {item.label}:
-                    </dt>
-                    <dd className="inline">{item.value}</dd>
-                  </div>
-                ))}
-              </dl>
+              <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+                A structured graph for capturing the intent, structure, and
+                constraints of any project — the shared contract between agents
+                and humans.
+              </p>
+              <div className="mt-8 flex flex-wrap gap-3">
+                <Link to="/specification">
+                  <Button size="lg" className="gap-1.5 px-5 text-sm">
+                    Read the Specification
+                    <RiArrowRightLine className="size-4" />
+                  </Button>
+                </Link>
+                <a
+                  href="https://github.com/shapes-fyi/shapes"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="gap-1.5 px-5 text-sm"
+                  >
+                    <RiGithubFill className="size-4" />
+                    GitHub
+                  </Button>
+                </a>
+              </div>
             </div>
 
-            <section className="space-y-4">
-              <h2 className="font-serif text-2xl font-semibold">Abstract</h2>
-              <p className="max-w-2xl text-[length:var(--spec-abstract)] leading-7 text-muted-foreground">
-                Agents reconstruct project context from scattered artifacts —
-                code, documents, conversations — losing intent and constraints
-                along the way. Shapes eliminates this by defining a structured
-                graph where each node captures what is to be built, why it
-                matters, and what must hold true. The graph is the shared
-                contract between agents and humans: a single, versionable
-                representation of a project's intent, history, and boundaries.
-                The protocol is domain-agnostic and applies to software,
-                research, writing, and any other structured endeavor.
+            <div
+              className={`flex items-center border-t ${BORDER} p-8 md:border-t-0 md:p-12 lg:p-14`}
+            >
+              <pre className="yaml-scroll w-full overflow-x-auto rounded-xl border border-border/80 bg-secondary/60 px-5 py-5 font-mono text-[0.8125rem] leading-relaxed text-muted-foreground">
+                {TREE_EXAMPLE}
+              </pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SectionDivider />
+
+      {/* ─── The Protocol ─── */}
+      <section>
+        <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-16">
+          <div className={`border-y ${BORDER}`}>
+            {/* Header cell */}
+            <div className={`border-b ${BORDER} p-8 md:p-12 lg:p-14`}>
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                The Protocol
               </p>
-            </section>
-
-            <nav className="space-y-5" aria-label="Table of Contents">
-              <h2 className="font-serif text-2xl font-semibold">
-                Table of Contents
+              <h2 className="mt-4 max-w-xl font-serif text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
+                Four primitives, two graphs
               </h2>
-              <ol className="space-y-2 text-[length:var(--spec-toc)] leading-[1.65] text-muted-foreground tabular-nums">
-                {sections.map((section, index) => (
-                  <li key={section.id}>
-                    <a
-                      href={`#${section.id}`}
-                      className={`underline underline-offset-4 transition hover:text-primary hover:decoration-primary ${activeId === section.id ? "text-primary decoration-primary" : "text-foreground decoration-muted-foreground/60"}`}
-                    >
-                      {index + 1}. {section.title}
-                    </a>
-                    {section.subsections && (
-                      <ol className="mt-2 space-y-1 pl-7 text-[length:var(--spec-toc-sub)] leading-[1.55] text-muted-foreground tabular-nums">
-                        {section.subsections.map(
-                          (subsection, subsectionIndex) => (
-                            <li key={subsection.id}>
-                              <a
-                                href={`#${subsection.id}`}
-                                className={`underline underline-offset-4 transition hover:text-primary hover:decoration-primary ${activeId === subsection.id ? "text-primary decoration-primary" : "decoration-muted-foreground/50"}`}
-                              >
-                                {index + 1}.{subsectionIndex + 1}{" "}
-                                {subsection.title}
-                              </a>
-                            </li>
-                          )
-                        )}
-                      </ol>
-                    )}
-                  </li>
-                ))}
-              </ol>
-            </nav>
-          </header>
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+                Shapes and Constraints each form their own directed acyclic
+                graph. Amendments record how the graph evolves. Profiles govern
+                how each domain uses it.
+              </p>
+            </div>
 
-          {sections.map((section, index) => (
-            <Fragment key={section.id}>
-              <hr className="hr-ornament my-12 sm:my-16" />
-              <section id={section.id} className="scroll-mt-4">
-                <LinkedHeading
-                  id={section.id}
-                  level={2}
-                  className="font-serif text-[length:var(--spec-h2)] leading-tight font-semibold tracking-[-0.02em] sm:text-[length:var(--spec-h2-sm)]"
+            {/* 2×2 primitives grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2">
+              {primitives.map((item, i) => (
+                <div
+                  key={item.name}
+                  className={`p-8 md:p-10 ${i % 2 === 0 ? `sm:border-r ${BORDER}` : ""} ${i < 2 ? `border-b ${BORDER}` : ""}`}
                 >
-                  {index + 1}. {section.title}
-                </LinkedHeading>
-                <div className="mt-6 space-y-6 text-[length:var(--spec-body)] leading-[1.65] tracking-[-0.01em] text-muted-foreground">
-                  {section.content}
+                  <h3 className="font-serif text-xl font-semibold">
+                    {item.name}
+                  </h3>
+                  <p className="mt-2 text-lg leading-relaxed text-muted-foreground">
+                    {item.desc}
+                  </p>
                 </div>
-
-                {section.subsections && (
-                  <div className="mt-12 space-y-12">
-                    {section.subsections.map((subsection, subsectionIndex) => (
-                      <section
-                        key={subsection.id}
-                        id={subsection.id}
-                        className="scroll-mt-4"
-                      >
-                        <LinkedHeading
-                          id={subsection.id}
-                          level={3}
-                          className="font-serif text-[length:var(--spec-h3)] leading-tight font-semibold tracking-[-0.02em] sm:text-[length:var(--spec-h3-sm)]"
-                        >
-                          {index + 1}.{subsectionIndex + 1} {subsection.title}
-                        </LinkedHeading>
-                        <div className="mt-5 space-y-6 text-[length:var(--spec-body-sub)] leading-[1.65] tracking-[-0.01em] text-muted-foreground">
-                          {subsection.content}
-                        </div>
-                      </section>
-                    ))}
-                  </div>
-                )}
-              </section>
-            </Fragment>
-          ))}
+              ))}
+            </div>
+          </div>
         </div>
-      </article>
+      </section>
 
-      <div
-        className={`fixed bottom-6 right-4 z-20 transition-all duration-200 ease-out sm:right-6 ${
-          scrollProgress > 90
-            ? "pointer-events-auto translate-y-0 opacity-100"
-            : "pointer-events-none translate-y-2 opacity-0"
-        }`}
-      >
-        <div className="rounded-full border border-border/80 bg-background/85 p-1 shadow-[var(--shadow-elevated)] backdrop-blur">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full hover:rounded-full focus-visible:rounded-full"
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            aria-label="Back to top"
+      <SectionDivider />
+
+      {/* ─── Code Example ─── */}
+      <section>
+        <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-16">
+          <div className={`grid grid-cols-1 border-y ${BORDER} md:grid-cols-6`}>
+            <div
+              className={`p-8 md:col-span-2 md:border-r ${BORDER} md:p-12 lg:p-14`}
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                In Practice
+              </p>
+              <h2 className="mt-4 font-serif text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
+                Structured intent
+              </h2>
+              <p className="mt-5 text-lg leading-relaxed text-muted-foreground">
+                Every shape is a YAML file in your repository. The graph lives
+                alongside your code — versionable, diffable, reviewable.
+              </p>
+            </div>
+            <div
+              className={`border-t ${BORDER} p-8 md:col-span-4 md:border-t-0 md:p-12 lg:p-14`}
+            >
+              <CodeBlock language="yaml">{SHAPE_EXAMPLE}</CodeBlock>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <SectionDivider />
+
+      {/* ─── Get Started ─── */}
+      <section>
+        <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-16">
+          <div
+            className={`border-y ${BORDER} p-8 text-center md:p-12 lg:p-14`}
           >
-            <RiArrowUpLine className="size-4" />
-          </Button>
+            <h2 className="font-serif text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
+              Get started
+            </h2>
+
+            <div className="mt-10 flex flex-col items-center gap-6">
+              <div>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">
+                  Install the CLI
+                </p>
+                <div className="inline-flex items-center gap-3 rounded-lg border border-border/80 bg-secondary/50 px-5 py-3 font-mono text-sm">
+                  <span className="text-muted-foreground/60 select-none">
+                    $
+                  </span>
+                  <span className="text-foreground">
+                    cargo install --git https://github.com/shapes-fyi/shapes
+                  </span>
+                  <CopyButton text="cargo install --git https://github.com/shapes-fyi/shapes" />
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 text-sm font-medium text-muted-foreground">
+                  Install the Agent Skills
+                </p>
+                <div className="inline-flex items-center gap-3 rounded-lg border border-border/80 bg-secondary/50 px-5 py-3 font-mono text-sm">
+                  <span className="text-muted-foreground/60 select-none">
+                    $
+                  </span>
+                  <span className="text-foreground">
+                    npx skills add shapes-fyi/shapes
+                  </span>
+                  <CopyButton text="npx skills add shapes-fyi/shapes" />
+                </div>
+              </div>
+            </div>
+
+            <p className="mt-8 text-lg leading-relaxed text-muted-foreground">
+              Run <code className="text-foreground">shapes init</code> in your
+              project to create the graph.
+              <br />
+              Read the{" "}
+              <Link
+                to="/specification"
+                className="text-primary underline underline-offset-4 transition hover:decoration-primary"
+              >
+                specification
+              </Link>{" "}
+              for the full protocol.
+            </p>
+          </div>
         </div>
-      </div>
+      </section>
+
+      <SectionDivider />
+
+      {/* ─── Footer ─── */}
+      <footer className="py-10">
+        <div className="mx-auto flex max-w-5xl flex-col items-center justify-between gap-4 px-14 sm:flex-row sm:px-[4.5rem] md:px-[5.5rem] lg:px-[7.5rem]">
+          <div className="text-center sm:text-left">
+            <p className="font-serif text-lg font-semibold tracking-[-0.04em]">
+              Shapes
+            </p>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              v0.1.0 — Working Draft
+            </p>
+          </div>
+          <div className="flex items-center gap-6 text-sm text-muted-foreground">
+            <Link
+              to="/specification"
+              className="transition hover:text-foreground"
+            >
+              Specification
+            </Link>
+            <a
+              href="https://github.com/shapes-fyi/shapes"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition hover:text-foreground"
+            >
+              GitHub
+            </a>
+          </div>
+        </div>
+      </footer>
     </main>
   )
 }
