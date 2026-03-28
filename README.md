@@ -10,16 +10,28 @@ Shapes captures what your code means — not just what it does — as a queryabl
 
 With Shapes, you can:
 
-- **Give agents context they can't get from code** — intent, constraints, domain knowledge, and design rationale that would otherwise live in your head
-- **Enforce rules through inheritance** — constraints propagate down the shape hierarchy, so agents discover what rules apply before writing code
-- **Keep context accurate as code evolves** — audit the graph for drift, stale bindings, and coverage gaps
-- **Stay domain-agnostic** — Profiles let you define custom vocabulary for software, research, writing, or any structured endeavor
+- **Give agents a queryable map of your project** — a structured graph of intent, constraints, and boundaries that agents consult *before* reading code, replacing expensive reconstruction from scattered artifacts
+- **Enforce constraints through inheritance** — constraints propagate down the shape hierarchy, so agents discover every applicable rule automatically — not flat lists they might skip
+- **Bound the scope of every change** — realizations link shapes to the artifacts that implement them, making scope explicit and surfacing changes that spill beyond it
+- **Detect drift as code evolves** — audit the graph for stale bindings, coverage gaps, and divergence between intent and implementation
+- **Work across any domain** — Profiles define custom vocabulary and lifecycles for software, research, writing, or any structured endeavor
 
 Read the full specification at **[shapes.fyi](https://shapes.fyi)**.
 
+## Why Shapes
+
+The context an agent needs to understand your project is scattered across commit messages, PR descriptions, Slack threads, design docs, code comments, and people's heads. Reconstructing it from these sources is expensive, lossy, and doesn't scale.
+
+- **Reconstruction doesn't scale** — An agent *could* query GitHub PRs, read commit histories, and grep through docs. In practice, this is extremely token-heavy and still produces fragments — not a coherent understanding of the project as a whole.
+- **Agents have no map** — Without a structured context layer, agents plan and build by reading code. They miss intent they can't infer, constraints they can't see, and boundaries they can't derive. Every session starts from scratch.
+- **Memory layers recall facts, not project structure** — Tools like Mem0, Zep, and Supermemory store entities and embeddings retrieved via semantic search. They help agents remember facts from past sessions, but don't model intent hierarchies, enforceable constraints, or change boundaries. They optimize for "recall what was said," not "understand the entire project."
+- **Rules files are flat and unscopeable** — `CLAUDE.md` and similar files have no hierarchy, no inheritance, and no enforcement mechanism. A constraint that should govern an entire system must be restated everywhere, and nothing stops agents from overlooking it.
+- **Recording history isn't structuring context** — Provenance-only tools like [Agent Trace](https://github.com/cursor/agent-trace) and [Entire](https://entire.io) capture agent sessions and traces but don't transform that history into a queryable layer. Knowing what happened is not the same as knowing what matters now, what rules apply, and what boundaries exist.
+
+Shapes aggregates intent, constraints, and boundaries into a **single structured graph** that agents query *before* acting on code — an end-to-end map of the project that evolves alongside it.
+
 ## Table of Contents
 
-- [Why Shapes](#why-shapes)
 - [Quick Start](#quick-start)
   - [Install the CLI](#install-the-cli)
   - [Install the Agent Skills](#install-the-agent-skills)
@@ -37,17 +49,6 @@ Read the full specification at **[shapes.fyi](https://shapes.fyi)**.
 - [Discovery](#discovery)
 - [Repository Structure](#repository-structure)
 - [Getting Help](#getting-help)
-
-## Why Shapes
-
-Code tells you *what* exists. Git tells you *what changed*. Neither tells you *why it matters*.
-
-- **Intent lives in people's heads** — design rationale, unwritten rules, domain knowledge, and the reasoning behind architectural decisions are lost when the conversation ends.
-- **Agents start from zero every time** — without structured context, agents reconstruct understanding from code alone, missing constraints they can't infer and intent they can't guess.
-- **Constraints are scattered** — rules about what must hold live in docs, comments, code reviews, and tribal knowledge. No single place to query "what rules apply here?"
-- **Context drifts silently** — as code evolves, the assumptions behind it become stale. There's no mechanism to detect when intent and implementation diverge.
-
-Shapes solves this by making intent, constraints, and boundaries **explicit, queryable, and version-controlled**.
 
 ## Quick Start
 
