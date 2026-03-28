@@ -2,7 +2,7 @@
 
 **Record the intent, constraints, and decisions that shape a project.**
 
-Shapes captures what your code means — not just what it does — as a queryable graph of YAML files in a `.shapes/` directory, version-controlled alongside your code. Agents query it before making changes; humans maintain it as the project evolves.
+Shapes captures what your code means — not just what it does — as a queryable graph of YAML files in a `.shapes/` directory, version-controlled alongside your code. Agents transcribe human intent into this context layer, query it before making changes, and maintain it as the project evolves.
 
 With Shapes, you can:
 
@@ -97,16 +97,26 @@ Run `/shapes:shapes-maintain` periodically to audit the graph for consistency, d
 
 Shapes maintains two independent directed acyclic graphs:
 
-```
-Shape DAG (composition)              Constraint DAG (policy)
+**Shape DAG (composition)**
 
-[System]                             [Security Policy]
- ├── [Auth Service]                   ├── [No Plain Passwords]
- │    ├── [Login Feature]             └── [Token Expiry Rules]
- │    └── [Token Refresh]                  ├── [Access Token TTL]
- └── [API Gateway]                         └── [Refresh Token TTL]
-      ├── [Rate Limiter]
-      └── [Request Router]
+```mermaid
+graph TD
+  System --> AuthService[Auth Service]
+  AuthService --> LoginFeature[Login Feature]
+  AuthService --> TokenRefresh[Token Refresh]
+  System --> APIGateway[API Gateway]
+  APIGateway --> RateLimiter[Rate Limiter]
+  APIGateway --> RequestRouter[Request Router]
+```
+
+**Constraint DAG (policy)**
+
+```mermaid
+graph TD
+  SecurityPolicy[Security Policy] --> NoPlainPasswords[No Plain Passwords]
+  SecurityPolicy --> TokenExpiryRules[Token Expiry Rules]
+  TokenExpiryRules --> AccessTokenTTL[Access Token TTL]
+  TokenExpiryRules --> RefreshTokenTTL[Refresh Token TTL]
 ```
 
 **Shape DAG** — composition hierarchy. Systems contain services, services contain features. Each shape captures intent: what it does, why it exists, what it explicitly does *not* do.
@@ -154,12 +164,14 @@ This means top-level rules automatically apply everywhere. A "no raw SQL" constr
 
 Nodes progress through **seven states** that control how they can change:
 
-```
-proposed ──► promoted ──► canonical
-    │            │            │
-    ▼            ▼            ▼
-rejected    superseded    reverted
-                          abandoned
+```mermaid
+stateDiagram-v2
+  proposed --> promoted
+  promoted --> canonical
+  proposed --> rejected
+  promoted --> superseded
+  canonical --> reverted
+  canonical --> abandoned
 ```
 
 - **Proposed** — direct edits allowed, low confidence
