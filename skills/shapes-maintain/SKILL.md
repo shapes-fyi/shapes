@@ -1,10 +1,11 @@
 ---
 name: shapes-maintain
 description: >
-  Audit and organize an existing shapes graph. Checks for inconsistencies,
+  Audits and organizes an existing shapes graph. Checks for inconsistencies,
   deduplication opportunities, coverage gaps, stale realizations, and
-  structural improvements. Run this periodically to keep the shapes graph
-  accurate and useful as the project evolves.
+  structural improvements. Should be run periodically to keep the shapes
+  graph accurate and useful as the project evolves.
+user-invocable: true
 disable-model-invocation: true
 ---
 
@@ -13,6 +14,35 @@ disable-model-invocation: true
 Review the project's shapes graph for quality, consistency, and coverage.
 Present all findings and proposed changes to the user before making any
 modifications.
+
+## Contents
+
+- Step 1: Load the Full Graph
+- Step 2: Fix Validation Errors
+- Step 3: Check for Duplicates
+- Step 4: Check for Shallow Nodes
+- Step 5: Check Realization Accuracy
+- Step 6: Check Coverage
+- Step 7: Check Structural Organization
+- Step 8: Present Findings
+- Step 9: Apply Approved Changes
+
+## Progress Checklist
+
+Copy this checklist and track your progress:
+
+```
+Audit Progress:
+- [ ] Step 1: Full graph loaded and reviewed
+- [ ] Step 2: Validation errors fixed (or none found)
+- [ ] Step 3: Duplicates checked (merges proposed if found)
+- [ ] Step 4: Shallow nodes identified (enriched or flagged)
+- [ ] Step 5: Realization accuracy verified (paths exist, summaries current)
+- [ ] Step 6: Coverage gaps identified (uncovered files, missing constraints)
+- [ ] Step 7: Structural organization reviewed
+- [ ] Step 8: Findings presented to user by severity
+- [ ] Step 9: Approved changes applied and validated clean
+```
 
 ## Step 1: Load the Full Graph
 
@@ -63,11 +93,9 @@ content, or ask the user for the missing context.
 
 ## Step 5: Check Realization Accuracy
 
-For each realization binding, verify the referenced file still exists:
-
-```bash
-# For each realization binding value, check if the file exists
-```
+For each realization binding, verify the referenced file still exists.
+Read each shape's YAML, extract the `value` field from each binding, and
+check whether the file is present at that path in the project.
 
 Flag:
 - **Stale realizations** — bindings pointing to files that were renamed,
@@ -117,12 +145,20 @@ user approval before making any changes.
 
 ## Step 9: Apply Approved Changes
 
-After the user approves, apply changes by editing YAML files and running:
+After the user approves, apply changes by editing YAML files and validating:
 
 ```bash
 shapes validate
+```
+
+If `shapes validate` reports new errors introduced by the changes, fix them
+and re-validate. Repeat until exit code 0.
+
+Once clean, show the updated structure:
+
+```bash
 shapes tree shape
 shapes tree constraint
 ```
 
-Confirm the graph is clean and show the updated structure.
+Confirm the graph is clean and summarize the changes applied.
