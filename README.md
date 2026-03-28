@@ -67,11 +67,12 @@ npx skills add shapes-fyi/shapes
 
 The plugin provides three skills:
 
-| Skill | When to use |
-| ----- | ----------- |
-| `/shapes:shapes-init` | Bootstrap shapes for a new project. Explores your codebase, interviews you about architecture and constraints, then generates a full context graph. |
-| `/shapes:shapes-context` | Load the protocol knowledge before working. Auto-loads when a `.shapes/` directory exists, or invoke manually to teach the agent the context-first workflow. |
-| `/shapes:shapes-maintain` | Audit an existing graph. Run periodically to catch drift — stale realizations, coverage gaps, shallow nodes, and structural issues. |
+<table>
+<tr><th>Skill</th><th>When to use</th></tr>
+<tr><td nowrap><code>/shapes:shapes-init</code></td><td>Bootstrap shapes for a new project. Explores your codebase, interviews you about architecture and constraints, then generates a full context graph.</td></tr>
+<tr><td nowrap><code>/shapes:shapes-context</code></td><td>Load the protocol knowledge before working. Auto-loads when a <code>.shapes/</code> directory exists, or invoke manually to teach the agent the context-first workflow.</td></tr>
+<tr><td nowrap><code>/shapes:shapes-maintain</code></td><td>Audit an existing graph. Run periodically to catch drift — stale realizations, coverage gaps, shallow nodes, and structural issues.</td></tr>
+</table>
 
 ## Key Concepts
 
