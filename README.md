@@ -160,9 +160,17 @@ stateDiagram-v2
   proposed --> promoted
   promoted --> canonical
   proposed --> rejected
+  proposed --> superseded
+  proposed --> abandoned
+  proposed --> reverted
+  promoted --> rejected
   promoted --> superseded
-  canonical --> reverted
+  promoted --> abandoned
+  promoted --> reverted
+  canonical --> rejected
+  canonical --> superseded
   canonical --> abandoned
+  canonical --> reverted
 ```
 
 - **Proposed** — direct edits allowed, low confidence
