@@ -18,7 +18,7 @@ Read the full specification at **[shapes.fyi](https://shapes.fyi)**.
 - [Why Shapes](#why-shapes)
 - [Quick Start](#quick-start)
   - [Install the CLI](#install-the-cli)
-  - [Install the Claude Code Plugin](#install-the-claude-code-plugin)
+  - [Install the Agent Skills](#install-the-agent-skills)
   - [Use It](#use-it)
 - [Key Concepts](#key-concepts)
   - [Four Node Types](#four-node-types)
@@ -29,7 +29,7 @@ Read the full specification at **[shapes.fyi](https://shapes.fyi)**.
   - [Profiles](#profiles)
 - [Typical Workflow](#typical-workflow)
 - [Commands Reference](#commands-reference)
-- [Claude Code Plugin](#claude-code-plugin)
+- [Agent Skills](#agent-skills)
 - [Discovery](#discovery)
 - [Repository Structure](#repository-structure)
 - [Getting Help](#getting-help)
@@ -53,16 +53,7 @@ Shapes solves this by making intent, constraints, and boundaries **explicit, que
 cargo install --git https://github.com/shapes-fyi/shapes
 ```
 
-### Install the Claude Code Plugin
-
-In Claude Code, run:
-
-```
-/plugin marketplace add shapes-fyi/shapes
-/plugin install shapes
-```
-
-Or install via skills:
+### Install the Agent Skills
 
 ```bash
 npx skills add shapes-fyi/shapes
@@ -70,7 +61,7 @@ npx skills add shapes-fyi/shapes
 
 ### Use It
 
-In any project, run `/shapes:shapes-init` in Claude Code. The agent will:
+In any project, run `/shapes:shapes-init`. The agent will:
 
 1. Explore your project structure and source code
 2. Interview you about architecture, constraints, and domain knowledge
@@ -200,7 +191,7 @@ shapes get shape 3             # Read a specific shape's intent
 shapes query constraints 3     # What rules apply here?
 ```
 
-Agents follow this workflow automatically when the Claude Code plugin is installed.
+Agents follow this workflow automatically when the shapes skills are installed.
 
 ### 2. Create Shapes as You Build
 
@@ -246,7 +237,7 @@ Checks all 11 invariants: no cycles, no dangling references, reciprocal parent-c
 
 ### 6. Maintain Over Time
 
-Run `/shapes:shapes-maintain` in Claude Code to audit for drift — stale realizations pointing to renamed files, shallow nodes missing intent, coverage gaps where new code has no shapes.
+Run `/shapes:shapes-maintain` to audit for drift — stale realizations pointing to renamed files, shallow nodes missing intent, coverage gaps where new code has no shapes.
 
 ## Commands Reference
 
@@ -272,9 +263,9 @@ All commands support `--format yaml` (default) or `--format json`.
 
 Run `shapes --help` or `shapes <command> --help` for full flag reference.
 
-## Claude Code Plugin
+## Agent Skills
 
-The plugin includes three skills:
+The shapes plugin includes three skills that any compatible agent can use:
 
 | Skill | Invocation | Purpose |
 | ----- | ---------- | ------- |
@@ -306,7 +297,7 @@ This is a monorepo containing:
 - **`spec/`** — the protocol specification (protocol, operations, invariants, discovery)
 - **`apps/web/`** — the [shapes.fyi](https://shapes.fyi) specification website (TanStack Start, React 19, Vite)
 - **`packages/ui/`** — shared UI component library (shadcn/ui, Base UI, Tailwind CSS v4)
-- **`skills/`** — Claude Code skills (`/shapes:shapes-init`, `/shapes:shapes-context`, `/shapes:shapes-maintain`)
+- **`skills/`** — agent skills (`/shapes:shapes-init`, `/shapes:shapes-context`, `/shapes:shapes-maintain`)
 - **`.shapes/`** — the project's own context graph
 
 ## Getting Help
