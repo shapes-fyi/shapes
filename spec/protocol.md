@@ -490,3 +490,4 @@ conventions.
 |---------|-------------|
 | [`bindings/cli.md`](bindings/cli.md) | CLI transport binding. Maps operations to the `shapes` command-line tool. Reference implementation. |
 | [`bindings/mcp.md`](bindings/mcp.md) | MCP server transport binding. Maps operations to MCP tools with JSON parameters and responses. |
+| [`bindings/http.md`](bindings/http.md) | HTTP transport binding. Maps operations to REST endpoints with JSON request and response bodies. |
