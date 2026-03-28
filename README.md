@@ -156,21 +156,20 @@ This means top-level rules automatically apply everywhere. A "no raw SQL" constr
 Nodes progress through **seven states** that control how they can change:
 
 ```mermaid
-stateDiagram-v2
-  proposed --> promoted
-  promoted --> canonical
-  proposed --> rejected
-  proposed --> superseded
-  proposed --> abandoned
-  proposed --> reverted
-  promoted --> rejected
-  promoted --> superseded
-  promoted --> abandoned
-  promoted --> reverted
-  canonical --> rejected
-  canonical --> superseded
-  canonical --> abandoned
-  canonical --> reverted
+flowchart LR
+  subgraph Progressive
+    direction LR
+    proposed --> promoted --> canonical
+  end
+  subgraph Terminal
+    rejected
+    superseded
+    abandoned
+    reverted
+  end
+  proposed -.-> Terminal
+  promoted -.-> Terminal
+  canonical -.-> Terminal
 ```
 
 - **Proposed** — direct edits allowed, low confidence
