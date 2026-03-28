@@ -4,6 +4,10 @@
 
 Shapes captures what your code means — not just what it does — as a queryable graph of YAML files in a `.shapes/` directory, version-controlled alongside your code. Agents transcribe human intent into this context layer, query it before making changes, and maintain it as the project evolves.
 
+<p align="center">
+  <img src="docs/assets/shape-layers.png" alt="Shapes sits between humans and their work, giving agents a structured context layer of shapes, constraints, amendments, and profiles" width="400" />
+</p>
+
 With Shapes, you can:
 
 - **Give agents context they can't get from code** — intent, constraints, domain knowledge, and design rationale that would otherwise live in your head
