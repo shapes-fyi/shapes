@@ -1,10 +1,12 @@
 ---
 name: shapes-init
 description: >
-  Bootstrap the Shapes Context Protocol for an existing project. Explores the
-  codebase, interviews the engineer about architecture and constraints, creates
-  a Profile defining what fields matter, then generates a rich graph of shapes
-  and constraints capturing the project's intent, rules, and boundaries.
+  Bootstraps the Shapes Context Protocol for an existing project. Explores
+  the codebase, interviews the engineer about architecture and constraints,
+  creates a Profile defining what fields matter, then generates a rich graph
+  of shapes and constraints capturing the project's intent, rules, and
+  boundaries.
+user-invocable: true
 disable-model-invocation: true
 argument-hint: "[project-path]"
 ---
@@ -14,6 +16,33 @@ argument-hint: "[project-path]"
 The goal is to capture not just what the code does, but the **meaning behind
 it** — the intent, the unwritten rules, the domain knowledge that lives in
 the engineer's head. Code tells you *what* exists. Shapes capture *why*.
+
+## Contents
+
+- Step 1: Initialize the Store
+- Step 2: Explore the Project
+- Step 3: Interview the Engineer
+- Step 4: Define the Profile
+- Step 5: Create Shapes
+- Step 6: Create Constraints
+- Step 7: Link Everything
+- Step 8: Validate and Show
+
+## Progress Checklist
+
+Copy this checklist and track your progress:
+
+```
+Bootstrap Progress:
+- [ ] Step 1: Store initialized (`shapes init`)
+- [ ] Step 2: Project explored (manifest, docs, structure, source, tests, CI)
+- [ ] Step 3: Engineer interviewed (all rounds complete, understanding confirmed)
+- [ ] Step 4: Profile defined (fields, kinds, lifecycle chosen and created)
+- [ ] Step 5: Shapes created (root + children, rich descriptions, realizations)
+- [ ] Step 6: Constraints created (specific rules, descriptions with "why")
+- [ ] Step 7: Everything linked (reciprocal parent/child, constraint refs, realizations)
+- [ ] Step 8: Validated clean (`shapes validate` exit code 0)
+```
 
 ## Step 1: Initialize the Store
 
@@ -86,32 +115,30 @@ from sensible defaults, then ask if they want to add any custom fields.
 
 ### Shape Intent Fields
 
-Present these as options (based on what you learned in the interview, pre-select
-the ones that seem most relevant):
+Start with the recommended defaults for the project's domain. Present these
+as pre-selected and let the engineer remove what doesn't apply, then add
+custom fields.
 
-**For software engineering projects:**
+**Software projects (recommended defaults):**
 - `goals` — what this shape must achieve
 - `non_goals` — what is explicitly out of scope
 - `rationale` — why this approach was chosen over alternatives
 - `requirements` — specific functional requirements
+
+**Software projects (optional, add if relevant):**
 - `acceptance_criteria` — measurable conditions for completion
 - `data_flow` — how data moves through this component
 - `failure_modes` — what can go wrong and how it's mitigated
 - `dependencies` — what this component depends on
 - `api_contract` — the interface this component exposes
 
-**For research projects:**
-- `hypotheses` — what is being tested
-- `success_criteria` — how to measure success
-- `methodology` — the approach being used
-- `variables` — controlled and independent variables
+**Research projects (recommended defaults):**
+- `hypotheses`, `success_criteria`, `methodology`, `variables`
 
-**For editorial/writing projects:**
-- `themes` — thematic elements
-- `target_audience` — who this is for
-- `tone` — voice and style guidelines
+**Editorial/writing projects (recommended defaults):**
+- `themes`, `target_audience`, `tone`
 
-After the engineer selects, ask: "Any custom fields specific to your project
+After the engineer confirms, ask: "Any custom fields specific to your project
 that aren't in this list?" Let them add domain-specific fields.
 
 ### Constraint Intent Fields
@@ -157,9 +184,29 @@ shapes create shape --name "<ProjectName>" --kind system \
   --summary "<description>"
 ```
 
-Edit the YAML to flesh it out with everything you learned from the code AND
-the interview. Reference the Profile by ID in the `profile` field. Use
-whatever Intent fields the Profile declares.
+Edit the YAML to flesh it out. Minimum viable shape structure:
+
+```yaml
+intent:
+  kind: system
+  summary: "<one-line description>"
+  source: human
+  goals: "<what this must achieve>"
+  rationale: "<why this approach>"
+profile: <profile-id>
+status:
+  state: proposed
+realization:
+  - bindings:
+      - scheme: path
+        value: src/main.rs
+        metadata:
+          summary: "<what's in this file relevant to this shape>"
+    role: primary
+```
+
+Reference the Profile by ID in the `profile` field. Use whatever Intent
+fields the Profile declares.
 
 Then create child shapes for components, features, interfaces, patterns —
 whatever decomposition captures the project's structure. Link them via
@@ -183,7 +230,21 @@ shapes create constraint --name "<Name>" --kind invariant \
   --rule "<specific, falsifiable rule>" --enforcement machine
 ```
 
-Edit each constraint's YAML to include:
+Edit each constraint's YAML. Minimum viable constraint structure:
+
+```yaml
+intent:
+  kind: invariant
+  summary: "<one-line description>"
+  source: human
+  description: "<why this rule exists — the incident or requirement>"
+  rule: "<specific, falsifiable invariant>"
+  rationale: "<what breaks if violated>"
+status:
+  state: proposed
+```
+
+Each constraint should include:
 - A `description` explaining why the rule exists — the incident, decision,
   or requirement that created it
 - A `rule` specific enough to verify by reading code
@@ -231,9 +292,17 @@ realization:
 
 ```bash
 shapes validate
+```
+
+If `shapes validate` reports errors (exit code 2), fix each issue and
+re-validate. Repeat until exit code 0 — do not proceed with errors.
+
+Once clean, show the final structure:
+
+```bash
 shapes tree shape
 shapes tree constraint
 ```
 
-Fix any issues. Then summarize what was created for the engineer — the key
-shapes, constraints, and how they relate.
+Summarize what was created for the engineer — the key shapes, constraints,
+and how they relate.
