@@ -36,7 +36,7 @@ evidence:
       - scheme: path
         value: src/store.rs
         metadata:
-          summary: Store only writes YAML via serde_yaml::to_string — no JSON write path exists in save()
+          summary: Store only writes YAML via serde_yml::to_string — no JSON write path exists in save()
       - scheme: path
         value: src/commands/mod.rs
         metadata:

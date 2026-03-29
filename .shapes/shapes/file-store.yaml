@@ -5,7 +5,7 @@ description: >-
   Handles ID allocation via an auto-incrementing counter in meta.yaml, generic
   load/save operations for any node type, and directory listing. Each node type
   gets its own subdirectory (shapes/, constraints/, amendments/, profiles/) with
-  files named by ID (e.g., 1.yaml, 2.yaml).
+  files named as {id}-{slug}.yaml for uniqueness.
 profile: 1
 status: promoted
 intent:
@@ -34,13 +34,17 @@ constraints:
   - 5
   - 8
   - 12
+  - 15
 parents:
   - id: 1
     role: component
+children:
+  - shape: 31
+    role: feature
 realization:
   - bindings:
       - scheme: path
         value: src/store.rs
         metadata:
-          summary: Store implementation using serde_yml — scans YAML files by id field content, generates slug filenames from names, derives next ID by scanning (max + 1). Meta tracks only protocol version.
+          summary: NodeStore trait (load, list_ids, next_id, load_all) + FileStore impl. Scans YAML files by id field, generates {id}-{slug}.yaml filenames. MockStore in dag.rs tests.
     role: primary

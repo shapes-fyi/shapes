@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -8,6 +9,38 @@ use crate::model::NodeType;
 
 const SHAPES_DIR: &str = ".shapes";
 const META_FILE: &str = "meta.yaml";
+
+// ---------------------------------------------------------------------------
+// NodeStore trait — abstraction for read operations
+// ---------------------------------------------------------------------------
+
+pub trait NodeStore {
+    /// Load a single node by type and ID.
+    fn load<T: DeserializeOwned>(&self, node_type: NodeType, id: u64) -> Result<T>;
+
+    /// List all IDs for a given node type (sorted).
+    fn list_ids(&self, node_type: NodeType) -> Result<Vec<u64>>;
+
+    /// Allocate the next ID for a node type by scanning existing nodes.
+    fn next_id(&self, node_type: NodeType) -> Result<u64> {
+        let ids = self.list_ids(node_type)?;
+        Ok(ids.into_iter().max().unwrap_or(0) + 1)
+    }
+
+    /// Load all nodes of a given type into a BTreeMap keyed by raw ID.
+    /// Default impl calls load() per ID. FileStore should override for O(N)
+    /// single-pass loading if performance matters for large stores.
+    #[allow(dead_code)] // Available for future bulk operations
+    fn load_all<T: DeserializeOwned>(&self, node_type: NodeType) -> Result<BTreeMap<u64, T>> {
+        let ids = self.list_ids(node_type)?;
+        let mut map = BTreeMap::new();
+        for id in ids {
+            let node: T = self.load(node_type, id)?;
+            map.insert(id, node);
+        }
+        Ok(map)
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Meta — protocol version marker
@@ -43,21 +76,21 @@ struct IdAndName {
 }
 
 // ---------------------------------------------------------------------------
-// Store — file-based .shapes/ directory operations
+// FileStore — file-based .shapes/ directory operations
 // ---------------------------------------------------------------------------
 
-pub struct Store {
+pub struct FileStore {
     root: PathBuf,
 }
 
-impl Store {
+impl FileStore {
     /// Open an existing .shapes/ store in the given directory.
     pub fn open(dir: &Path) -> Result<Self> {
         let root = dir.join(SHAPES_DIR);
         if !root.is_dir() {
             bail!("No .shapes/ directory found. Run `shapes init` first.");
         }
-        Ok(Store { root })
+        Ok(FileStore { root })
     }
 
     /// Initialize a new .shapes/ store in the given directory.
@@ -83,56 +116,8 @@ impl Store {
         let yaml = serde_yml::to_string(&meta)?;
         fs::write(&meta_path, yaml).context("failed to write meta.yaml")?;
 
-        Ok(Store { root })
+        Ok(FileStore { root })
     }
-
-    // -- ID allocation ------------------------------------------------------
-
-    /// Allocate the next ID for a node type by scanning existing nodes.
-    pub fn next_id(&self, node_type: NodeType) -> Result<u64> {
-        let ids = self.list_ids(node_type)?;
-        Ok(ids.into_iter().max().unwrap_or(0) + 1)
-    }
-
-    // -- Directory scanning -------------------------------------------------
-
-    /// Return the directory for a given node type.
-    fn type_dir(&self, node_type: NodeType) -> PathBuf {
-        self.root.join(node_type.dir_name())
-    }
-
-    /// List all .yaml files in a node type directory.
-    fn yaml_files(&self, node_type: NodeType) -> Result<Vec<PathBuf>> {
-        let dir = self.type_dir(node_type);
-        let mut files = Vec::new();
-        for entry in
-            fs::read_dir(&dir).with_context(|| format!("failed to read {}", dir.display()))?
-        {
-            let entry = entry?;
-            let path = entry.path();
-            if path.extension().is_some_and(|e| e == "yaml") {
-                files.push(path);
-            }
-        }
-        files.sort();
-        Ok(files)
-    }
-
-    /// Find the file path for a node with the given id.
-    fn find_file(&self, node_type: NodeType, id: u64) -> Result<PathBuf> {
-        for path in self.yaml_files(node_type)? {
-            let content = fs::read_to_string(&path)
-                .with_context(|| format!("failed to read {}", path.display()))?;
-            if let Ok(parsed) = serde_yml::from_str::<IdOnly>(&content)
-                && parsed.id == id
-            {
-                return Ok(path);
-            }
-        }
-        bail!("{} {} not found", node_type, id)
-    }
-
-    // -- Node CRUD ----------------------------------------------------------
 
     /// Save a node to disk as YAML, generating a descriptive filename.
     pub fn save<T: Serialize>(&self, node_type: NodeType, id: u64, node: &T) -> Result<PathBuf> {
@@ -152,21 +137,56 @@ impl Store {
             id.to_string()
         };
 
-        let path = self.type_dir(node_type).join(format!("{slug}.yaml"));
+        let path = self.type_dir(node_type).join(format!("{id}-{slug}.yaml"));
         fs::write(&path, &yaml).with_context(|| format!("failed to write {}", path.display()))?;
         Ok(path)
     }
 
-    /// Load a single node by type and ID.
-    pub fn load<T: DeserializeOwned>(&self, node_type: NodeType, id: u64) -> Result<T> {
+    // -- Private helpers ---------------------------------------------------
+
+    fn type_dir(&self, node_type: NodeType) -> PathBuf {
+        self.root.join(node_type.dir_name())
+    }
+
+    fn yaml_files(&self, node_type: NodeType) -> Result<Vec<PathBuf>> {
+        let dir = self.type_dir(node_type);
+        let mut files = Vec::new();
+        for entry in
+            fs::read_dir(&dir).with_context(|| format!("failed to read {}", dir.display()))?
+        {
+            let entry = entry?;
+            let path = entry.path();
+            if path.extension().is_some_and(|e| e == "yaml") {
+                files.push(path);
+            }
+        }
+        files.sort();
+        Ok(files)
+    }
+
+    fn find_file(&self, node_type: NodeType, id: u64) -> Result<PathBuf> {
+        for path in self.yaml_files(node_type)? {
+            let content = fs::read_to_string(&path)
+                .with_context(|| format!("failed to read {}", path.display()))?;
+            if let Ok(parsed) = serde_yml::from_str::<IdOnly>(&content)
+                && parsed.id == id
+            {
+                return Ok(path);
+            }
+        }
+        bail!("{} {} not found", node_type, id)
+    }
+}
+
+impl NodeStore for FileStore {
+    fn load<T: DeserializeOwned>(&self, node_type: NodeType, id: u64) -> Result<T> {
         let path = self.find_file(node_type, id)?;
         let content = fs::read_to_string(&path)
             .with_context(|| format!("failed to read {}", path.display()))?;
         Ok(serde_yml::from_str(&content)?)
     }
 
-    /// List all IDs for a given node type (sorted).
-    pub fn list_ids(&self, node_type: NodeType) -> Result<Vec<u64>> {
+    fn list_ids(&self, node_type: NodeType) -> Result<Vec<u64>> {
         let mut ids = Vec::new();
         for path in self.yaml_files(node_type)? {
             let content = fs::read_to_string(&path)

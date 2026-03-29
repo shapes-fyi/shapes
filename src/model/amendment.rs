@@ -2,10 +2,28 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
+use clap::ValueEnum;
+
 use super::{
     AmendmentId, ConstraintId, ProfileId, ShapeId,
     common::{Evidence, Intent, Provenance, Realization, Status},
 };
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum VersionImpact {
+    Major,
+    Minor,
+    Patch,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum InitiatedType {
+    Human,
+    Ai,
+    System,
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Amendment {
@@ -15,28 +33,28 @@ pub struct Amendment {
     pub targets: AmendmentTargets,
     pub status: Status,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub version_impact: Option<String>,
+    pub version_impact: Option<VersionImpact>,
     pub intent: Intent,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub constraints: Vec<ConstraintId>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub realization: Vec<Realization>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub evidence: Vec<Evidence>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub provenance: Vec<Provenance>,
     pub initiated_by: InitiatedBy,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AmendmentTargets {
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub shape_ids: Vec<ShapeId>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub constraint_ids: Vec<ConstraintId>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub profile_ids: Vec<ProfileId>,
 }
 
@@ -51,7 +69,7 @@ impl AmendmentTargets {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct InitiatedBy {
     #[serde(rename = "type")]
-    pub initiated_type: String,
+    pub initiated_type: InitiatedType,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub identity: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

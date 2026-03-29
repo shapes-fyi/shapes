@@ -16,25 +16,25 @@ pub struct Shape {
     pub profile: Option<ProfileId>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub predecessors: Vec<ShapeId>,
     pub status: Status,
     pub intent: Intent,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub constraints: Vec<ConstraintId>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub realization: Vec<Realization>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub evidence: Vec<Evidence>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub provenance: Vec<Provenance>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub amendment_log: Vec<AmendmentId>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub parents: Vec<ParentRef<ShapeId>>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub children: Vec<ShapeChildRef>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 

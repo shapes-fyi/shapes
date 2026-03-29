@@ -6,6 +6,20 @@ use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 // ---------------------------------------------------------------------------
+// Serde helpers — null-safe deserialization for Vec and BTreeMap fields
+// ---------------------------------------------------------------------------
+
+/// Deserializes a value that may be null, missing, or present.
+/// Maps null/missing to `T::default()`. Use with `#[serde(default, deserialize_with)]`.
+pub fn null_to_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
+where
+    D: Deserializer<'de>,
+    T: Deserialize<'de> + Default,
+{
+    Ok(Option::<T>::deserialize(deserializer)?.unwrap_or_default())
+}
+
+// ---------------------------------------------------------------------------
 // Status
 // ---------------------------------------------------------------------------
 
@@ -42,9 +56,9 @@ impl Status {
 pub struct StatusDetail {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub uris: Vec<String>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
@@ -52,13 +66,13 @@ pub struct StatusDetail {
 pub struct TerminalDetail {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub uris: Vec<String>,
     /// Successor node IDs (same type as the owning node).
     /// For shapes, these are ShapeId values; for constraints, ConstraintId values.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub successors: Vec<u64>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
@@ -174,7 +188,7 @@ pub struct Intent {
     pub kind: String,
     pub summary: String,
     pub source: serde_yml::Value,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "Vec::is_empty")]
     pub uris: Vec<String>,
     #[serde(flatten)]
     pub extra: BTreeMap<String, serde_yml::Value>,
@@ -201,7 +215,7 @@ pub struct ParentRef<Id> {
 pub struct Binding {
     pub scheme: String,
     pub value: String,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
@@ -222,7 +236,7 @@ pub struct Evidence {
     pub bindings: Vec<Binding>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trusted: Option<bool>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
@@ -231,7 +245,7 @@ pub struct Provenance {
     #[serde(rename = "type")]
     pub provenance_type: String,
     pub bindings: Vec<Binding>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 

@@ -1,0 +1,22 @@
+id: 14
+name: Domain Error Types
+description: >-
+  Structured error types (StoreError, CreateError, ValidationError) enable
+  typed exit codes, meaningful error messages, and future error-specific
+  handling rather than opaque anyhow strings.
+kind: guideline
+rule: All new command functions SHOULD return domain-specific error types (StoreError, CreateError, ValidationError) rather than anyhow::Result
+enforcement: manual
+status: proposed
+profile: 1
+intent:
+  kind: requirement
+  summary: Prefer structured error types over anyhow for new code
+  source: human
+  rationale: >-
+    anyhow errors are opaque strings that cannot be pattern-matched; domain
+    types enable exit code 2 for validation failures and future differentiated
+    error handling
+  impact_if_violated: >-
+    All errors produce generic exit code 1 and string messages, making it
+    impossible to programmatically distinguish error categories

@@ -1,13 +1,15 @@
 mod commands;
+mod error;
 mod model;
 mod store;
 
-use std::process;
+use std::process::ExitCode;
 
-use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
 
-use model::NodeType;
+use error::CliError;
+
+use model::{AmendmentModel, ConstraintId, Enforcement, NodeType, ShapeId, VersionImpact};
 
 #[derive(Parser)]
 #[command(
@@ -135,6 +137,9 @@ enum CreateCommand {
         /// Origin: human, ai, or system
         #[arg(long, default_value = "human")]
         source: String,
+        /// Apply a governance profile by ID — sets profile reference and pre-populates required fields
+        #[arg(long, conflicts_with = "from")]
+        profile: Option<u64>,
         /// Full description (defaults to name if omitted)
         #[arg(long)]
         description: Option<String>,
@@ -159,18 +164,24 @@ enum CreateCommand {
         rule: Option<String>,
         /// How enforced: manual (human review) or machine (automated checks)
         #[arg(long, default_value = "manual")]
-        enforcement: String,
+        enforcement: Enforcement,
         /// Brief summary
         #[arg(long)]
         summary: Option<String>,
         /// Origin: human, ai, or system
         #[arg(long, default_value = "human")]
         source: String,
+        /// Intent kind — classifies the purpose of this constraint's intent (defaults to --kind value)
+        #[arg(long)]
+        intent_kind: Option<String>,
+        /// Apply a governance profile by ID — sets profile reference and pre-populates required fields
+        #[arg(long, conflicts_with = "from")]
+        profile: Option<u64>,
         /// Full description (defaults to name if omitted)
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent-kind", "description"])]
         from: Option<String>,
     },
 
@@ -182,10 +193,10 @@ enum CreateCommand {
         name: String,
         /// Target shape IDs (repeatable: --target-shape 1 --target-shape 2)
         #[arg(long = "target-shape")]
-        target_shapes: Vec<u64>,
+        target_shapes: Vec<ShapeId>,
         /// Target constraint IDs (repeatable)
         #[arg(long = "target-constraint")]
-        target_constraints: Vec<u64>,
+        target_constraints: Vec<ConstraintId>,
         /// Brief summary of what changed and why
         #[arg(long)]
         summary: Option<String>,
@@ -194,12 +205,12 @@ enum CreateCommand {
         source: String,
         /// Semantic version impact: major, minor, or patch
         #[arg(long)]
-        version_impact: Option<String>,
+        version_impact: Option<VersionImpact>,
         /// Full description (defaults to name if omitted)
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "target_shapes", "target_constraints", "summary", "source", "version_impact", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "target-shape", "target-constraint", "summary", "source", "version-impact", "description"])]
         from: Option<String>,
     },
 
@@ -216,12 +227,12 @@ enum CreateCommand {
         source: String,
         /// How amendments are applied: merge, overlay, edition, or append-only
         #[arg(long, default_value = "merge")]
-        amendment_model: String,
+        amendment_model: AmendmentModel,
         /// Full description (defaults to name if omitted)
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "summary", "source", "amendment_model", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "summary", "source", "amendment-model", "description"])]
         from: Option<String>,
     },
 }
@@ -259,38 +270,49 @@ enum QueryCommand {
         /// Shape ID to query constraints for
         shape_id: u64,
     },
+    /// Find all shapes that are governed by a constraint — both direct references and inherited.
+    /// This is the reverse of `query constraints`: given a constraint, which shapes must satisfy it?
+    ShapesForConstraint {
+        /// Constraint ID to look up
+        constraint_id: u64,
+    },
 }
 
-fn main() {
+fn main() -> ExitCode {
     let cli = Cli::parse();
-    if let Err(e) = run(cli) {
-        eprintln!("Error: {e:#}");
-        process::exit(1);
+    match run(cli) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("Error: {e}");
+            e.exit_code()
+        }
     }
 }
 
-fn run(cli: Cli) -> Result<()> {
+fn run(cli: Cli) -> Result<(), CliError> {
     match cli.command {
-        Command::Init => commands::init(),
+        Command::Init => commands::init()?,
 
-        Command::Create { node, id_only } => commands::create(node, id_only, cli.format),
+        Command::Create { node, id_only } => commands::create(node, id_only, cli.format)?,
 
-        Command::Get { node_type, id } => commands::get(node_type, id, cli.format),
+        Command::Get { node_type, id } => commands::get(node_type, id, cli.format)?,
 
         Command::List {
             node_type,
             status,
             kind,
-        } => commands::list(node_type, status, kind, cli.format),
+        } => commands::list(node_type, status, kind, cli.format)?,
 
         Command::Tree {
             node_type,
             root,
             depth,
-        } => commands::tree(node_type, root, depth),
+        } => commands::tree(node_type, root, depth)?,
 
-        Command::Query { operation } => commands::query(operation, cli.format),
+        Command::Query { operation } => commands::query(operation, cli.format)?,
 
-        Command::Validate => commands::validate(cli.format),
+        Command::Validate => commands::validate(cli.format)?,
     }
+
+    Ok(())
 }
