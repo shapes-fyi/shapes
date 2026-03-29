@@ -2,10 +2,19 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
+use clap::ValueEnum;
+
 use super::{
     AmendmentId, ConstraintId, ProfileId,
     common::{Evidence, Intent, ParentRef, Provenance, Realization, Status},
 };
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Enforcement {
+    Manual,
+    Machine,
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Constraint {
@@ -14,7 +23,7 @@ pub struct Constraint {
     pub description: String,
     pub kind: String,
     pub rule: String,
-    pub enforcement: String,
+    pub enforcement: Enforcement,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub profile: Option<ProfileId>,
     #[serde(skip_serializing_if = "Option::is_none")]

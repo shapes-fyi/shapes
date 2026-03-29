@@ -6,6 +6,7 @@ use anyhow::Result;
 use serde::Serialize;
 
 use crate::model::*;
+use crate::model::{ShapeId, ConstraintId, AmendmentId, ProfileId, InitiatedType};
 use crate::store::Store;
 use crate::{CreateCommand, DagType, OutputFormat, QueryCommand};
 
@@ -68,7 +69,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             description,
             from,
         } => {
-            let id = store.next_id(NodeType::Shape)?;
+            let id = ShapeId::new(store.next_id(NodeType::Shape)?);
             let shape: Shape = if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut s: Shape = serde_yml::from_str(&content)?;
@@ -100,7 +101,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: BTreeMap::new(),
                 }
             };
-            let path = store.save(NodeType::Shape, id, &shape)?;
+            let path = store.save(NodeType::Shape, id.get(), &shape)?;
             if id_only {
                 println!("{id}");
             } else {
@@ -119,7 +120,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             description,
             from,
         } => {
-            let id = store.next_id(NodeType::Constraint)?;
+            let id = ConstraintId::new(store.next_id(NodeType::Constraint)?);
             let constraint: Constraint = if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut c: Constraint = serde_yml::from_str(&content)?;
@@ -152,7 +153,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: BTreeMap::new(),
                 }
             };
-            let path = store.save(NodeType::Constraint, id, &constraint)?;
+            let path = store.save(NodeType::Constraint, id.get(), &constraint)?;
             if id_only {
                 println!("{id}");
             } else {
@@ -171,7 +172,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             description,
             from,
         } => {
-            let id = store.next_id(NodeType::Amendment)?;
+            let id = AmendmentId::new(store.next_id(NodeType::Amendment)?);
             let amendment: Amendment = if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut a: Amendment = serde_yml::from_str(&content)?;
@@ -201,14 +202,14 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     evidence: vec![],
                     provenance: vec![],
                     initiated_by: InitiatedBy {
-                        initiated_type: "human".into(),
+                        initiated_type: InitiatedType::Human,
                         identity: None,
                         provenance: None,
                     },
                     metadata: BTreeMap::new(),
                 }
             };
-            let path = store.save(NodeType::Amendment, id, &amendment)?;
+            let path = store.save(NodeType::Amendment, id.get(), &amendment)?;
             if id_only {
                 println!("{id}");
             } else {
@@ -225,7 +226,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             description,
             from,
         } => {
-            let id = store.next_id(NodeType::Profile)?;
+            let id = ProfileId::new(store.next_id(NodeType::Profile)?);
             let profile: Profile = if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut p: Profile = serde_yml::from_str(&content)?;
@@ -256,7 +257,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: BTreeMap::new(),
                 }
             };
-            let path = store.save(NodeType::Profile, id, &profile)?;
+            let path = store.save(NodeType::Profile, id.get(), &profile)?;
             if id_only {
                 println!("{id}");
             } else {

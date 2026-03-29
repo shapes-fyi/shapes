@@ -33,6 +33,7 @@ intent:
 constraints:
   - 5
   - 6
+  - 13
 parents:
   - id: 1
     role: component
@@ -46,7 +47,7 @@ realization:
       - scheme: path
         value: src/model/mod.rs
         metadata:
-          summary: Module root — type aliases (ShapeId, ConstraintId, etc.), NodeType enum, re-exports
+          summary: Module root — newtype ID wrappers (ShapeId, ConstraintId, AmendmentId, ProfileId) with serde(transparent), NodeType enum, re-exports
     role: primary
   - bindings:
       - scheme: path

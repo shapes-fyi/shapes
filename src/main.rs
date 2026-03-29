@@ -7,7 +7,7 @@ use std::process;
 use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
 
-use model::NodeType;
+use model::{AmendmentModel, ConstraintId, Enforcement, NodeType, ShapeId, VersionImpact};
 
 #[derive(Parser)]
 #[command(
@@ -159,7 +159,7 @@ enum CreateCommand {
         rule: Option<String>,
         /// How enforced: manual (human review) or machine (automated checks)
         #[arg(long, default_value = "manual")]
-        enforcement: String,
+        enforcement: Enforcement,
         /// Brief summary
         #[arg(long)]
         summary: Option<String>,
@@ -182,10 +182,10 @@ enum CreateCommand {
         name: String,
         /// Target shape IDs (repeatable: --target-shape 1 --target-shape 2)
         #[arg(long = "target-shape")]
-        target_shapes: Vec<u64>,
+        target_shapes: Vec<ShapeId>,
         /// Target constraint IDs (repeatable)
         #[arg(long = "target-constraint")]
-        target_constraints: Vec<u64>,
+        target_constraints: Vec<ConstraintId>,
         /// Brief summary of what changed and why
         #[arg(long)]
         summary: Option<String>,
@@ -194,7 +194,7 @@ enum CreateCommand {
         source: String,
         /// Semantic version impact: major, minor, or patch
         #[arg(long)]
-        version_impact: Option<String>,
+        version_impact: Option<VersionImpact>,
         /// Full description (defaults to name if omitted)
         #[arg(long)]
         description: Option<String>,
@@ -216,7 +216,7 @@ enum CreateCommand {
         source: String,
         /// How amendments are applied: merge, overlay, edition, or append-only
         #[arg(long, default_value = "merge")]
-        amendment_model: String,
+        amendment_model: AmendmentModel,
         /// Full description (defaults to name if omitted)
         #[arg(long)]
         description: Option<String>,

@@ -2,10 +2,28 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
+use clap::ValueEnum;
+
 use super::{
     AmendmentId, ConstraintId, ProfileId, ShapeId,
     common::{Evidence, Intent, Provenance, Realization, Status},
 };
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum VersionImpact {
+    Major,
+    Minor,
+    Patch,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum InitiatedType {
+    Human,
+    Ai,
+    System,
+}
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Amendment {
@@ -15,7 +33,7 @@ pub struct Amendment {
     pub targets: AmendmentTargets,
     pub status: Status,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub version_impact: Option<String>,
+    pub version_impact: Option<VersionImpact>,
     pub intent: Intent,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub constraints: Vec<ConstraintId>,
@@ -51,7 +69,7 @@ impl AmendmentTargets {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct InitiatedBy {
     #[serde(rename = "type")]
-    pub initiated_type: String,
+    pub initiated_type: InitiatedType,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub identity: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -123,7 +123,18 @@ pub struct Versioning {
     pub bump_rules: Option<String>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AmendmentModel {
+    Merge,
+    Overlay,
+    Edition,
+    #[serde(rename = "append-only")]
+    #[value(name = "append-only")]
+    AppendOnly,
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AmendmentRules {
-    pub application: String,
+    pub application: AmendmentModel,
 }

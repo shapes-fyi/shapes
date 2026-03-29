@@ -1,0 +1,11 @@
+id: 13
+name: Newtype ID Safety
+description: Newtype ID Safety
+kind: invariant
+rule: All node ID fields in model structs MUST use the corresponding newtype wrapper (ShapeId, ConstraintId, AmendmentId, ProfileId), not bare u64
+enforcement: machine
+status: proposed
+intent:
+  kind: requirement
+  summary: Compile-time type safety for node ID fields
+  source: human
