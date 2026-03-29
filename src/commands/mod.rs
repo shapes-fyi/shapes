@@ -8,7 +8,7 @@ use serde::Serialize;
 use crate::error::{CliError, ValidationError};
 use crate::model::*;
 use crate::model::{ShapeId, ConstraintId, AmendmentId, ProfileId, InitiatedType};
-use crate::store::Store;
+use crate::store::{FileStore, NodeStore};
 use crate::{CreateCommand, DagType, OutputFormat, QueryCommand};
 
 mod dag;
@@ -39,8 +39,8 @@ fn read_from(path: &str) -> Result<String> {
     }
 }
 
-fn open_store() -> Result<Store> {
-    Store::open(&env::current_dir()?)
+fn open_store() -> Result<FileStore> {
+    FileStore::open(&env::current_dir()?)
 }
 
 // ---------------------------------------------------------------------------
@@ -49,7 +49,7 @@ fn open_store() -> Result<Store> {
 
 pub fn init() -> Result<()> {
     let dir = env::current_dir()?;
-    Store::init(&dir)?;
+    FileStore::init(&dir)?;
     eprintln!("Initialized .shapes/ in {}", dir.display());
     Ok(())
 }

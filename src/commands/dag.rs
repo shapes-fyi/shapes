@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::DagType;
 use crate::model::*;
-use crate::store::Store;
+use crate::store::NodeStore;
 
 // ---------------------------------------------------------------------------
 // Validation types
@@ -52,7 +52,7 @@ impl fmt::Display for ValidationIssue {
 // Ancestors
 // ---------------------------------------------------------------------------
 
-pub fn ancestors(store: &Store, dag_type: DagType, id: u64) -> Result<Vec<u64>> {
+pub fn ancestors(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result<Vec<u64>> {
     let mut result = Vec::new();
     let mut visited = HashSet::new();
     let mut queue = VecDeque::new();
@@ -106,7 +106,7 @@ pub fn ancestors(store: &Store, dag_type: DagType, id: u64) -> Result<Vec<u64>> 
 // Descendants
 // ---------------------------------------------------------------------------
 
-pub fn descendants(store: &Store, dag_type: DagType, id: u64) -> Result<Vec<u64>> {
+pub fn descendants(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result<Vec<u64>> {
     let mut result = Vec::new();
     let mut visited = HashSet::new();
     let mut queue = VecDeque::new();
@@ -160,7 +160,7 @@ pub fn descendants(store: &Store, dag_type: DagType, id: u64) -> Result<Vec<u64>
 // Effective constraints (shape-specific)
 // ---------------------------------------------------------------------------
 
-pub fn effective_constraints(store: &Store, shape_id: u64) -> Result<Vec<ConstraintWithSource>> {
+pub fn effective_constraints(store: &impl NodeStore, shape_id: u64) -> Result<Vec<ConstraintWithSource>> {
     let mut result = Vec::new();
     let mut seen = HashSet::new();
     let mut visited = HashSet::new();
@@ -208,7 +208,7 @@ pub struct ConstraintWithSource {
 // Tree
 // ---------------------------------------------------------------------------
 
-pub fn print_tree(store: &Store, dag_type: DagType, root: Option<u64>, max_depth: usize) -> Result<()> {
+pub fn print_tree(store: &impl NodeStore, dag_type: DagType, root: Option<u64>, max_depth: usize) -> Result<()> {
     let label = match dag_type {
         DagType::Shape => "shape",
         DagType::Constraint => "constraint",
@@ -256,7 +256,7 @@ pub fn print_tree(store: &Store, dag_type: DagType, root: Option<u64>, max_depth
     Ok(())
 }
 
-fn find_roots(store: &Store, dag_type: DagType) -> Result<Vec<u64>> {
+fn find_roots(store: &impl NodeStore, dag_type: DagType) -> Result<Vec<u64>> {
     let node_type = match dag_type {
         DagType::Shape => NodeType::Shape,
         DagType::Constraint => NodeType::Constraint,
@@ -283,7 +283,7 @@ fn find_roots(store: &Store, dag_type: DagType) -> Result<Vec<u64>> {
 }
 
 fn get_node_info(
-    store: &Store,
+    store: &impl NodeStore,
     dag_type: DagType,
     id: u64,
 ) -> Result<(String, Vec<u64>, Vec<u64>)> {
@@ -321,7 +321,7 @@ fn get_node_info(
 }
 
 fn print_subtree(
-    store: &Store,
+    store: &impl NodeStore,
     dag_type: DagType,
     id: u64,
     depth_remaining: usize,
@@ -385,7 +385,7 @@ fn print_subtree(
 // Validate
 // ---------------------------------------------------------------------------
 
-pub fn validate(store: &Store) -> Result<Vec<ValidationIssue>> {
+pub fn validate(store: &impl NodeStore) -> Result<Vec<ValidationIssue>> {
     let mut issues = Vec::new();
 
     // Load all nodes
@@ -395,7 +395,7 @@ pub fn validate(store: &Store) -> Result<Vec<ValidationIssue>> {
     let profile_ids = store.list_ids(NodeType::Profile)?;
 
     fn load_all_or_warn<Id: Ord, T: serde::de::DeserializeOwned>(
-        store: &Store,
+        store: &impl NodeStore,
         ids: &[u64],
         node_type: NodeType,
         make_id: impl Fn(u64) -> Id,
@@ -708,5 +708,98 @@ fn check_required_fields(
                 ),
             });
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::HashMap;
+    use serde::de::DeserializeOwned;
+    use crate::model::{ShapeId, ConstraintId};
+    use crate::model::common::{Intent, Status};
+    use crate::store::NodeStore;
+
+    struct MockStore {
+        nodes: HashMap<(NodeType, u64), String>,
+    }
+
+    impl MockStore {
+        fn new() -> Self {
+            MockStore {
+                nodes: HashMap::new(),
+            }
+        }
+
+        fn insert<T: Serialize>(&mut self, node_type: NodeType, id: u64, node: &T) {
+            let yaml = serde_yml::to_string(node).unwrap();
+            self.nodes.insert((node_type, id), yaml);
+        }
+    }
+
+    impl NodeStore for MockStore {
+        fn load<T: DeserializeOwned>(&self, node_type: NodeType, id: u64) -> Result<T> {
+            let yaml = self
+                .nodes
+                .get(&(node_type, id))
+                .ok_or_else(|| anyhow::anyhow!("{} {} not found", node_type, id))?;
+            Ok(serde_yml::from_str(yaml)?)
+        }
+
+        fn list_ids(&self, node_type: NodeType) -> Result<Vec<u64>> {
+            let mut ids: Vec<u64> = self
+                .nodes
+                .keys()
+                .filter(|(nt, _)| *nt == node_type)
+                .map(|(_, id)| *id)
+                .collect();
+            ids.sort();
+            Ok(ids)
+        }
+    }
+
+    fn make_shape(id: u64) -> Shape {
+        Shape {
+            id: ShapeId::new(id),
+            name: format!("shape-{id}"),
+            description: format!("shape-{id}"),
+            profile: None,
+            version: None,
+            predecessors: vec![],
+            status: Status::proposed(),
+            intent: Intent {
+                kind: "feature".into(),
+                summary: format!("shape-{id}"),
+                source: serde_yml::Value::String("human".into()),
+                uris: vec![],
+                extra: Default::default(),
+            },
+            constraints: vec![],
+            realization: vec![],
+            evidence: vec![],
+            provenance: vec![],
+            amendment_log: vec![],
+            parents: vec![],
+            children: vec![],
+            metadata: BTreeMap::new(),
+        }
+    }
+
+    #[test]
+    fn validate_detects_dangling_constraint_ref() {
+        let mut store = MockStore::new();
+        let mut shape = make_shape(1);
+        shape.constraints = vec![ConstraintId::new(999)]; // dangling
+        store.insert(NodeType::Shape, 1, &shape);
+
+        let issues = validate(&store).unwrap();
+        assert!(issues.iter().any(|i| i.invariant == "INV-003"));
+    }
+
+    #[test]
+    fn validate_clean_graph() {
+        let store = MockStore::new();
+        let issues = validate(&store).unwrap();
+        assert!(issues.is_empty());
     }
 }

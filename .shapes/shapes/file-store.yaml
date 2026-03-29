@@ -34,6 +34,7 @@ constraints:
   - 5
   - 8
   - 12
+  - 15
 parents:
   - id: 1
     role: component
@@ -42,5 +43,5 @@ realization:
       - scheme: path
         value: src/store.rs
         metadata:
-          summary: Store implementation using serde_yml — scans YAML files by id field content, generates {id}-{slug}.yaml filenames to prevent collisions, derives next ID by scanning (max + 1). Meta tracks only protocol version.
+          summary: NodeStore trait (load, list_ids, next_id, load_all) + FileStore impl. Scans YAML files by id field, generates {id}-{slug}.yaml filenames. MockStore in dag.rs tests.
     role: primary
