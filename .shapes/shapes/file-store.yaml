@@ -38,6 +38,9 @@ constraints:
 parents:
   - id: 1
     role: component
+children:
+  - shape: 31
+    role: feature
 realization:
   - bindings:
       - scheme: path

@@ -1,0 +1,14 @@
+id: 31
+name: Lazy Store Loading
+description: >-
+  Add lazy/streaming node loading for large stores. Currently
+  build_adjacency and validate load all nodes of a type upfront which
+  is fine for hundreds of nodes but would need lazy loading for thousands.
+status: proposed
+intent:
+  kind: feature
+  summary: Add lazy/streaming node loading for large stores instead of loading all nodes upfront
+  source: human
+parents:
+  - id: 3
+    role: feature

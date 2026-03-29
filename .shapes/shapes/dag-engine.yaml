@@ -52,5 +52,5 @@ realization:
       - scheme: path
         value: src/commands/dag.rs
         metadata:
-          summary: DAG algorithms — validate() with ValidationIssue carrying `invariant` field (INV-001 through INV-011), duplicate ID detection (INV-011), reciprocal link check upgraded to error severity, ancestors(), descendants(), effective_constraints(), print_tree(), cycle detection
+          summary: DAG module split into walk.rs (ancestors, descendants, effective_constraints, shapes_for_constraint), tree.rs (print_tree), validate.rs (validate, cycle detection, profile fields). Tests in tests.rs with MockStore.
     role: primary
