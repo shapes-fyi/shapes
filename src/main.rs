@@ -137,6 +137,9 @@ enum CreateCommand {
         /// Origin: human, ai, or system
         #[arg(long, default_value = "human")]
         source: String,
+        /// Apply a governance profile by ID — sets profile reference and pre-populates required fields
+        #[arg(long, conflicts_with = "from")]
+        profile: Option<u64>,
         /// Full description (defaults to name if omitted)
         #[arg(long)]
         description: Option<String>,
@@ -171,6 +174,9 @@ enum CreateCommand {
         /// Intent kind — classifies the purpose of this constraint's intent (defaults to --kind value)
         #[arg(long)]
         intent_kind: Option<String>,
+        /// Apply a governance profile by ID — sets profile reference and pre-populates required fields
+        #[arg(long, conflicts_with = "from")]
+        profile: Option<u64>,
         /// Full description (defaults to name if omitted)
         #[arg(long)]
         description: Option<String>,
@@ -263,6 +269,12 @@ enum QueryCommand {
     Constraints {
         /// Shape ID to query constraints for
         shape_id: u64,
+    },
+    /// Find all shapes that are governed by a constraint — both direct references and inherited.
+    /// This is the reverse of `query constraints`: given a constraint, which shapes must satisfy it?
+    ShapesForConstraint {
+        /// Constraint ID to look up
+        constraint_id: u64,
     },
 }
 

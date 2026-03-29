@@ -205,6 +205,78 @@ pub struct ConstraintWithSource {
 }
 
 // ---------------------------------------------------------------------------
+// Reverse query: which shapes reference a constraint?
+// ---------------------------------------------------------------------------
+
+pub fn shapes_for_constraint(store: &impl NodeStore, constraint_id: u64) -> Result<Vec<ShapeForConstraint>> {
+    // Verify the constraint exists
+    let _: Constraint = store.load(NodeType::Constraint, constraint_id)?;
+
+    // Load all shapes
+    let shape_ids = store.list_ids(NodeType::Shape)?;
+    let mut shapes_map: BTreeMap<u64, Shape> = BTreeMap::new();
+    let mut direct_shapes: HashSet<u64> = HashSet::new();
+
+    let cid = ConstraintId::new(constraint_id);
+    for &sid in &shape_ids {
+        if let Ok(shape) = store.load::<Shape>(NodeType::Shape, sid) {
+            if shape.constraints.contains(&cid) {
+                direct_shapes.insert(sid);
+            }
+            shapes_map.insert(sid, shape);
+        }
+    }
+
+    // Find all descendants of direct shapes (they inherit the constraint)
+    let mut inherited_shapes: HashSet<u64> = HashSet::new();
+    for &direct_id in &direct_shapes {
+        let mut queue = VecDeque::new();
+        let mut visited = HashSet::new();
+        if let Some(s) = shapes_map.get(&direct_id) {
+            for child_id in s.child_ids() {
+                queue.push_back(child_id.get());
+            }
+        }
+        while let Some(current) = queue.pop_front() {
+            if !visited.insert(current) {
+                continue;
+            }
+            if !direct_shapes.contains(&current) {
+                inherited_shapes.insert(current);
+            }
+            if let Some(s) = shapes_map.get(&current) {
+                for child_id in s.child_ids() {
+                    queue.push_back(child_id.get());
+                }
+            }
+        }
+    }
+
+    // Build result
+    let mut result = Vec::new();
+    for &sid in direct_shapes.iter().chain(inherited_shapes.iter()) {
+        let name = shapes_map
+            .get(&sid)
+            .map(|s| s.name.clone())
+            .unwrap_or_else(|| "???".into());
+        result.push(ShapeForConstraint {
+            shape_id: sid,
+            shape_name: name,
+            inherited: !direct_shapes.contains(&sid),
+        });
+    }
+    result.sort_by_key(|r| r.shape_id);
+    Ok(result)
+}
+
+#[derive(Debug, Serialize)]
+pub struct ShapeForConstraint {
+    pub shape_id: u64,
+    pub shape_name: String,
+    pub inherited: bool,
+}
+
+// ---------------------------------------------------------------------------
 // Tree
 // ---------------------------------------------------------------------------
 

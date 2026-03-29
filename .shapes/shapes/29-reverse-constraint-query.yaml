@@ -1,0 +1,21 @@
+id: 29
+name: Reverse Constraint Query
+description: >-
+  The query shapes-for-constraint command scans all shapes to find which
+  ones reference a given constraint, distinguishing direct references from
+  inherited ones. Output format matches ConstraintWithSource pattern.
+status: proposed
+intent:
+  kind: feature
+  summary: query shapes-for-constraint returns shapes referencing a constraint with inheritance tracking
+  source: human
+parents:
+  - id: 5
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/dag.rs
+        metadata:
+          summary: shapes_for_constraint function and ShapeForConstraint output struct
+    role: primary

@@ -5,9 +5,10 @@ use std::io::Read;
 use anyhow::Result;
 use serde::Serialize;
 
-use crate::error::{CliError, ValidationError};
+use crate::error::{CliError, CreateError, ValidationError};
 use crate::model::*;
 use crate::model::{ShapeId, ConstraintId, AmendmentId, ProfileId, InitiatedType};
+use crate::model::profile::{FieldGroup, FieldSection};
 use crate::store::{FileStore, NodeStore};
 use crate::{CreateCommand, DagType, OutputFormat, QueryCommand};
 
@@ -44,6 +45,94 @@ fn open_store() -> Result<FileStore> {
 }
 
 // ---------------------------------------------------------------------------
+// Profile helpers for create commands
+// ---------------------------------------------------------------------------
+
+fn load_profile(store: &impl NodeStore, profile_id: u64) -> Result<Profile, CreateError> {
+    store
+        .load::<Profile>(NodeType::Profile, profile_id)
+        .map_err(|_| CreateError::ProfileNotFound { id: profile_id })
+}
+
+fn validate_kind_against_profile(
+    profile: &Profile,
+    node_type_str: &str,
+    kind: &str,
+) -> Result<(), CreateError> {
+    let fields = match &profile.fields {
+        Some(f) => f,
+        None => return Ok(()),
+    };
+    let section: &FieldSection = match node_type_str {
+        "shape" => match &fields.shape {
+            Some(s) => s,
+            None => return Ok(()),
+        },
+        "constraint" => match &fields.constraint {
+            Some(s) => s,
+            None => return Ok(()),
+        },
+        _ => return Ok(()),
+    };
+    if let Some(ref group) = section.intent
+        && !group.kinds.is_empty()
+        && !group.kinds.iter().any(|k| k.name == kind)
+    {
+        let allowed: Vec<&str> = group.kinds.iter().map(|k| k.name.as_str()).collect();
+        return Err(CreateError::InvalidKind {
+            kind: kind.to_string(),
+            profile_id: profile.id.get(),
+            allowed: allowed.join(", "),
+        });
+    }
+    Ok(())
+}
+
+fn apply_profile_fields(
+    profile: &Profile,
+    node_type_str: &str,
+    intent_extra: &mut BTreeMap<String, serde_yml::Value>,
+    metadata: &mut BTreeMap<String, serde_yml::Value>,
+) {
+    let fields = match &profile.fields {
+        Some(f) => f,
+        None => return,
+    };
+    let section: &FieldSection = match node_type_str {
+        "shape" => match &fields.shape {
+            Some(s) => s,
+            None => return,
+        },
+        "constraint" => match &fields.constraint {
+            Some(s) => s,
+            None => return,
+        },
+        _ => return,
+    };
+    if let Some(ref group) = section.intent {
+        apply_field_group(group, intent_extra);
+    }
+    if let Some(ref group) = section.metadata {
+        apply_field_group(group, metadata);
+    }
+}
+
+fn apply_field_group(
+    group: &FieldGroup,
+    map: &mut BTreeMap<String, serde_yml::Value>,
+) {
+    for fd in &group.fields {
+        if map.contains_key(&fd.name) {
+            continue;
+        }
+        if fd.required {
+            let placeholder = format!("TODO: {}", fd.description);
+            map.insert(fd.name.clone(), serde_yml::Value::String(placeholder));
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // init
 // ---------------------------------------------------------------------------
 
@@ -67,6 +156,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             kind,
             summary,
             source,
+            profile,
             description,
             from,
         } => {
@@ -77,11 +167,27 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                 s.id = id;
                 s
             } else {
+                let loaded_profile = match profile {
+                    Some(pid) => Some(load_profile(&store, pid)?),
+                    None => None,
+                };
+
+                if let Some(ref p) = loaded_profile {
+                    validate_kind_against_profile(p, "shape", &kind)?;
+                }
+
+                let mut intent_extra: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
+                let mut metadata: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
+
+                if let Some(ref p) = loaded_profile {
+                    apply_profile_fields(p, "shape", &mut intent_extra, &mut metadata);
+                }
+
                 Shape {
                     id,
                     name: name.clone(),
                     description: description.unwrap_or_else(|| name.clone()),
-                    profile: None,
+                    profile: profile.map(ProfileId::new),
                     version: None,
                     predecessors: vec![],
                     status: Status::proposed(),
@@ -90,7 +196,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                         summary: summary.unwrap_or(name),
                         source: serde_yml::Value::String(source),
                         uris: vec![],
-                        extra: Default::default(),
+                        extra: intent_extra,
                     },
                     constraints: vec![],
                     realization: vec![],
@@ -99,7 +205,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     amendment_log: vec![],
                     parents: vec![],
                     children: vec![],
-                    metadata: BTreeMap::new(),
+                    metadata,
                 }
             };
             let path = store.save(NodeType::Shape, id.get(), &shape)?;
@@ -119,6 +225,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             summary,
             source,
             intent_kind,
+            profile,
             description,
             from,
         } => {
@@ -129,6 +236,22 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                 c.id = id;
                 c
             } else {
+                let loaded_profile = match profile {
+                    Some(pid) => Some(load_profile(&store, pid)?),
+                    None => None,
+                };
+
+                if let Some(ref p) = loaded_profile {
+                    validate_kind_against_profile(p, "constraint", &kind)?;
+                }
+
+                let mut intent_extra: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
+                let mut metadata: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
+
+                if let Some(ref p) = loaded_profile {
+                    apply_profile_fields(p, "constraint", &mut intent_extra, &mut metadata);
+                }
+
                 let resolved_intent_kind = intent_kind.unwrap_or_else(|| kind.clone());
                 Constraint {
                     id,
@@ -137,7 +260,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     kind,
                     rule: rule.unwrap_or_default(),
                     enforcement,
-                    profile: None,
+                    profile: profile.map(ProfileId::new),
                     version: None,
                     status: Status::proposed(),
                     intent: Intent {
@@ -145,7 +268,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                         summary: summary.unwrap_or(name),
                         source: serde_yml::Value::String(source),
                         uris: vec![],
-                        extra: Default::default(),
+                        extra: intent_extra,
                     },
                     realization: vec![],
                     evidence: vec![],
@@ -153,7 +276,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     amendment_log: vec![],
                     parents: vec![],
                     children: vec![],
-                    metadata: BTreeMap::new(),
+                    metadata,
                 }
             };
             let path = store.save(NodeType::Constraint, id.get(), &constraint)?;
@@ -392,6 +515,10 @@ pub fn query(op: QueryCommand, format: OutputFormat) -> Result<()> {
         }
         QueryCommand::Constraints { shape_id } => {
             let result = dag::effective_constraints(&store, shape_id)?;
+            output(&result, format)
+        }
+        QueryCommand::ShapesForConstraint { constraint_id } => {
+            let result = dag::shapes_for_constraint(&store, constraint_id)?;
             output(&result, format)
         }
     }

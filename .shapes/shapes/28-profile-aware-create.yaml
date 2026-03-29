@@ -1,0 +1,30 @@
+id: 28
+name: Profile-Aware Create
+description: >-
+  The --profile flag on shape and constraint create commands loads the
+  referenced profile, validates the --kind value against allowed kinds,
+  and pre-populates required intent and metadata fields with TODO
+  placeholders. Optional fields are omitted. Conflicts with --from.
+status: proposed
+intent:
+  kind: feature
+  summary: >-
+    The --profile flag on shape/constraint create auto-populates required
+    fields and validates kinds against profile
+  source: human
+parents:
+  - id: 4
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/mod.rs
+        metadata:
+          summary: load_profile, validate_kind_against_profile, apply_profile_fields, apply_field_group helpers
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/main.rs
+        metadata:
+          summary: --profile flag on CreateCommand::Shape and CreateCommand::Constraint
+    role: supporting

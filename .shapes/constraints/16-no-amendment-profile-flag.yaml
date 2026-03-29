@@ -1,0 +1,11 @@
+id: 16
+name: No Amendment Profile Flag
+description: No Amendment Profile Flag
+kind: boundary
+rule: Amendments MUST NOT have a --profile flag unless the protocol spec adds a profile field to the Amendment schema
+enforcement: manual
+status: proposed
+intent:
+  kind: boundary
+  summary: Prevent premature --profile on amendment create
+  source: human

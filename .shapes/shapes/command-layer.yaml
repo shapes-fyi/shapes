@@ -31,6 +31,7 @@ intent:
 constraints:
   - 6
   - 9
+  - 16
 parents:
   - id: 1
     role: component
@@ -38,6 +39,8 @@ children:
   - shape: 12
     role: feature
   - shape: 13
+    role: feature
+  - shape: 28
     role: feature
 realization:
   - bindings:
