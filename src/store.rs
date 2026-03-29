@@ -28,7 +28,8 @@ pub trait NodeStore {
     }
 
     /// Load all nodes of a given type into a BTreeMap keyed by raw ID.
-    /// Reads each file exactly once — O(N) instead of O(N²) for bulk operations.
+    /// Default impl calls load() per ID. FileStore should override for O(N)
+    /// single-pass loading if performance matters for large stores.
     #[allow(dead_code)] // Available for future bulk operations
     fn load_all<T: DeserializeOwned>(&self, node_type: NodeType) -> Result<BTreeMap<u64, T>> {
         let ids = self.list_ids(node_type)?;

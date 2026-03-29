@@ -53,29 +53,29 @@ realization:
       - scheme: path
         value: src/model/shape.rs
         metadata:
-          summary: Shape struct with parent_ids()/child_ids() methods — Vec fields with serde default/skip_serializing_if
+          summary: Shape struct with parent_ids()/child_ids() methods, ShapeChildRef, ShapeRef enum (untagged). Vec fields with null-safe serde deserialization.
     role: primary
   - bindings:
       - scheme: path
         value: src/model/constraint.rs
         metadata:
-          summary: Constraint struct with parent_ids()/child_ids() methods — Vec fields with serde default/skip_serializing_if
+          summary: Constraint struct (kind, rule, Enforcement enum) with parent_ids()/child_ids() methods, ConstraintChildRef, ConstraintRef enum. Vec fields with null-safe serde deserialization.
     role: primary
   - bindings:
       - scheme: path
         value: src/model/amendment.rs
         metadata:
-          summary: Amendment struct — targets (shape/constraint/profile IDs), version_impact, InitiatedBy
+          summary: Amendment struct with AmendmentTargets, VersionImpact enum, InitiatedType enum, InitiatedBy. Vec fields with null-safe serde deserialization.
     role: primary
   - bindings:
       - scheme: path
         value: src/model/profile.rs
         metadata:
-          summary: Profile struct — Lifecycle, FieldDef, ProfileFields, FieldSection, Versioning, AmendmentRules
+          summary: Profile struct with Lifecycle, FieldDef, ProfileFields, FieldSection, FieldGroup, Versioning, AmendmentModel enum, AmendmentRules. Vec fields with null-safe serde deserialization.
     role: primary
   - bindings:
       - scheme: path
         value: src/model/common.rs
         metadata:
-          summary: Shared types — Status (7 states), Intent (open map), Binding, Realization, Evidence, Provenance, ParentRef. Vec/BTreeMap fields use serde default attributes.
+          summary: Shared types — Status enum (7 states) with custom serde, Intent (open map via serde_yml), Binding, Realization, Evidence, Provenance, ParentRef<Id>. null_to_default helper for null-safe Vec/BTreeMap deserialization.
     role: primary

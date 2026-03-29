@@ -215,7 +215,7 @@ pub fn shapes_for_constraint(store: &impl NodeStore, constraint_id: u64) -> Resu
             .map(|s| s.name.clone())
             .unwrap_or_else(|| "???".into());
         result.push(ShapeForConstraint {
-            shape_id: sid,
+            shape_id: ShapeId::new(sid),
             shape_name: name,
             inherited: !direct_shapes.contains(&sid),
         });
@@ -226,7 +226,7 @@ pub fn shapes_for_constraint(store: &impl NodeStore, constraint_id: u64) -> Resu
 
 #[derive(Debug, Serialize)]
 pub struct ShapeForConstraint {
-    pub shape_id: u64,
+    pub shape_id: ShapeId,
     pub shape_name: String,
     pub inherited: bool,
 }

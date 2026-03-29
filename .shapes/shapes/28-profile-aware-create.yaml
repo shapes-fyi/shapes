@@ -6,12 +6,21 @@ description: >-
   and pre-populates required intent and metadata fields with TODO
   placeholders. Optional fields are omitted. Conflicts with --from.
 status: proposed
+profile: 1
 intent:
   kind: feature
   summary: >-
     The --profile flag on shape/constraint create auto-populates required
     fields and validates kinds against profile
   source: human
+  goals: >-
+    Enable --profile flag on shape/constraint create to auto-populate
+    required fields from a governance profile and validate kind against
+    allowed kinds
+  rationale: >-
+    Without profile integration at creation time, users must manually add
+    all required fields after creating a node, which is error-prone and
+    tedious
 parents:
   - id: 4
     role: feature

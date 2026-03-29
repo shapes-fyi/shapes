@@ -181,7 +181,7 @@ enum CreateCommand {
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent_kind", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent-kind", "description"])]
         from: Option<String>,
     },
 
@@ -210,7 +210,7 @@ enum CreateCommand {
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "target-shape", "target-constraint", "summary", "source", "version_impact", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "target-shape", "target-constraint", "summary", "source", "version-impact", "description"])]
         from: Option<String>,
     },
 
@@ -232,7 +232,7 @@ enum CreateCommand {
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "summary", "source", "amendment_model", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "summary", "source", "amendment-model", "description"])]
         from: Option<String>,
     },
 }

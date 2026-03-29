@@ -5,7 +5,7 @@ description: >-
   Handles ID allocation via an auto-incrementing counter in meta.yaml, generic
   load/save operations for any node type, and directory listing. Each node type
   gets its own subdirectory (shapes/, constraints/, amendments/, profiles/) with
-  files named by ID (e.g., 1.yaml, 2.yaml).
+  files named as {id}-{slug}.yaml for uniqueness.
 profile: 1
 status: promoted
 intent:
