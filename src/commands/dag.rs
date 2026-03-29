@@ -394,37 +394,41 @@ pub fn validate(store: &Store) -> Result<Vec<ValidationIssue>> {
     let amendment_ids = store.list_ids(NodeType::Amendment)?;
     let profile_ids = store.list_ids(NodeType::Profile)?;
 
-    let shapes: BTreeMap<ShapeId, Shape> = shape_ids
-        .iter()
-        .filter_map(|&id| {
-            let sid = ShapeId::new(id);
-            store.load::<Shape>(NodeType::Shape, id).ok().map(|s| (sid, s))
-        })
-        .collect();
+    fn load_all_or_warn<Id: Ord, T: serde::de::DeserializeOwned>(
+        store: &Store,
+        ids: &[u64],
+        node_type: NodeType,
+        make_id: impl Fn(u64) -> Id,
+        issues: &mut Vec<ValidationIssue>,
+    ) -> BTreeMap<Id, T> {
+        let mut map = BTreeMap::new();
+        for &id in ids {
+            match store.load::<T>(node_type, id) {
+                Ok(node) => {
+                    map.insert(make_id(id), node);
+                }
+                Err(e) => {
+                    issues.push(ValidationIssue {
+                        invariant: "PARSE".into(),
+                        severity: Severity::Warning,
+                        node_type: node_type.to_string(),
+                        node_id: id.to_string(),
+                        message: format!("failed to parse: {e}"),
+                    });
+                }
+            }
+        }
+        map
+    }
 
-    let constraints: BTreeMap<ConstraintId, Constraint> = constraint_ids
-        .iter()
-        .filter_map(|&id| {
-            let cid = ConstraintId::new(id);
-            store.load::<Constraint>(NodeType::Constraint, id).ok().map(|c| (cid, c))
-        })
-        .collect();
-
-    let amendments: BTreeMap<AmendmentId, Amendment> = amendment_ids
-        .iter()
-        .filter_map(|&id| {
-            let aid = AmendmentId::new(id);
-            store.load::<Amendment>(NodeType::Amendment, id).ok().map(|a| (aid, a))
-        })
-        .collect();
-
-    let profiles: BTreeMap<ProfileId, Profile> = profile_ids
-        .iter()
-        .filter_map(|&id| {
-            let pid = ProfileId::new(id);
-            store.load::<Profile>(NodeType::Profile, id).ok().map(|p| (pid, p))
-        })
-        .collect();
+    let shapes: BTreeMap<ShapeId, Shape> =
+        load_all_or_warn(store, &shape_ids, NodeType::Shape, ShapeId::new, &mut issues);
+    let constraints: BTreeMap<ConstraintId, Constraint> =
+        load_all_or_warn(store, &constraint_ids, NodeType::Constraint, ConstraintId::new, &mut issues);
+    let amendments: BTreeMap<AmendmentId, Amendment> =
+        load_all_or_warn(store, &amendment_ids, NodeType::Amendment, AmendmentId::new, &mut issues);
+    let profiles: BTreeMap<ProfileId, Profile> =
+        load_all_or_warn(store, &profile_ids, NodeType::Profile, ProfileId::new, &mut issues);
 
     // --- ID uniqueness (INV-011) ---
     fn check_duplicate_ids(ids: &[u64], type_name: &str, issues: &mut Vec<ValidationIssue>) {

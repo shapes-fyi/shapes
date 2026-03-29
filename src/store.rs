@@ -152,7 +152,7 @@ impl Store {
             id.to_string()
         };
 
-        let path = self.type_dir(node_type).join(format!("{slug}.yaml"));
+        let path = self.type_dir(node_type).join(format!("{id}-{slug}.yaml"));
         fs::write(&path, &yaml).with_context(|| format!("failed to write {}", path.display()))?;
         Ok(path)
     }

@@ -117,6 +117,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             enforcement,
             summary,
             source,
+            intent_kind,
             description,
             from,
         } => {
@@ -127,6 +128,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                 c.id = id;
                 c
             } else {
+                let resolved_intent_kind = intent_kind.unwrap_or_else(|| kind.clone());
                 Constraint {
                     id,
                     name: name.clone(),
@@ -138,7 +140,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     version: None,
                     status: Status::proposed(),
                     intent: Intent {
-                        kind: "requirement".into(),
+                        kind: resolved_intent_kind,
                         summary: summary.unwrap_or(name),
                         source: serde_yml::Value::String(source),
                         uris: vec![],

@@ -166,11 +166,14 @@ enum CreateCommand {
         /// Origin: human, ai, or system
         #[arg(long, default_value = "human")]
         source: String,
+        /// Intent kind — classifies the purpose of this constraint's intent (defaults to --kind value)
+        #[arg(long)]
+        intent_kind: Option<String>,
         /// Full description (defaults to name if omitted)
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent_kind", "description"])]
         from: Option<String>,
     },
 
@@ -199,7 +202,7 @@ enum CreateCommand {
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "target_shapes", "target_constraints", "summary", "source", "version_impact", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "target-shape", "target-constraint", "summary", "source", "version_impact", "description"])]
         from: Option<String>,
     },
 

@@ -8,8 +8,9 @@ description: >-
   relationships are mirrored on both sides. Amendment validation confirms
   targets exist and are non-empty. Profile field validation checks that
   required fields declared in the Profile are present in governed nodes.
-  Returns a list of ValidationIssue structs with severity, node type, ID,
-  and message. Exit code 2 when issues are found.
+  Returns a list of ValidationIssue structs with typed Severity enum, node
+  type, ID, and message. YAML parse errors are reported as warnings instead
+  of being silently skipped. Exit code 2 when issues are found.
 profile: 1
 status: promoted
 intent:

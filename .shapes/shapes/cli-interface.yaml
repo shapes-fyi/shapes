@@ -42,5 +42,5 @@ realization:
       - scheme: path
         value: src/main.rs
         metadata:
-          summary: Cli struct (clap), Command enum with 7 subcommands, DagType enum, OutputFormat enum. tree defaults to shape DAG when no node_type given, validate supports --format json
+          summary: Cli struct (clap), Command enum with 7 subcommands, DagType/OutputFormat enums. Constraint create has --intent-kind flag. Amendment create has corrected conflicts_with_all arg names.
     role: primary
