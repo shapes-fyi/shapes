@@ -45,10 +45,28 @@ children:
     role: feature
   - shape: 13
     role: feature
+  - shape: 29
+    role: feature
 realization:
   - bindings:
       - scheme: path
-        value: src/commands/dag.rs
+        value: src/commands/dag/mod.rs
         metadata:
-          summary: DAG algorithms — validate() with ValidationIssue carrying `invariant` field (INV-001 through INV-011), duplicate ID detection (INV-011), reciprocal link check upgraded to error severity, ancestors(), descendants(), effective_constraints(), print_tree(), cycle detection
+          summary: Module root — re-exports public API for walk, tree, validate submodules
+      - scheme: path
+        value: src/commands/dag/walk.rs
+        metadata:
+          summary: Graph traversal — ancestors, descendants, effective_constraints, shapes_for_constraint with typed ConstraintWithSource and ShapeForConstraint outputs
+      - scheme: path
+        value: src/commands/dag/tree.rs
+        metadata:
+          summary: ASCII tree visualization — print_tree with find_roots, get_node_info, recursive print_subtree
+      - scheme: path
+        value: src/commands/dag/validate.rs
+        metadata:
+          summary: Graph validation — validate with load_all_or_warn, detect_cycles_in (generic over ID), check_required_fields, validate_profile_fields. Severity enum and ValidationIssue output type.
+      - scheme: path
+        value: src/commands/dag/tests.rs
+        metadata:
+          summary: MockStore (HashMap-based NodeStore impl) and validation tests
     role: primary

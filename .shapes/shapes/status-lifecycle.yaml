@@ -34,6 +34,9 @@ parents:
     role: pattern
   - id: 2
     role: pattern
+children:
+  - shape: 30
+    role: feature
 realization:
   - bindings:
       - scheme: path

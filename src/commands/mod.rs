@@ -5,8 +5,11 @@ use std::io::Read;
 use anyhow::Result;
 use serde::Serialize;
 
+use crate::error::{CliError, CreateError, ValidationError};
 use crate::model::*;
-use crate::store::Store;
+use crate::model::{ShapeId, ConstraintId, AmendmentId, ProfileId, InitiatedType};
+use crate::model::profile::{FieldGroup, FieldSection};
+use crate::store::{FileStore, NodeStore};
 use crate::{CreateCommand, DagType, OutputFormat, QueryCommand};
 
 mod dag;
@@ -37,8 +40,96 @@ fn read_from(path: &str) -> Result<String> {
     }
 }
 
-fn open_store() -> Result<Store> {
-    Store::open(&env::current_dir()?)
+fn open_store() -> Result<FileStore> {
+    FileStore::open(&env::current_dir()?)
+}
+
+// ---------------------------------------------------------------------------
+// Profile helpers for create commands
+// ---------------------------------------------------------------------------
+
+fn load_profile(store: &impl NodeStore, profile_id: u64) -> Result<Profile, CreateError> {
+    store
+        .load::<Profile>(NodeType::Profile, profile_id)
+        .map_err(|_| CreateError::ProfileNotFound { id: profile_id })
+}
+
+fn validate_kind_against_profile(
+    profile: &Profile,
+    node_type_str: &str,
+    kind: &str,
+) -> Result<(), CreateError> {
+    let fields = match &profile.fields {
+        Some(f) => f,
+        None => return Ok(()),
+    };
+    let section: &FieldSection = match node_type_str {
+        "shape" => match &fields.shape {
+            Some(s) => s,
+            None => return Ok(()),
+        },
+        "constraint" => match &fields.constraint {
+            Some(s) => s,
+            None => return Ok(()),
+        },
+        _ => return Ok(()),
+    };
+    if let Some(ref group) = section.intent
+        && !group.kinds.is_empty()
+        && !group.kinds.iter().any(|k| k.name == kind)
+    {
+        let allowed: Vec<&str> = group.kinds.iter().map(|k| k.name.as_str()).collect();
+        return Err(CreateError::InvalidKind {
+            kind: kind.to_string(),
+            profile_id: profile.id.get(),
+            allowed: allowed.join(", "),
+        });
+    }
+    Ok(())
+}
+
+fn apply_profile_fields(
+    profile: &Profile,
+    node_type_str: &str,
+    intent_extra: &mut BTreeMap<String, serde_yml::Value>,
+    metadata: &mut BTreeMap<String, serde_yml::Value>,
+) {
+    let fields = match &profile.fields {
+        Some(f) => f,
+        None => return,
+    };
+    let section: &FieldSection = match node_type_str {
+        "shape" => match &fields.shape {
+            Some(s) => s,
+            None => return,
+        },
+        "constraint" => match &fields.constraint {
+            Some(s) => s,
+            None => return,
+        },
+        _ => return,
+    };
+    if let Some(ref group) = section.intent {
+        apply_field_group(group, intent_extra);
+    }
+    if let Some(ref group) = section.metadata {
+        apply_field_group(group, metadata);
+    }
+}
+
+fn apply_field_group(
+    group: &FieldGroup,
+    map: &mut BTreeMap<String, serde_yml::Value>,
+) {
+    for fd in &group.fields {
+        if map.contains_key(&fd.name) {
+            continue;
+        }
+        if fd.required {
+            let placeholder = format!("TODO: {}", fd.description);
+            map.insert(fd.name.clone(), serde_yml::Value::String(placeholder));
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -47,7 +138,7 @@ fn open_store() -> Result<Store> {
 
 pub fn init() -> Result<()> {
     let dir = env::current_dir()?;
-    Store::init(&dir)?;
+    FileStore::init(&dir)?;
     eprintln!("Initialized .shapes/ in {}", dir.display());
     Ok(())
 }
@@ -65,21 +156,38 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             kind,
             summary,
             source,
+            profile,
             description,
             from,
         } => {
-            let id = store.next_id(NodeType::Shape)?;
+            let id = ShapeId::new(store.next_id(NodeType::Shape)?);
             let shape: Shape = if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut s: Shape = serde_yml::from_str(&content)?;
                 s.id = id;
                 s
             } else {
+                let loaded_profile = match profile {
+                    Some(pid) => Some(load_profile(&store, pid)?),
+                    None => None,
+                };
+
+                if let Some(ref p) = loaded_profile {
+                    validate_kind_against_profile(p, "shape", &kind)?;
+                }
+
+                let mut intent_extra: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
+                let mut metadata: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
+
+                if let Some(ref p) = loaded_profile {
+                    apply_profile_fields(p, "shape", &mut intent_extra, &mut metadata);
+                }
+
                 Shape {
                     id,
                     name: name.clone(),
                     description: description.unwrap_or_else(|| name.clone()),
-                    profile: None,
+                    profile: profile.map(ProfileId::new),
                     version: None,
                     predecessors: vec![],
                     status: Status::proposed(),
@@ -88,7 +196,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                         summary: summary.unwrap_or(name),
                         source: serde_yml::Value::String(source),
                         uris: vec![],
-                        extra: Default::default(),
+                        extra: intent_extra,
                     },
                     constraints: vec![],
                     realization: vec![],
@@ -97,10 +205,10 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     amendment_log: vec![],
                     parents: vec![],
                     children: vec![],
-                    metadata: BTreeMap::new(),
+                    metadata,
                 }
             };
-            let path = store.save(NodeType::Shape, id, &shape)?;
+            let path = store.save(NodeType::Shape, id.get(), &shape)?;
             if id_only {
                 println!("{id}");
             } else {
@@ -116,16 +224,35 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             enforcement,
             summary,
             source,
+            intent_kind,
+            profile,
             description,
             from,
         } => {
-            let id = store.next_id(NodeType::Constraint)?;
+            let id = ConstraintId::new(store.next_id(NodeType::Constraint)?);
             let constraint: Constraint = if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut c: Constraint = serde_yml::from_str(&content)?;
                 c.id = id;
                 c
             } else {
+                let loaded_profile = match profile {
+                    Some(pid) => Some(load_profile(&store, pid)?),
+                    None => None,
+                };
+
+                if let Some(ref p) = loaded_profile {
+                    validate_kind_against_profile(p, "constraint", &kind)?;
+                }
+
+                let mut intent_extra: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
+                let mut metadata: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
+
+                if let Some(ref p) = loaded_profile {
+                    apply_profile_fields(p, "constraint", &mut intent_extra, &mut metadata);
+                }
+
+                let resolved_intent_kind = intent_kind.unwrap_or_else(|| kind.clone());
                 Constraint {
                     id,
                     name: name.clone(),
@@ -133,15 +260,15 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     kind,
                     rule: rule.unwrap_or_default(),
                     enforcement,
-                    profile: None,
+                    profile: profile.map(ProfileId::new),
                     version: None,
                     status: Status::proposed(),
                     intent: Intent {
-                        kind: "requirement".into(),
+                        kind: resolved_intent_kind,
                         summary: summary.unwrap_or(name),
                         source: serde_yml::Value::String(source),
                         uris: vec![],
-                        extra: Default::default(),
+                        extra: intent_extra,
                     },
                     realization: vec![],
                     evidence: vec![],
@@ -149,10 +276,10 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     amendment_log: vec![],
                     parents: vec![],
                     children: vec![],
-                    metadata: BTreeMap::new(),
+                    metadata,
                 }
             };
-            let path = store.save(NodeType::Constraint, id, &constraint)?;
+            let path = store.save(NodeType::Constraint, id.get(), &constraint)?;
             if id_only {
                 println!("{id}");
             } else {
@@ -171,7 +298,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             description,
             from,
         } => {
-            let id = store.next_id(NodeType::Amendment)?;
+            let id = AmendmentId::new(store.next_id(NodeType::Amendment)?);
             let amendment: Amendment = if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut a: Amendment = serde_yml::from_str(&content)?;
@@ -201,14 +328,14 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     evidence: vec![],
                     provenance: vec![],
                     initiated_by: InitiatedBy {
-                        initiated_type: "human".into(),
+                        initiated_type: InitiatedType::Human,
                         identity: None,
                         provenance: None,
                     },
                     metadata: BTreeMap::new(),
                 }
             };
-            let path = store.save(NodeType::Amendment, id, &amendment)?;
+            let path = store.save(NodeType::Amendment, id.get(), &amendment)?;
             if id_only {
                 println!("{id}");
             } else {
@@ -225,7 +352,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             description,
             from,
         } => {
-            let id = store.next_id(NodeType::Profile)?;
+            let id = ProfileId::new(store.next_id(NodeType::Profile)?);
             let profile: Profile = if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut p: Profile = serde_yml::from_str(&content)?;
@@ -256,7 +383,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     metadata: BTreeMap::new(),
                 }
             };
-            let path = store.save(NodeType::Profile, id, &profile)?;
+            let path = store.save(NodeType::Profile, id.get(), &profile)?;
             if id_only {
                 println!("{id}");
             } else {
@@ -390,6 +517,10 @@ pub fn query(op: QueryCommand, format: OutputFormat) -> Result<()> {
             let result = dag::effective_constraints(&store, shape_id)?;
             output(&result, format)
         }
+        QueryCommand::ShapesForConstraint { constraint_id } => {
+            let result = dag::shapes_for_constraint(&store, constraint_id)?;
+            output(&result, format)
+        }
     }
 }
 
@@ -397,7 +528,7 @@ pub fn query(op: QueryCommand, format: OutputFormat) -> Result<()> {
 // validate
 // ---------------------------------------------------------------------------
 
-pub fn validate(format: OutputFormat) -> Result<()> {
+pub fn validate(format: OutputFormat) -> Result<(), CliError> {
     let store = open_store()?;
     let issues = dag::validate(&store)?;
     if issues.is_empty() {
@@ -407,18 +538,20 @@ pub fn validate(format: OutputFormat) -> Result<()> {
         }
         Ok(())
     } else {
+        let count = issues.len();
         match format {
             OutputFormat::Json => {
-                let json = serde_json::to_string_pretty(&issues)?;
+                let json = serde_json::to_string_pretty(&issues)
+                    .map_err(|e| CliError::Other(e.into()))?;
                 println!("{json}");
             }
             OutputFormat::Yaml => {
                 for issue in &issues {
                     eprintln!("{issue}");
                 }
-                eprintln!("{} validation issue(s) found", issues.len());
+                eprintln!("{count} validation issue(s) found");
             }
         }
-        std::process::exit(2);
+        Err(ValidationError::IssuesFound { count }.into())
     }
 }

@@ -1,0 +1,22 @@
+id: 15
+name: NodeStore Trait Boundary
+description: >-
+  The NodeStore trait abstracts read operations (load, list_ids) so DAG
+  algorithms can be tested with MockStore without filesystem access. All
+  read-only command logic must accept &impl NodeStore.
+kind: invariant
+rule: All read-only command logic (dag traversal, validation, tree) MUST accept &impl NodeStore, not a concrete FileStore type
+enforcement: machine
+status: proposed
+profile: 1
+intent:
+  kind: requirement
+  summary: Enforce trait-based store abstraction for testability
+  source: human
+  rationale: >-
+    Without a trait boundary, all DAG and validation logic is coupled to the
+    filesystem, making unit tests impossible without creating temporary
+    directories and YAML files
+  impact_if_violated: >-
+    Command logic becomes untestable in isolation; regression detection
+    requires slow filesystem-based integration tests

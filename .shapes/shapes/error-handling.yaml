@@ -1,0 +1,33 @@
+id: 27
+name: Error Handling
+description: >-
+  Structured error hierarchy using thiserror. Four error types: StoreError
+  (file I/O and persistence), CreateError (node creation failures including
+  profile validation), ValidationError (validation-as-operation control flow),
+  and CliError (top-level wrapper that maps errors to exit codes 0/1/2).
+  The CliError::Other variant wraps anyhow::Error for backward compatibility
+  during incremental migration from anyhow.
+status: promoted
+profile: 1
+intent:
+  kind: module
+  summary: Structured error hierarchy with thiserror for typed exit codes and domain-specific errors
+  source: human
+  goals: >-
+    Provide domain-specific error types that enable typed exit codes,
+    structured error messages, and incremental migration from anyhow.
+  rationale: >-
+    The validate command previously used process::exit(2) for control flow.
+    With CliError, exit codes are determined by error type via exit_code().
+constraints:
+  - 14
+parents:
+  - id: 1
+    role: component
+realization:
+  - bindings:
+      - scheme: path
+        value: src/error.rs
+        metadata:
+          summary: StoreError, CreateError, ValidationError, CliError enums with thiserror derives and exit_code() method
+    role: primary
