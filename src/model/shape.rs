@@ -16,26 +16,42 @@ pub struct Shape {
     pub profile: Option<ProfileId>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub predecessors: Option<Vec<ShapeId>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub predecessors: Vec<ShapeId>,
     pub status: Status,
     pub intent: Intent,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub constraints: Option<Vec<ConstraintId>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub realization: Option<Vec<Realization>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub evidence: Option<Vec<Evidence>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub provenance: Option<Vec<Provenance>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub amendment_log: Option<Vec<AmendmentId>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parents: Option<Vec<ParentRef<ShapeId>>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub children: Option<Vec<ShapeChildRef>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<BTreeMap<String, serde_yaml::Value>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub constraints: Vec<ConstraintId>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub realization: Vec<Realization>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub evidence: Vec<Evidence>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub provenance: Vec<Provenance>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub amendment_log: Vec<AmendmentId>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub parents: Vec<ParentRef<ShapeId>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub children: Vec<ShapeChildRef>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, serde_yml::Value>,
+}
+
+impl Shape {
+    pub fn parent_ids(&self) -> Vec<ShapeId> {
+        self.parents.iter().map(|p| p.id).collect()
+    }
+
+    pub fn child_ids(&self) -> Vec<ShapeId> {
+        self.children
+            .iter()
+            .map(|c| match &c.shape {
+                ShapeRef::Id(id) => *id,
+                ShapeRef::Inline(s) => s.id,
+            })
+            .collect()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

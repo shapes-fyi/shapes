@@ -80,7 +80,7 @@ impl Store {
 
         let meta = Meta::new();
         let meta_path = root.join(META_FILE);
-        let yaml = serde_yaml::to_string(&meta)?;
+        let yaml = serde_yml::to_string(&meta)?;
         fs::write(&meta_path, yaml).context("failed to write meta.yaml")?;
 
         Ok(Store { root })
@@ -123,10 +123,10 @@ impl Store {
         for path in self.yaml_files(node_type)? {
             let content = fs::read_to_string(&path)
                 .with_context(|| format!("failed to read {}", path.display()))?;
-            if let Ok(parsed) = serde_yaml::from_str::<IdOnly>(&content) {
-                if parsed.id == id {
-                    return Ok(path);
-                }
+            if let Ok(parsed) = serde_yml::from_str::<IdOnly>(&content)
+                && parsed.id == id
+            {
+                return Ok(path);
             }
         }
         bail!("{} {} not found", node_type, id)
@@ -138,15 +138,15 @@ impl Store {
     pub fn save<T: Serialize>(&self, node_type: NodeType, id: u64, node: &T) -> Result<PathBuf> {
         // If a file with this id already exists, overwrite it.
         if let Ok(existing) = self.find_file(node_type, id) {
-            let yaml = serde_yaml::to_string(node)?;
+            let yaml = serde_yml::to_string(node)?;
             fs::write(&existing, yaml)
                 .with_context(|| format!("failed to write {}", existing.display()))?;
             return Ok(existing);
         }
 
         // New node — serialize to extract the name for the filename.
-        let yaml = serde_yaml::to_string(node)?;
-        let slug = if let Ok(parsed) = serde_yaml::from_str::<IdAndName>(&yaml) {
+        let yaml = serde_yml::to_string(node)?;
+        let slug = if let Ok(parsed) = serde_yml::from_str::<IdAndName>(&yaml) {
             slugify(&parsed.name)
         } else {
             id.to_string()
@@ -162,7 +162,7 @@ impl Store {
         let path = self.find_file(node_type, id)?;
         let content = fs::read_to_string(&path)
             .with_context(|| format!("failed to read {}", path.display()))?;
-        Ok(serde_yaml::from_str(&content)?)
+        Ok(serde_yml::from_str(&content)?)
     }
 
     /// List all IDs for a given node type (sorted).
@@ -171,7 +171,7 @@ impl Store {
         for path in self.yaml_files(node_type)? {
             let content = fs::read_to_string(&path)
                 .with_context(|| format!("failed to read {}", path.display()))?;
-            if let Ok(parsed) = serde_yaml::from_str::<IdOnly>(&content) {
+            if let Ok(parsed) = serde_yml::from_str::<IdOnly>(&content) {
                 ids.push(parsed.id);
             }
         }
