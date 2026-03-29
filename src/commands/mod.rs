@@ -1,3 +1,4 @@
+use std::collections::BTreeMap;
 use std::env;
 use std::io::Read;
 
@@ -17,7 +18,7 @@ mod dag;
 fn output<T: Serialize>(value: &T, format: OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Yaml => {
-            print!("{}", serde_yaml::to_string(value)?);
+            print!("{}", serde_yml::to_string(value)?);
         }
         OutputFormat::Json => {
             println!("{}", serde_json::to_string_pretty(value)?);
@@ -70,7 +71,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             let id = store.next_id(NodeType::Shape)?;
             let shape: Shape = if let Some(path) = from {
                 let content = read_from(&path)?;
-                let mut s: Shape = serde_yaml::from_str(&content)?;
+                let mut s: Shape = serde_yml::from_str(&content)?;
                 s.id = id;
                 s
             } else {
@@ -80,23 +81,23 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     description: description.unwrap_or_else(|| name.clone()),
                     profile: None,
                     version: None,
-                    predecessors: None,
+                    predecessors: vec![],
                     status: Status::proposed(),
                     intent: Intent {
                         kind,
                         summary: summary.unwrap_or(name),
-                        source: serde_yaml::Value::String(source),
-                        uris: None,
+                        source: serde_yml::Value::String(source),
+                        uris: vec![],
                         extra: Default::default(),
                     },
-                    constraints: None,
-                    realization: None,
-                    evidence: None,
-                    provenance: None,
-                    amendment_log: None,
-                    parents: None,
-                    children: None,
-                    metadata: None,
+                    constraints: vec![],
+                    realization: vec![],
+                    evidence: vec![],
+                    provenance: vec![],
+                    amendment_log: vec![],
+                    parents: vec![],
+                    children: vec![],
+                    metadata: BTreeMap::new(),
                 }
             };
             let path = store.save(NodeType::Shape, id, &shape)?;
@@ -121,7 +122,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             let id = store.next_id(NodeType::Constraint)?;
             let constraint: Constraint = if let Some(path) = from {
                 let content = read_from(&path)?;
-                let mut c: Constraint = serde_yaml::from_str(&content)?;
+                let mut c: Constraint = serde_yml::from_str(&content)?;
                 c.id = id;
                 c
             } else {
@@ -138,17 +139,17 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     intent: Intent {
                         kind: "requirement".into(),
                         summary: summary.unwrap_or(name),
-                        source: serde_yaml::Value::String(source),
-                        uris: None,
+                        source: serde_yml::Value::String(source),
+                        uris: vec![],
                         extra: Default::default(),
                     },
-                    realization: None,
-                    evidence: None,
-                    provenance: None,
-                    amendment_log: None,
-                    parents: None,
-                    children: None,
-                    metadata: None,
+                    realization: vec![],
+                    evidence: vec![],
+                    provenance: vec![],
+                    amendment_log: vec![],
+                    parents: vec![],
+                    children: vec![],
+                    metadata: BTreeMap::new(),
                 }
             };
             let path = store.save(NodeType::Constraint, id, &constraint)?;
@@ -173,7 +174,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             let id = store.next_id(NodeType::Amendment)?;
             let amendment: Amendment = if let Some(path) = from {
                 let content = read_from(&path)?;
-                let mut a: Amendment = serde_yaml::from_str(&content)?;
+                let mut a: Amendment = serde_yml::from_str(&content)?;
                 a.id = id;
                 a
             } else {
@@ -182,37 +183,29 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     name: name.clone(),
                     description: description.unwrap_or_else(|| name.clone()),
                     targets: AmendmentTargets {
-                        shape_ids: if target_shapes.is_empty() {
-                            None
-                        } else {
-                            Some(target_shapes)
-                        },
-                        constraint_ids: if target_constraints.is_empty() {
-                            None
-                        } else {
-                            Some(target_constraints)
-                        },
-                        profile_ids: None,
+                        shape_ids: target_shapes,
+                        constraint_ids: target_constraints,
+                        profile_ids: vec![],
                     },
                     status: Status::proposed(),
                     version_impact,
                     intent: Intent {
                         kind: "amendment".into(),
                         summary: summary.unwrap_or(name),
-                        source: serde_yaml::Value::String(source),
-                        uris: None,
+                        source: serde_yml::Value::String(source),
+                        uris: vec![],
                         extra: Default::default(),
                     },
-                    constraints: None,
-                    realization: None,
-                    evidence: None,
-                    provenance: None,
+                    constraints: vec![],
+                    realization: vec![],
+                    evidence: vec![],
+                    provenance: vec![],
                     initiated_by: InitiatedBy {
                         initiated_type: "human".into(),
                         identity: None,
                         provenance: None,
                     },
-                    metadata: None,
+                    metadata: BTreeMap::new(),
                 }
             };
             let path = store.save(NodeType::Amendment, id, &amendment)?;
@@ -235,7 +228,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             let id = store.next_id(NodeType::Profile)?;
             let profile: Profile = if let Some(path) = from {
                 let content = read_from(&path)?;
-                let mut p: Profile = serde_yaml::from_str(&content)?;
+                let mut p: Profile = serde_yml::from_str(&content)?;
                 p.id = id;
                 p
             } else {
@@ -248,19 +241,19 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                     intent: Intent {
                         kind: "governance".into(),
                         summary: summary.unwrap_or(name),
-                        source: serde_yaml::Value::String(source),
-                        uris: None,
+                        source: serde_yml::Value::String(source),
+                        uris: vec![],
                         extra: Default::default(),
                     },
-                    provenance: None,
+                    provenance: vec![],
                     lifecycle: None,
                     fields: None,
                     versioning: None,
                     amendment_rules: Some(AmendmentRules {
                         application: amendment_model,
                     }),
-                    amendment_log: None,
-                    metadata: None,
+                    amendment_log: vec![],
+                    metadata: BTreeMap::new(),
                 }
             };
             let path = store.save(NodeType::Profile, id, &profile)?;

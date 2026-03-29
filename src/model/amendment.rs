@@ -17,34 +17,34 @@ pub struct Amendment {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version_impact: Option<String>,
     pub intent: Intent,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub constraints: Option<Vec<ConstraintId>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub realization: Option<Vec<Realization>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub evidence: Option<Vec<Evidence>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub provenance: Option<Vec<Provenance>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub constraints: Vec<ConstraintId>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub realization: Vec<Realization>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub evidence: Vec<Evidence>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub provenance: Vec<Provenance>,
     pub initiated_by: InitiatedBy,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<BTreeMap<String, serde_yaml::Value>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AmendmentTargets {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub shape_ids: Option<Vec<ShapeId>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub constraint_ids: Option<Vec<ConstraintId>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub profile_ids: Option<Vec<ProfileId>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub shape_ids: Vec<ShapeId>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub constraint_ids: Vec<ConstraintId>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub profile_ids: Vec<ProfileId>,
 }
 
 impl AmendmentTargets {
     pub fn is_empty(&self) -> bool {
-        self.shape_ids.as_ref().is_none_or(|v| v.is_empty())
-            && self.constraint_ids.as_ref().is_none_or(|v| v.is_empty())
-            && self.profile_ids.as_ref().is_none_or(|v| v.is_empty())
+        self.shape_ids.is_empty()
+            && self.constraint_ids.is_empty()
+            && self.profile_ids.is_empty()
     }
 }
 

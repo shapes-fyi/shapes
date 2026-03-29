@@ -11,9 +11,9 @@ pub type ProfileId = u64;
 
 pub use amendment::{Amendment, AmendmentTargets, InitiatedBy};
 pub use common::{Intent, Status};
-pub use constraint::{Constraint, ConstraintRef};
+pub use constraint::Constraint;
 pub use profile::{AmendmentRules, FieldGroup, Profile};
-pub use shape::{Shape, ShapeRef};
+pub use shape::Shape;
 
 use clap::ValueEnum;
 use serde::{Deserialize, Serialize};

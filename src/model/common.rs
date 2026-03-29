@@ -42,22 +42,24 @@ impl Status {
 pub struct StatusDetail {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub uris: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<BTreeMap<String, serde_yaml::Value>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub uris: Vec<String>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct TerminalDetail {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub uris: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub successors: Option<Vec<u64>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<BTreeMap<String, serde_yaml::Value>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub uris: Vec<String>,
+    /// Successor node IDs (same type as the owning node).
+    /// For shapes, these are ShapeId values; for constraints, ConstraintId values.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub successors: Vec<u64>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
 // Custom Serialize: if detail is default, emit bare string; otherwise tagged map.
@@ -171,11 +173,11 @@ const VALID_STATUSES: &[&str] = &[
 pub struct Intent {
     pub kind: String,
     pub summary: String,
-    pub source: serde_yaml::Value,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub uris: Option<Vec<String>>,
+    pub source: serde_yml::Value,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub uris: Vec<String>,
     #[serde(flatten)]
-    pub extra: BTreeMap<String, serde_yaml::Value>,
+    pub extra: BTreeMap<String, serde_yml::Value>,
 }
 
 // ---------------------------------------------------------------------------
@@ -199,8 +201,8 @@ pub struct ParentRef<Id> {
 pub struct Binding {
     pub scheme: String,
     pub value: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<BTreeMap<String, serde_yaml::Value>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -211,14 +213,17 @@ pub struct Realization {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Evidence {
+    /// Unique identifier for this evidence record within its parent node's
+    /// evidence array. This is a freeform string (e.g., "test-suite-pass"),
+    /// NOT a node ID.
     pub id: String,
     #[serde(rename = "type")]
     pub evidence_type: String,
     pub bindings: Vec<Binding>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trusted: Option<bool>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<BTreeMap<String, serde_yaml::Value>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -226,8 +231,8 @@ pub struct Provenance {
     #[serde(rename = "type")]
     pub provenance_type: String,
     pub bindings: Vec<Binding>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<BTreeMap<String, serde_yaml::Value>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
 #[cfg(test)]
@@ -237,9 +242,9 @@ mod tests {
     #[test]
     fn status_roundtrip_bare_string() {
         let status = Status::proposed();
-        let yaml = serde_yaml::to_string(&status).unwrap();
+        let yaml = serde_yml::to_string(&status).unwrap();
         assert_eq!(yaml.trim(), "proposed");
-        let parsed: Status = serde_yaml::from_str(&yaml).unwrap();
+        let parsed: Status = serde_yml::from_str(&yaml).unwrap();
         assert_eq!(parsed, status);
     }
 
@@ -247,16 +252,16 @@ mod tests {
     fn status_roundtrip_with_detail() {
         let status = Status::Canonical(StatusDetail {
             reason: Some("passed review".into()),
-            uris: None,
-            metadata: Some(BTreeMap::from([(
+            uris: vec![],
+            metadata: BTreeMap::from([(
                 "date".into(),
-                serde_yaml::Value::String("2025-12-01".into()),
-            )])),
+                serde_yml::Value::String("2025-12-01".into()),
+            )]),
         });
-        let yaml = serde_yaml::to_string(&status).unwrap();
+        let yaml = serde_yml::to_string(&status).unwrap();
         assert!(yaml.contains("canonical"));
         assert!(yaml.contains("passed review"));
-        let parsed: Status = serde_yaml::from_str(&yaml).unwrap();
+        let parsed: Status = serde_yml::from_str(&yaml).unwrap();
         assert_eq!(parsed, status);
     }
 
@@ -264,13 +269,13 @@ mod tests {
     fn status_roundtrip_terminal() {
         let status = Status::Superseded(TerminalDetail {
             reason: Some("replaced".into()),
-            successors: Some(vec![5, 6]),
-            uris: None,
-            metadata: None,
+            successors: vec![5, 6],
+            uris: vec![],
+            metadata: BTreeMap::new(),
         });
-        let yaml = serde_yaml::to_string(&status).unwrap();
+        let yaml = serde_yml::to_string(&status).unwrap();
         assert!(yaml.contains("superseded"));
-        let parsed: Status = serde_yaml::from_str(&yaml).unwrap();
+        let parsed: Status = serde_yml::from_str(&yaml).unwrap();
         assert_eq!(parsed, status);
     }
 
@@ -279,18 +284,18 @@ mod tests {
         let intent = Intent {
             kind: "feature".into(),
             summary: "Add auth".into(),
-            source: serde_yaml::Value::String("human".into()),
-            uris: None,
+            source: serde_yml::Value::String("human".into()),
+            uris: vec![],
             extra: BTreeMap::from([(
                 "goals".into(),
-                serde_yaml::Value::Sequence(vec![serde_yaml::Value::String(
+                serde_yml::Value::Sequence(vec![serde_yml::Value::String(
                     "SSO support".into(),
                 )]),
             )]),
         };
-        let yaml = serde_yaml::to_string(&intent).unwrap();
+        let yaml = serde_yml::to_string(&intent).unwrap();
         assert!(yaml.contains("goals"));
-        let parsed: Intent = serde_yaml::from_str(&yaml).unwrap();
+        let parsed: Intent = serde_yml::from_str(&yaml).unwrap();
         assert_eq!(parsed, intent);
     }
 }

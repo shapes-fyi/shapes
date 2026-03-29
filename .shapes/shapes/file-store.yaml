@@ -42,5 +42,5 @@ realization:
       - scheme: path
         value: src/store.rs
         metadata:
-          summary: Store implementation — scans YAML files by id field content, generates slug filenames from names, derives next ID by scanning (max + 1). Meta tracks only protocol version.
+          summary: Store implementation using serde_yml — scans YAML files by id field content, generates slug filenames from names, derives next ID by scanning (max + 1). Meta tracks only protocol version.
     role: primary

@@ -16,8 +16,8 @@ pub struct Profile {
     pub version: Option<String>,
     pub status: Status,
     pub intent: Intent,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub provenance: Option<Vec<Provenance>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub provenance: Vec<Provenance>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lifecycle: Option<Lifecycle>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -26,10 +26,10 @@ pub struct Profile {
     pub versioning: Option<Versioning>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub amendment_rules: Option<AmendmentRules>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub amendment_log: Option<Vec<AmendmentId>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<BTreeMap<String, serde_yaml::Value>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub amendment_log: Vec<AmendmentId>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
 // ---------------------------------------------------------------------------
@@ -38,10 +38,10 @@ pub struct Profile {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Lifecycle {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub statuses: Option<Vec<StatusDef>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub gates: Option<Vec<Gate>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub statuses: Vec<StatusDef>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub gates: Vec<Gate>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -56,10 +56,10 @@ pub struct StatusDef {
 pub struct Gate {
     pub from: String,
     pub to: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub preconditions: Option<Vec<String>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub postconditions: Option<Vec<String>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub preconditions: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub postconditions: Vec<String>,
 }
 
 // ---------------------------------------------------------------------------
@@ -104,12 +104,12 @@ pub struct FieldSection {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FieldGroup {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub fields: Option<Vec<FieldDef>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub kinds: Option<Vec<FieldDef>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sources: Option<Vec<FieldDef>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub fields: Vec<FieldDef>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub kinds: Vec<FieldDef>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sources: Vec<FieldDef>,
 }
 
 // ---------------------------------------------------------------------------

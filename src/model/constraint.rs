@@ -21,20 +21,36 @@ pub struct Constraint {
     pub version: Option<String>,
     pub status: Status,
     pub intent: Intent,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub realization: Option<Vec<Realization>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub evidence: Option<Vec<Evidence>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub provenance: Option<Vec<Provenance>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub amendment_log: Option<Vec<AmendmentId>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parents: Option<Vec<ParentRef<ConstraintId>>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub children: Option<Vec<ConstraintChildRef>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub metadata: Option<BTreeMap<String, serde_yaml::Value>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub realization: Vec<Realization>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub evidence: Vec<Evidence>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub provenance: Vec<Provenance>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub amendment_log: Vec<AmendmentId>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub parents: Vec<ParentRef<ConstraintId>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub children: Vec<ConstraintChildRef>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub metadata: BTreeMap<String, serde_yml::Value>,
+}
+
+impl Constraint {
+    pub fn parent_ids(&self) -> Vec<ConstraintId> {
+        self.parents.iter().map(|p| p.id).collect()
+    }
+
+    pub fn child_ids(&self) -> Vec<ConstraintId> {
+        self.children
+            .iter()
+            .map(|ch| match &ch.constraint {
+                ConstraintRef::Id(id) => *id,
+                ConstraintRef::Inline(c) => c.id,
+            })
+            .collect()
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
