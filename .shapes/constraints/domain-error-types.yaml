@@ -1,0 +1,11 @@
+id: 14
+name: Domain Error Types
+description: Domain Error Types
+kind: guideline
+rule: All new command functions SHOULD return domain-specific error types (StoreError, CreateError, ValidationError) rather than anyhow::Result
+enforcement: manual
+status: proposed
+intent:
+  kind: requirement
+  summary: Prefer structured error types over anyhow for new code
+  source: human

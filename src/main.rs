@@ -1,11 +1,13 @@
 mod commands;
+mod error;
 mod model;
 mod store;
 
-use std::process;
+use std::process::ExitCode;
 
-use anyhow::Result;
 use clap::{Parser, Subcommand, ValueEnum};
+
+use error::CliError;
 
 use model::{AmendmentModel, ConstraintId, Enforcement, NodeType, ShapeId, VersionImpact};
 
@@ -264,36 +266,41 @@ enum QueryCommand {
     },
 }
 
-fn main() {
+fn main() -> ExitCode {
     let cli = Cli::parse();
-    if let Err(e) = run(cli) {
-        eprintln!("Error: {e:#}");
-        process::exit(1);
+    match run(cli) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("Error: {e}");
+            e.exit_code()
+        }
     }
 }
 
-fn run(cli: Cli) -> Result<()> {
+fn run(cli: Cli) -> Result<(), CliError> {
     match cli.command {
-        Command::Init => commands::init(),
+        Command::Init => commands::init()?,
 
-        Command::Create { node, id_only } => commands::create(node, id_only, cli.format),
+        Command::Create { node, id_only } => commands::create(node, id_only, cli.format)?,
 
-        Command::Get { node_type, id } => commands::get(node_type, id, cli.format),
+        Command::Get { node_type, id } => commands::get(node_type, id, cli.format)?,
 
         Command::List {
             node_type,
             status,
             kind,
-        } => commands::list(node_type, status, kind, cli.format),
+        } => commands::list(node_type, status, kind, cli.format)?,
 
         Command::Tree {
             node_type,
             root,
             depth,
-        } => commands::tree(node_type, root, depth),
+        } => commands::tree(node_type, root, depth)?,
 
-        Command::Query { operation } => commands::query(operation, cli.format),
+        Command::Query { operation } => commands::query(operation, cli.format)?,
 
-        Command::Validate => commands::validate(cli.format),
+        Command::Validate => commands::validate(cli.format)?,
     }
+
+    Ok(())
 }

@@ -38,6 +38,7 @@ constraints:
   - 8
   - 9
   - 11
+  - 14
 children:
   - shape: 2
     role: component
@@ -64,6 +65,8 @@ children:
   - shape: 21
     role: component
   - shape: 23
+    role: component
+  - shape: 27
     role: component
 realization:
   - bindings:

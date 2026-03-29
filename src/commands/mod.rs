@@ -5,6 +5,7 @@ use std::io::Read;
 use anyhow::Result;
 use serde::Serialize;
 
+use crate::error::{CliError, ValidationError};
 use crate::model::*;
 use crate::model::{ShapeId, ConstraintId, AmendmentId, ProfileId, InitiatedType};
 use crate::store::Store;
@@ -400,7 +401,7 @@ pub fn query(op: QueryCommand, format: OutputFormat) -> Result<()> {
 // validate
 // ---------------------------------------------------------------------------
 
-pub fn validate(format: OutputFormat) -> Result<()> {
+pub fn validate(format: OutputFormat) -> Result<(), CliError> {
     let store = open_store()?;
     let issues = dag::validate(&store)?;
     if issues.is_empty() {
@@ -410,18 +411,20 @@ pub fn validate(format: OutputFormat) -> Result<()> {
         }
         Ok(())
     } else {
+        let count = issues.len();
         match format {
             OutputFormat::Json => {
-                let json = serde_json::to_string_pretty(&issues)?;
+                let json = serde_json::to_string_pretty(&issues)
+                    .map_err(|e| CliError::Other(e.into()))?;
                 println!("{json}");
             }
             OutputFormat::Yaml => {
                 for issue in &issues {
                     eprintln!("{issue}");
                 }
-                eprintln!("{} validation issue(s) found", issues.len());
+                eprintln!("{count} validation issue(s) found");
             }
         }
-        std::process::exit(2);
+        Err(ValidationError::IssuesFound { count }.into())
     }
 }
