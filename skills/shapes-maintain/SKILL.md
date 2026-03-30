@@ -1,18 +1,21 @@
 ---
 name: shapes-maintain
 description: >
-  Keeps the shapes graph in sync with code changes. Triggers when editing
-  source files, creating new files, refactoring code, preparing git commits,
-  or completing coding tasks in a project with a .shapes/ directory. Provides
-  the decision framework for when to create shapes, amendments, or constraints
-  vs editing existing nodes, and ensures the graph stays valid and current.
+  Keeps the shapes graph in sync with code changes. Triggers when planning
+  work in the graph, editing source files, creating new files, refactoring
+  code, preparing git commits, or completing coding tasks in a project with
+  a .shapes/ directory. Provides the decision framework for when to create
+  shapes, amendments, or constraints before writing code, how to bind
+  realizations after, and ensures the graph stays valid and current.
 user-invocable: true
 ---
 
 # Keeping the Shapes Graph in Sync
 
-Every code change in a shapes project should be reflected in the graph.
-This is not a separate maintenance step — it happens as you code.
+Shapes are planned before code is written. After implementation, the graph
+needs realizations bound, summaries updated, and validation passed. This
+skill handles that post-implementation sync and the ongoing decision
+framework for how to evolve the graph.
 
 ## Contents
 
@@ -24,18 +27,26 @@ This is not a separate maintenance step — it happens as you code.
 
 ## Decision Framework
 
-| What you did | Shape status | Action |
+### Before writing code (plan in the graph)
+
+| What you plan to do | Shape status | Action |
 |---|---|---|
-| New feature or component | — | `shapes create shape` + link to parent |
-| Changed behavior or scope | proposed | Edit the shape YAML directly |
-| Changed behavior or scope | promoted or canonical | `shapes create amendment --target-shape <id>` |
-| New rule or invariant | — | `shapes create constraint` |
-| Modified an existing file | any | Update the realization `metadata.summary` if meaning changed |
-| Created a new source file | any | Add a realization binding to the appropriate shape |
-| Renamed or moved a file | any | Update the realization binding `value` (path) |
-| Refactored without behavior change | any | Update realization paths and summaries only |
-| Deleted a file | any | Remove the stale realization binding |
-| Removed a feature entirely | any | Set shape status to `abandoned` or `superseded` |
+| Build a new feature or component | — | `shapes create shape` + link to parent |
+| Change behavior or scope | proposed | Edit the shape YAML directly |
+| Change behavior or scope | promoted or canonical | `shapes create amendment --target-shape <id>` |
+| Introduce a new rule or invariant | — | `shapes create constraint` |
+| Fix a bug | any | Amend the shape or add a constraint to prevent recurrence |
+| Remove a feature | any | Set shape status to `abandoned` or `superseded` |
+
+### After writing code (bind realizations)
+
+| What happened in code | Action |
+|---|---|
+| Created a new source file | Add a realization binding to the appropriate shape |
+| Modified an existing file | Update the realization `metadata.summary` if meaning changed |
+| Renamed or moved a file | Update the realization binding `value` (path) |
+| Refactored without behavior change | Update realization paths and summaries only |
+| Deleted a file | Remove the stale realization binding |
 
 **When in doubt:** if the shape is `promoted` or `canonical`, use an amendment.
 If it's `proposed`, edit directly.
