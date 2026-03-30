@@ -7,7 +7,6 @@ description: >
   of shapes and constraints capturing the project's intent, rules, and
   boundaries.
 user-invocable: true
-disable-model-invocation: true
 argument-hint: "[project-path]"
 ---
 
