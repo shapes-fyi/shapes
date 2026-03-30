@@ -6,7 +6,6 @@ description: >
   structural improvements. Should be run periodically to keep the shapes
   graph accurate and useful as the project evolves.
 user-invocable: true
-disable-model-invocation: true
 ---
 
 # Maintain the Shapes Graph
