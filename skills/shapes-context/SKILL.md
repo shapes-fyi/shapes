@@ -1,10 +1,11 @@
 ---
 name: shapes-context
 description: >
-  Provides Shapes Context Protocol knowledge including protocol concepts,
-  node types, DAG structure, context-first workflow, and shapes-cli usage.
-  Loaded automatically when a project has a .shapes/ directory or the user
-  mentions shapes, context, or constraints.
+  Teaches the Shapes Context Protocol and context-first workflow. Triggers
+  when starting work in a project with a .shapes/ directory, or when exploring
+  project architecture, intent, constraints, or shape graph structure. Covers
+  node types, DAGs, lifecycle, bindings, profiles, and how to query the graph
+  before starting work.
 user-invocable: true
 ---
 
@@ -12,9 +13,8 @@ user-invocable: true
 
 ## Contents
 
-- Prerequisites
 - The Protocol (node types, DAGs, intent, profiles, bindings, lifecycle)
-- Context-First Workflow (before tasks, after tasks, new work, constraints)
+- Context-First Workflow
 - Writing Good Shapes and Constraints
 - Related Skills
 - CLI Reference
@@ -22,7 +22,8 @@ user-invocable: true
 ## Related Skills
 
 - `/shapes:shapes-init` — bootstrap a new project with shapes, profiles, and constraints
-- `/shapes:shapes-maintain` — audit and organize an existing shapes graph
+- `/shapes:shapes-maintain` — keep the shapes graph in sync with code changes;
+  includes the decision framework for amendments vs new shapes vs direct edits
 
 ## Prerequisites
 
@@ -56,8 +57,8 @@ change between domains.
 Shapes and Constraints each form their own **Directed Acyclic Graph** through
 parent/child relationships. These are independent graphs:
 
-- **Shape DAG** — composition hierarchy (system → services → features → ...)
-- **Constraint DAG** — policy decomposition (policy → sub-rules → ...)
+- **Shape DAG** — composition hierarchy (system > services > features > ...)
+- **Constraint DAG** — policy decomposition (policy > sub-rules > ...)
 
 Shapes reference Constraints by ID. When you traverse a Shape's ancestors, you
 discover all constraints that apply — constraints are inherited downward.
@@ -117,7 +118,7 @@ trusted indicator, and bindings to verification artifacts.
 
 ### Lifecycle
 
-Seven states: proposed → promoted → canonical (progressive), plus rejected,
+Seven states: proposed > promoted > canonical (progressive), plus rejected,
 superseded, abandoned, reverted (terminal). Direct edits allowed while
 `proposed`; `promoted`/`canonical` changes require Amendments.
 
@@ -137,11 +138,9 @@ Shapes are an **interactive discovery tool** — query them on demand.
 
 ### After Completing Work
 
-- Edit the shape's YAML to add **realizations** (bindings to files you
-  created or modified). Use `scheme: path` with the file path and include
-  `metadata.summary` describing the relevant constructs.
-- Add **evidence** if you satisfied a constraint
-- Create an **amendment** if a canonical shape changed significantly
+Update the shapes graph to reflect your changes. The decision framework and
+incremental update workflow are in the shapes-maintain skill — it auto-triggers
+when you're editing code and preparing commits.
 
 ### When Starting New Work
 

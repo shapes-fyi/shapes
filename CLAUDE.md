@@ -1,29 +1,13 @@
 # Shapes — Agent Instructions
 
-## Context-First Workflow
+This project uses the Shapes Context Protocol (`.shapes/`). The shapes skills
+auto-trigger based on what you're doing — no manual invocation needed.
 
-Before doing any work in this project, load the shapes context skill:
-
-```
-/shapes:shapes-context
-```
-
-Then follow the context-first workflow: run `shapes tree shape` to see the
-project map, find the relevant shapes, read their intent and constraints,
-and only then start working. Never skip context discovery.
-
-## Before Committing
-
-Before creating any git commit, load the shapes maintain skill:
-
-```
-/shapes:shapes-maintain
-```
-
-Audit the shapes graph to ensure it reflects the current state of the code.
-Fix any validation errors, update stale realizations, and add shapes or
-constraints for new work. Do not commit until the graph is consistent and
-`shapes validate` passes clean.
+- `shapes-context` activates when starting work, exploring architecture, or
+  reading intent and constraints
+- `shapes-maintain` activates when editing code, creating files, preparing
+  commits, or finishing tasks — provides the decision framework for keeping
+  the graph in sync
 
 ## CLI Reference
 
@@ -32,7 +16,7 @@ Run `shapes --help` for available commands. Key commands:
 - `shapes tree shape` — project overview
 - `shapes get shape <id>` — read a shape's full intent
 - `shapes query constraints <shape-id>` — discover applicable rules
-- `shapes validate` — check graph integrity
+- `shapes validate` — check graph integrity (must pass before commits)
 
 ## Web Commands
 
