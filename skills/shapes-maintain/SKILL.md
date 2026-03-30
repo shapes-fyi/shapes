@@ -1,163 +1,152 @@
 ---
 name: shapes-maintain
 description: >
-  Audits and organizes an existing shapes graph. Checks for inconsistencies,
-  deduplication opportunities, coverage gaps, stale realizations, and
-  structural improvements. Should be run periodically to keep the shapes
-  graph accurate and useful as the project evolves.
+  Keeps the shapes graph in sync with code changes. Triggers when planning
+  work in the graph, editing source files, creating new files, refactoring
+  code, preparing git commits, or completing coding tasks in a project with
+  a .shapes/ directory. Provides the decision framework for when to create
+  shapes, amendments, or constraints before writing code, how to bind
+  realizations after, and ensures the graph stays valid and current.
 user-invocable: true
 ---
 
-# Maintain the Shapes Graph
+# Keeping the Shapes Graph in Sync
 
-Review the project's shapes graph for quality, consistency, and coverage.
-Present all findings and proposed changes to the user before making any
-modifications.
+Shapes are planned before code is written. After implementation, the graph
+needs realizations bound, summaries updated, and validation passed. This
+skill handles that post-implementation sync and the ongoing decision
+framework for how to evolve the graph.
 
 ## Contents
 
-- Step 1: Load the Full Graph
-- Step 2: Fix Validation Errors
-- Step 3: Check for Duplicates
-- Step 4: Check for Shallow Nodes
-- Step 5: Check Realization Accuracy
-- Step 6: Check Coverage
-- Step 7: Check Structural Organization
-- Step 8: Present Findings
-- Step 9: Apply Approved Changes
+- Decision Framework
+- Amendment Rules
+- Updating Realizations
+- Before Every Commit
+- Deep Audit (periodic)
 
-## Progress Checklist
+## Decision Framework
 
-Copy this checklist and track your progress:
+### Before writing code (plan in the graph)
 
-```
-Audit Progress:
-- [ ] Step 1: Full graph loaded and reviewed
-- [ ] Step 2: Validation errors fixed (or none found)
-- [ ] Step 3: Duplicates checked (merges proposed if found)
-- [ ] Step 4: Shallow nodes identified (enriched or flagged)
-- [ ] Step 5: Realization accuracy verified (paths exist, summaries current)
-- [ ] Step 6: Coverage gaps identified (uncovered files, missing constraints)
-- [ ] Step 7: Structural organization reviewed
-- [ ] Step 8: Findings presented to user by severity
-- [ ] Step 9: Approved changes applied and validated clean
-```
+| What you plan to do | Shape status | Action |
+|---|---|---|
+| Build a new feature or component | — | `shapes create shape` + link to parent |
+| Change behavior or scope | proposed | Edit the shape YAML directly |
+| Change behavior or scope | promoted or canonical | `shapes create amendment --target-shape <id>` |
+| Introduce a new rule or invariant | — | `shapes create constraint` |
+| Fix a bug | any | Amend the shape or add a constraint to prevent recurrence |
+| Remove a feature | any | Set shape status to `abandoned` or `superseded` |
 
-## Step 1: Load the Full Graph
+### After writing code (bind realizations)
 
-```bash
-shapes tree shape
-shapes tree constraint
-shapes validate
-shapes list
-```
+| What happened in code | Action |
+|---|---|
+| Created a new source file | Add a realization binding to the appropriate shape |
+| Modified an existing file | Update the realization `metadata.summary` if meaning changed |
+| Renamed or moved a file | Update the realization binding `value` (path) |
+| Refactored without behavior change | Update realization paths and summaries only |
+| Deleted a file | Remove the stale realization binding |
 
-Read the tree output to understand the current structure. Note the validate
-output — any existing integrity issues are the first priority.
+**When in doubt:** if the shape is `promoted` or `canonical`, use an amendment.
+If it's `proposed`, edit directly.
 
-## Step 2: Fix Validation Errors
+## Amendment Rules
 
-If `shapes validate` reported issues (exit code 2), address them first:
+Amendments are **immutable change records** for nodes that have graduated past
+`proposed` status. They preserve lineage without bloating the original node.
 
-- **Cycles** — restructure parent/child relationships to eliminate cycles
-- **Dangling references** — remove references to non-existent nodes or
-  create the missing nodes
-- **Missing reciprocal links** — if parent lists child, ensure child lists
-  parent (and vice versa)
-- **Empty amendment targets** — every amendment must target at least one node
-- **Profile field violations** — add required fields or update the Profile
+### When amendments are required
 
-## Step 3: Check for Duplicates
+- The target shape or constraint is `promoted` or `canonical`
+- The change affects intent, scope, goals, or non-goals
+- A constraint's `rule` is being modified
 
-Read each shape and constraint. Look for:
+### When amendments are NOT needed
 
-- **Duplicate shapes** — different nodes describing the same component or
-  feature. Compare names, descriptions, and realizations. Propose merging
-  duplicates and updating all references.
-- **Overlapping constraints** — rules that cover the same invariant with
-  different wording. Propose consolidating into one constraint with a clear,
-  comprehensive rule.
+- The shape is still `proposed` — edit it directly
+- You're only adding or updating realization bindings (file paths, summaries)
+- You're fixing metadata (typos, formatting) that doesn't change meaning
+- You're adding evidence for a constraint
 
-## Step 4: Check for Shallow Nodes
-
-Identify shapes and constraints that are too thin to be useful:
-
-- Shapes with one-line descriptions and no intent detail
-- Shapes with no realizations (not linked to any source files)
-- Constraints with vague rules (not specific enough to verify)
-- Constraints with no description (missing the "why")
-
-For each shallow node, read the relevant source code and flesh out the
-content, or ask the user for the missing context.
-
-## Step 5: Check Realization Accuracy
-
-For each realization binding, verify the referenced file still exists.
-Read each shape's YAML, extract the `value` field from each binding, and
-check whether the file is present at that path in the project.
-
-Flag:
-- **Stale realizations** — bindings pointing to files that were renamed,
-  moved, or deleted. Update or remove them.
-- **Missing summaries** — bindings without `metadata.summary`. Every
-  binding should describe the specific constructs relevant to the shape.
-- **Stale summaries** — summaries that no longer match the file contents
-  (e.g., function was renamed or moved). Read the source to verify.
-- **Missing realizations** — shapes with no realization bindings at all.
-  Find the source files that implement them and add bindings.
-
-## Step 6: Check Coverage
-
-Identify gaps in the shapes graph:
-
-- **Uncovered source files** — scan the project's source tree and find files
-  or directories not referenced by any shape's realization. These may need
-  new shapes.
-- **Shapes without constraints** — components with no rules governing them.
-  Ask the user if there are invariants that should be captured.
-- **Orphan nodes** — shapes or constraints with no parent and no children
-  that aren't the root. These may be misplaced in the DAG.
-
-## Step 7: Check Structural Organization
-
-Review the DAG structure:
-
-- **Flat hierarchies** — if most shapes are direct children of the root,
-  consider adding intermediate grouping nodes (services, modules).
-- **Deep narrow chains** — long parent→child chains with no branching may
-  indicate over-decomposition. Consider flattening.
-- **Cross-cutting concerns** — if the same constraint appears on many
-  unrelated shapes, consider restructuring the Constraint DAG to use
-  parent constraints that apply broadly.
-
-## Step 8: Present Findings
-
-Summarize all findings for the user organized by severity:
-
-1. **Errors** — validation failures, broken references
-2. **Duplicates** — shapes or constraints that should be merged
-3. **Gaps** — missing coverage, shallow nodes
-4. **Suggestions** — structural improvements, reorganization ideas
-
-For each finding, explain what's wrong and propose a specific fix. Wait for
-user approval before making any changes.
-
-## Step 9: Apply Approved Changes
-
-After the user approves, apply changes by editing YAML files and validating:
+### Creating an amendment
 
 ```bash
+shapes create amendment \
+  --name "Add multi-tenant support" \
+  --target-shape 5 \
+  --summary "Auth service now supports multiple tenants" \
+  --version-impact minor
+```
+
+Then edit the amendment YAML to flesh out intent and add realization
+bindings pointing to the changed files.
+
+**Multiple targets:** use `--target-shape` and `--target-constraint` flags
+repeatedly to target multiple nodes in one amendment.
+
+## Updating Realizations
+
+Realizations bind shapes to source files. Keep them accurate as code changes.
+
+### Adding a realization
+
+Edit the shape's YAML and add a binding:
+
+```yaml
+realization:
+  - bindings:
+      - scheme: path
+        value: src/auth/oauth.rs
+        metadata:
+          summary: OAuth2 token exchange, session creation, refresh logic
+    role: primary
+```
+
+The `metadata.summary` should describe the specific constructs in the file
+that are relevant to this shape — not just "the auth module" but what's in
+it that matters.
+
+### When to update summaries
+
+Update `metadata.summary` when:
+- Functions or structs relevant to the shape were renamed
+- Significant logic was added or removed
+- The file's role in the shape changed
+
+Don't update summaries for trivial changes (formatting, comments, imports).
+
+## Before Every Commit
+
+```
 shapes validate
 ```
 
-If `shapes validate` reports new errors introduced by the changes, fix them
-and re-validate. Repeat until exit code 0.
+If exit code is 2, fix the reported issues before committing. Common fixes:
 
-Once clean, show the updated structure:
+- **Dangling references** — a shape references a constraint or parent that
+  doesn't exist. Remove the reference or create the missing node.
+- **Missing reciprocal links** — if a parent lists a child, the child must
+  list the parent back. Add the missing link.
+- **Profile field violations** — add required fields declared by the Profile.
+
+## Deep Audit
+
+For periodic health checks (after major refactors, before releases, or when
+the graph feels stale), run the full audit process described in
+[DEEP-AUDIT.md](DEEP-AUDIT.md). This covers duplicate detection, coverage
+gaps, shallow node enrichment, and structural organization.
+
+Invoke with `/shapes:shapes-maintain` and request a deep audit explicitly.
+
+## CLI Quick Reference
 
 ```bash
-shapes tree shape
-shapes tree constraint
+shapes tree shape                        # See project structure
+shapes get shape <id>                    # Read a shape's full definition
+shapes query constraints <id>            # Constraints that apply to a shape
+shapes create shape --name "X" --kind feature --summary "Y"
+shapes create amendment --name "X" --target-shape <id> --summary "Y"
+shapes create constraint --name "X" --kind invariant --rule "Y"
+shapes validate                          # Check graph integrity (exit 0 = clean)
 ```
-
-Confirm the graph is clean and summarize the changes applied.

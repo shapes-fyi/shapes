@@ -1,10 +1,11 @@
 ---
 name: shapes-context
 description: >
-  Provides Shapes Context Protocol knowledge including protocol concepts,
-  node types, DAG structure, context-first workflow, and shapes-cli usage.
-  Loaded automatically when a project has a .shapes/ directory or the user
-  mentions shapes, context, or constraints.
+  Teaches the Shapes Context Protocol and shapes-first workflow. Triggers
+  when starting work in a project with a .shapes/ directory, or when exploring
+  project architecture, intent, constraints, or shape graph structure. Covers
+  node types, DAGs, lifecycle, bindings, profiles, and the shapes-first
+  principle: plan changes in the graph before writing any code.
 user-invocable: true
 ---
 
@@ -12,9 +13,9 @@ user-invocable: true
 
 ## Contents
 
-- Prerequisites
+- The Shapes-First Principle
 - The Protocol (node types, DAGs, intent, profiles, bindings, lifecycle)
-- Context-First Workflow (before tasks, after tasks, new work, constraints)
+- Shapes-First Workflow
 - Writing Good Shapes and Constraints
 - Related Skills
 - CLI Reference
@@ -22,7 +23,26 @@ user-invocable: true
 ## Related Skills
 
 - `/shapes:shapes-init` — bootstrap a new project with shapes, profiles, and constraints
-- `/shapes:shapes-maintain` — audit and organize an existing shapes graph
+- `/shapes:shapes-maintain` — keep the shapes graph in sync with code changes;
+  includes the decision framework for amendments vs new shapes vs direct edits
+
+## The Shapes-First Principle
+
+**No code changes without shapes changes first.** The graph is the plan;
+code is the execution. Before writing or modifying any source code:
+
+1. Create or amend the relevant shapes, constraints, or amendments
+2. Capture what you intend to build, change, or enforce
+3. Only then write the code that realizes that intent
+
+This applies to every kind of work:
+- **New feature** — create the shape first, then implement it
+- **Bug fix** — amend the affected shape or add a constraint first, then fix
+- **Refactor** — update shapes to reflect the new structure first, then move code
+- **New rule** — create the constraint first, then enforce it in code
+
+The graph is not documentation written after the fact. It is the source of
+intent that drives implementation.
 
 ## Prerequisites
 
@@ -56,8 +76,8 @@ change between domains.
 Shapes and Constraints each form their own **Directed Acyclic Graph** through
 parent/child relationships. These are independent graphs:
 
-- **Shape DAG** — composition hierarchy (system → services → features → ...)
-- **Constraint DAG** — policy decomposition (policy → sub-rules → ...)
+- **Shape DAG** — composition hierarchy (system > services > features > ...)
+- **Constraint DAG** — policy decomposition (policy > sub-rules > ...)
 
 Shapes reference Constraints by ID. When you traverse a Shape's ancestors, you
 discover all constraints that apply — constraints are inherited downward.
@@ -117,43 +137,48 @@ trusted indicator, and bindings to verification artifacts.
 
 ### Lifecycle
 
-Seven states: proposed → promoted → canonical (progressive), plus rejected,
+Seven states: proposed > promoted > canonical (progressive), plus rejected,
 superseded, abandoned, reverted (terminal). Direct edits allowed while
 `proposed`; `promoted`/`canonical` changes require Amendments.
 
-## Context-First Workflow
+## Shapes-First Workflow
 
-When a project has `.shapes/`, always discover context before doing any work.
-Shapes are an **interactive discovery tool** — query them on demand.
+When a project has `.shapes/`, the graph drives all work. No code changes
+happen until the graph reflects what you intend to do.
 
-### Before Every Task
+### Step 1: Discover Context
 
 1. **See the big picture** — `shapes tree shape`
 2. **Find the relevant shape** — `shapes list` with filters
 3. **Read the intent** — `shapes get shape <id>`
 4. **Discover constraints** — `shapes query constraints <shape-id>`, then
    `shapes get constraint <id>` for the actual rules
-5. **Now do the work** — with full understanding of intent and constraints
 
-### After Completing Work
+### Step 2: Plan in the Graph
 
-- Edit the shape's YAML to add **realizations** (bindings to files you
-  created or modified). Use `scheme: path` with the file path and include
-  `metadata.summary` describing the relevant constructs.
-- Add **evidence** if you satisfied a constraint
-- Create an **amendment** if a canonical shape changed significantly
+Before writing any code, update the graph to capture your planned changes:
 
-### When Starting New Work
+- **New feature** — `shapes create shape` with intent, parent links, constraints
+- **Changing an existing feature** — create an amendment (if promoted/canonical)
+  or edit the shape directly (if proposed)
+- **New rule or invariant** — `shapes create constraint` with a specific,
+  falsifiable rule
+- **Bug fix** — amend the shape to document the fix, or add a constraint to
+  prevent recurrence
 
-Create the shape first, work second:
+Edit the YAML to flesh out intent fields, add parent/child references, and
+link relevant constraints. This is your plan.
 
-```bash
-shapes create shape --name "OAuth Integration" --kind feature \
-  --summary "Add OAuth2 login flow"
-```
+### Step 3: Write Code
 
-Edit the YAML to add parent references, constraints, and flesh out the
-intent with whatever fields the project's Profile defines.
+Now implement what the graph describes. The shapes you created or amended
+define the scope — don't exceed it without updating the graph first.
+
+### Step 4: Bind Realizations
+
+After code is written, add realization bindings to connect shapes to the
+files you created or modified. The shapes-maintain skill auto-triggers here
+with the full decision framework for updating realizations.
 
 ### Respecting Constraints
 
