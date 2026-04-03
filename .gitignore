@@ -5,6 +5,7 @@
 benchmarks/
 bench-eval.md
 benchmark-b1.md
+bench/runs/
 
 # Dependencies
 node_modules
