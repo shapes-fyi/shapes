@@ -1,0 +1,27 @@
+type: local
+name: python-shapes
+environment:
+  include_os_env: true
+  env:
+    CLAUDE_CODE_OAUTH_TOKEN: "${CLAUDE_CODE_OAUTH_TOKEN}"
+setup:
+  eval_commands:
+    - uv init
+    - uv add -r requirements.txt
+    - mkdir -p .claude/commands/shapes-context .claude/commands/shapes-maintain .claude/commands/shapes-init
+    - cp "${SHAPES_ROOT}/skills/shapes-context/SKILL.md" .claude/commands/shapes-context/SKILL.md
+    - cp "${SHAPES_ROOT}/skills/shapes-maintain/SKILL.md" .claude/commands/shapes-maintain/SKILL.md
+    - cp "${SHAPES_ROOT}/skills/shapes-maintain/DEEP-AUDIT.md" .claude/commands/shapes-maintain/DEEP-AUDIT.md
+    - cp "${SHAPES_ROOT}/skills/shapes-init/SKILL.md" .claude/commands/shapes-init/SKILL.md
+    - cp "${SHAPES_ROOT}/bench/configs/assets/CLAUDE.md" CLAUDE.md
+  resume_commands:
+    - mkdir -p .claude/commands/shapes-context .claude/commands/shapes-maintain .claude/commands/shapes-init
+    - cp "${SHAPES_ROOT}/skills/shapes-context/SKILL.md" .claude/commands/shapes-context/SKILL.md
+    - cp "${SHAPES_ROOT}/skills/shapes-maintain/SKILL.md" .claude/commands/shapes-maintain/SKILL.md
+    - cp "${SHAPES_ROOT}/skills/shapes-maintain/DEEP-AUDIT.md" .claude/commands/shapes-maintain/DEEP-AUDIT.md
+    - cp "${SHAPES_ROOT}/skills/shapes-init/SKILL.md" .claude/commands/shapes-init/SKILL.md
+    - cp "${SHAPES_ROOT}/bench/configs/assets/CLAUDE.md" CLAUDE.md
+commands:
+  entry_file: "{entry_file}.py"
+  command: "uv run"
+  agent_command: "python"
