@@ -148,23 +148,37 @@ happen until the graph reflects what you intend to do.
 
 ### Step 1: Discover Context
 
-1. **See the big picture** — `shapes tree shape`
-2. **Find the relevant shape** — `shapes list` with filters
-3. **Read the intent** — `shapes get shape <id>`
-4. **Discover constraints** — `shapes query constraints <shape-id>`, then
-   `shapes get constraint <id>` for the actual rules
+1. **See the big picture** — `shapes tree shape` gives the full hierarchy
+   in one call. Start here — don't read shapes one-by-one. Only call
+   `shapes get shape <id>` for the 2-4 shapes you plan to modify, not
+   every shape in the tree.
+2. **Load all constraints** — `shapes tree constraint` shows the constraint
+   hierarchy. Then `shapes query constraints <shape-id>` to see which
+   constraints apply to the shape you're about to change.
+3. **Read the specific shapes** — `shapes get shape <id>` for the intent,
+   goals, non-goals, and realization bindings of shapes you'll modify.
+4. **Read amendments (mandatory on continuations)** — `shapes list amendment`
+   to see the change history. On continuation sessions this is mandatory —
+   amendments tell you *what changed and why* in prior iterations. Skip
+   only on the initial bootstrap when no amendments exist yet.
 
 ### Step 2: Plan in the Graph
 
-Before writing any code, update the graph to capture your planned changes:
+Before writing any code, update the graph to capture your planned changes.
+**The graph is the plan. Code is the execution.** If the graph doesn't
+reflect what you're about to do, stop and update it first.
 
-- **New feature** — `shapes create shape` with intent, parent links, constraints
-- **Changing an existing feature** — create an amendment (if promoted/canonical)
-  or edit the shape directly (if proposed)
+- **New feature** — `shapes create shape` with intent, parent links, constraints.
+  Then edit the YAML to flesh out goals, non_goals, rationale.
+- **Changing an existing feature** — create an amendment first:
+  `shapes create amendment --target-shape <id> --name "Add X" --summary "Why"`.
+  Amendments are the change log. Even if the shape is `proposed` and you could
+  edit directly, prefer amendments for non-trivial changes — they document
+  *what changed and why* so future iterations can read the history.
 - **New rule or invariant** — `shapes create constraint` with a specific,
-  falsifiable rule
-- **Bug fix** — amend the shape to document the fix, or add a constraint to
-  prevent recurrence
+  falsifiable rule. Link it to the relevant shapes.
+- **Bug fix** — create an amendment documenting the fix, then add a constraint
+  to prevent recurrence.
 
 Edit the YAML to flesh out intent fields, add parent/child references, and
 link relevant constraints. This is your plan.
@@ -173,6 +187,49 @@ link relevant constraints. This is your plan.
 
 Now implement what the graph describes. The shapes you created or amended
 define the scope — don't exceed it without updating the graph first.
+
+#### Before writing: reuse check
+
+Before creating any new function, type, or module, check realization bindings
+on the target shape and its siblings — they point to files that may already
+contain what you need. Search the codebase for similar implementations.
+Extend existing code rather than duplicating.
+
+#### While writing: stay within shape scope
+
+The shapes you created or amended define the boundaries of this change.
+Write code that realizes the shape's intent — nothing more, nothing less.
+
+- **One shape, one responsibility.** Each shape maps to a focused unit of
+  code. If a function serves multiple shapes, it likely needs to be split
+  so each piece can be bound to the right shape.
+- **Respect non-goals.** The shape's `non_goals` field defines what is out
+  of scope. Don't implement functionality that falls outside the shape's
+  declared intent.
+- **Match the decomposition.** If the graph has child shapes for distinct
+  components, the code should reflect that structure — separate functions
+  or modules for each child, not a monolithic implementation.
+
+#### After writing: constraint verification (mandatory)
+
+This step is not optional. Before proceeding to Step 4, verify every
+constraint against the code you wrote.
+
+```bash
+shapes tree constraint
+```
+
+Then for each constraint:
+
+1. **Read the constraint's `rule` field.** State it to yourself explicitly.
+2. **Check the code against it.** The rule is specific and falsifiable — you
+   can verify it by reading the code. If the code violates the rule, fix it
+   now.
+3. **Check scope.** Did you modify code outside the shapes you planned to
+   change? If so, either update the graph to reflect the broader scope or
+   revert the unplanned changes.
+4. **State the result** for each constraint: satisfied or violated. Fix
+   violations before proceeding.
 
 ### Step 4: Bind Realizations
 
@@ -206,5 +263,39 @@ future contributors won't understand the cost of violating it.
 
 ## CLI Reference
 
-Run `shapes --help` for the full command list, and `shapes <command> --help`
-for detailed usage. The CLI is self-documenting.
+### Create commands (exact flags)
+
+```bash
+# Create a shape (required: --name, --kind, --summary)
+shapes create shape --name "Name" --kind module --summary "Description" --profile 1
+
+# Create a constraint (required: --name, --kind, --rule)
+shapes create constraint --name "Name" --kind invariant \
+  --rule "Specific falsifiable rule" --enforcement machine
+
+# Create an amendment (required: --name, --target-shape OR --target-constraint, --summary)
+shapes create amendment --name "Change description" \
+  --target-shape 5 --summary "What changed and why"
+
+# Create a profile (required: --name, --summary)
+shapes create profile --name "Project Profile" --summary "Governance configuration"
+```
+
+### Query commands
+
+```bash
+shapes tree shape                        # Full shape hierarchy (start here)
+shapes tree constraint                   # Full constraint hierarchy
+shapes get shape <id>                    # Read a shape's full definition
+shapes get constraint <id>               # Read a constraint's full definition
+shapes query constraints <shape-id>      # Constraints that apply (inherited)
+shapes list amendment                    # All amendments (change history)
+shapes validate                          # Check graph integrity (exit 0 = clean)
+```
+
+### Editing shapes
+
+There is no `shapes edit` command. Edit YAML files directly at
+`.shapes/shapes/<id>-<name>.yaml`. After creating with `shapes create`,
+flesh out the YAML to add parent/child links, constraints, realization
+bindings, and rich intent fields.

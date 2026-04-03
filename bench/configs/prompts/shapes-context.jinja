@@ -1,0 +1,48 @@
+You must use the Shapes Context Protocol for this project. The shapes skills are
+loaded and available. Follow the shapes-first principle: no code changes without
+shapes changes first.
+
+{% if not is_continuation -%}
+## First Checkpoint
+
+1. Use the `shapes-init` skill to bootstrap the shapes graph. Run `shapes init`,
+   create a profile, shapes, and constraints using `shapes create` CLI commands.
+   Flesh out each node with rich intent — goals, non_goals, rationale.
+
+2. Create constraints that capture the project's rules and invariants. These
+   should come from the specification — what must always be true, what formats
+   are required, what behaviors are guaranteed. Also create constraints for any
+   architectural boundaries you identify (e.g., which modules should not depend
+   on each other, what interfaces must be stable).
+
+3. After `shapes validate` passes, implement the code satisfying the specification.
+
+4. Use the `shapes-maintain` skill to bind realizations and ensure the graph
+   accurately represents what you built. Run `shapes validate` when done.
+
+Use a virtual environment and ensure `requirements.txt` is present.
+
+{% else -%}
+## Continuation Checkpoint
+
+1. Use the `shapes-context` skill to discover and understand the project.
+   Read the shapes graph — shapes, constraints, amendments — to understand
+   current intent, boundaries, and quality rules before touching any code.
+
+2. Read the new specification below. Plan the change in the graph first —
+   create amendments, update shapes, add constraints as needed.
+
+3. Implement the minimal code change that satisfies the new specification.
+   Respect the constraints in `.shapes/constraints/`.
+
+4. Use the `shapes-maintain` skill to sync the graph with your changes —
+   update realizations, check for duplicates, ensure the graph is clean
+   and accurately represents the current state. Run `shapes validate`.
+
+Keep using the same virtual environment. Update `requirements.txt` as needed.
+
+{% endif -%}
+
+## Specification
+
+{{ spec.strip() }}

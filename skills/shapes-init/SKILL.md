@@ -71,9 +71,16 @@ and what patterns you can observe.
 This is the most important step. Code tells you *what* exists. Only the
 engineer can tell you *why*.
 
-Use the **AskUserQuestion** tool to ask questions interactively in batches
-of 2-4 at a time. Wait for answers before asking the next batch. Continue
-until you truly understand the project.
+**Autonomous mode:** If you are working autonomously (no interactive user,
+CI/CD, benchmark, or headless context), skip the interview. Instead, infer
+intent from the specification, README, code, and project structure. Document
+your inferences in shape intent fields and mark `source: ai`. The engineer
+can refine these later. Do not use AskUserQuestion when there is no human
+to answer.
+
+**Interactive mode:** Use the **AskUserQuestion** tool to ask questions
+interactively in batches of 2-4 at a time. Wait for answers before asking
+the next batch. Continue until you truly understand the project.
 
 **Round 1 — Purpose and identity**:
 - What problem does this project solve? Who uses it?
@@ -167,9 +174,47 @@ shapes create profile --name "<ProjectName> Profile" \
   --summary "Governance configuration for <ProjectName>"
 ```
 
-Edit the Profile YAML to declare the selected fields as FieldDefs (with
-`required: true` or `required: false` based on what the engineer chose),
-the allowed kinds, lifecycle gates, and amendment model.
+Edit the Profile YAML to declare the selected fields, allowed kinds,
+lifecycle gates, and amendment model. Use this structure:
+
+```yaml
+field_defs:
+  intent:
+    - name: goals
+      description: "What this shape must achieve"
+      required: true
+    - name: non_goals
+      description: "What is explicitly out of scope"
+      required: false
+    - name: rationale
+      description: "Why this approach was chosen"
+      required: true
+allowed_kinds:
+  shapes:
+    - system
+    - module
+    - feature
+    - interface
+  constraints:
+    - invariant
+    - limit
+    - guideline
+    - requirement
+lifecycle:
+  gates:
+    - from: proposed
+      to: promoted
+      preconditions:
+        - "All required intent fields populated"
+    - from: promoted
+      to: canonical
+      preconditions:
+        - "Realization bindings present"
+amendment_model: merge
+```
+
+Each gate requires `from` (source state), `to` (target state), and
+`preconditions` (list of strings).
 
 The Profile ensures consistency: `shapes validate` checks that all governed
 nodes satisfy the Profile's field requirements.
