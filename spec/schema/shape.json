@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shapes.fyi/schema/v0.1.0/shape.json",
   "title": "Shape",
-  "description": "Primary work node in the Shapes Context Protocol. Represents a unit of intent — a feature, component, task, or any decomposable piece of work.",
+  "description": "Primary work node in the Shapes Specification. Represents a unit of intent — a feature, component, task, or any decomposable piece of work.",
   "type": "object",
   "required": ["id", "name", "description", "status", "intent"],
   "additionalProperties": false,

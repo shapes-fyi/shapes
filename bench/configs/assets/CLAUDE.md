@@ -1,6 +1,6 @@
 # Project Rules
 
-This project uses the Shapes Context Protocol (`.shapes/`). The shapes skills
+This project uses the Shapes Specification (`.shapes/`). The shapes skills
 auto-trigger based on what you're doing — no manual invocation needed.
 
 - `shapes-context` activates when starting work, exploring architecture, or

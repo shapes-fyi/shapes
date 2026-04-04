@@ -1,4 +1,4 @@
-# Shapes Context Protocol: Conformance Test Vectors
+# Shapes Specification: Conformance Test Vectors
 
 **Version:** 0.1.0
 **Status:** Draft
@@ -6,7 +6,7 @@
 ## Introduction
 
 This document defines the conformance requirements for implementations of the
-Shapes Context Protocol. A conforming implementation MUST pass all valid test
+Shapes Specification. A conforming implementation MUST pass all valid test
 vectors and MUST reject all invalid test vectors, reporting the expected
 invariant violations.
 
@@ -35,7 +35,7 @@ invariant on any invalid vector is non-conforming.
 
 The test vectors (`.shapes/` directories) are **transport-agnostic**. They are
 plain data that any implementation can load regardless of binding (CLI, MCP,
-HTTP, library). The vectors are the protocol-level conformance artifact.
+HTTP, library). The vectors are the spec-level conformance artifact.
 
 Test runners are **binding-specific**. Each transport binding needs its own
 harness that loads the test vectors and exercises the implementation through

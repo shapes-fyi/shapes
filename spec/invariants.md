@@ -1,4 +1,4 @@
-# Shapes Context Protocol: Graph Invariants
+# Shapes Specification: Graph Invariants
 
 **Version:** 0.1.0
 **Status:** Draft
@@ -6,7 +6,7 @@
 ## Introduction
 
 This document defines the structural invariants that a conforming Shapes
-Context Protocol graph MUST satisfy. Invariants are properties that hold at
+Specification graph MUST satisfy. Invariants are properties that hold at
 all times after any completed operation. An implementation MUST enforce every
 invariant listed here; a graph that violates any invariant is in an invalid
 state and MUST be reported by the `validate` operation.

@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shapes.fyi/schema/v0.1.0/constraint.json",
   "title": "Constraint",
-  "description": "Enforcement rule in the Shapes Context Protocol. Defines a verifiable condition that shapes must satisfy — covering code style, architecture boundaries, testing requirements, or any other governance rule.",
+  "description": "Enforcement rule in the Shapes Specification. Defines a verifiable condition that shapes must satisfy — covering code style, architecture boundaries, testing requirements, or any other governance rule.",
   "type": "object",
   "required": ["id", "name", "description", "kind", "rule", "enforcement", "status", "intent"],
   "additionalProperties": false,

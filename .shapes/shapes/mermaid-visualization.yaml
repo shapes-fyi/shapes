@@ -3,7 +3,7 @@ name: Mermaid Visualization
 description: >-
   Server-side Mermaid diagram rendering using the beautiful-mermaid library.
   Produces static SVG that respects the current theme via CSS custom properties.
-  Used in the examples section to visualize protocol relationships — shape
+  Used in the examples section to visualize spec relationships — shape
   composition DAGs, constraint hierarchies, and data flows. Includes error
   boundary that shows a user-friendly message on render failure.
 profile: 1
@@ -11,10 +11,10 @@ status: proposed
 intent:
   kind: feature
   summary: >-
-    Theme-aware Mermaid diagram rendering for protocol relationship visualization
+    Theme-aware Mermaid diagram rendering for spec relationship visualization
   source: human
   goals: >-
-    Render protocol relationships as visual diagrams so readers can see DAG
+    Render spec relationships as visual diagrams so readers can see DAG
     structures, constraint hierarchies, and data flows without mentally parsing
     YAML. Diagrams must respect the current theme (dark/light) and render as
     static SVG for performance.

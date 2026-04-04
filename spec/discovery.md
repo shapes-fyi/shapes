@@ -1,4 +1,4 @@
-# Shapes Context Protocol: Discovery
+# Shapes Specification: Discovery
 
 **Version:** 0.1.0
 **Status:** Draft
@@ -6,8 +6,8 @@
 ## Introduction
 
 This document specifies how consumers -- agents, tools, and integrations --
-discover that a project uses the Shapes Context Protocol and locate its
-shapes graph. Discovery is the prerequisite for all other protocol
+discover that a project uses the Shapes Specification and locate its
+shapes graph. Discovery is the prerequisite for all other spec
 operations: before an agent can read, query, or mutate a shapes graph, it
 must determine whether one exists and how to access it.
 
@@ -37,7 +37,7 @@ a nearest ancestor directory of the current working directory.
 The `.shapes/` directory MUST contain:
 
 - **`meta.yaml`** -- Graph metadata conforming to the
-  [Meta JSON Schema](schema/meta.json). Contains the protocol version and
+  [Meta JSON Schema](schema/meta.json). Contains the spec version and
   next-ID counters for each node type.
 
 - **`shapes/`** -- Directory containing Shape node files.
@@ -94,15 +94,15 @@ initialized graph.
 
 ## Mechanism 2: MCP Capability Advertisement
 
-When the Shapes Context Protocol is exposed as an MCP (Model Context
+When the Shapes Specification is exposed as an MCP (Model Context
 Protocol) server, discovery happens through the MCP tool listing mechanism.
 
 ### Tool Advertisement
 
-An MCP server implementing the Shapes Context Protocol MUST advertise a tool
+An MCP server implementing the Shapes Specification MUST advertise a tool
 named `shapes_discover` in its tool list. The presence of any tools with the
 `shapes_` prefix in the MCP tool list signals that the server supports the
-Shapes Context Protocol.
+Shapes Specification.
 
 ### Discovery Procedure
 
@@ -129,7 +129,7 @@ structure:
 }
 ```
 
-- `version` (string, REQUIRED) -- The Shapes Context Protocol version of
+- `version` (string, REQUIRED) -- The Shapes Specification version of
   the graph.
 - `node_counts` (object, REQUIRED) -- The number of nodes of each type
   currently in the graph. MUST contain integer values for keys `shape`,
@@ -138,7 +138,7 @@ structure:
 ### Absence of Shapes Support
 
 If the MCP tool list does not contain any `shapes_*` prefixed tools, the
-server does not support the Shapes Context Protocol. Consumers MUST treat
+server does not support the Shapes Specification. Consumers MUST treat
 this as discovery failure and SHOULD fall back to another mechanism if
 available.
 
@@ -177,7 +177,7 @@ A successful response MUST have:
 
 The fields carry the same meaning as in Mechanism 2:
 
-- `version` (string, REQUIRED) -- The Shapes Context Protocol version.
+- `version` (string, REQUIRED) -- The Shapes Specification version.
 - `node_counts` (object, REQUIRED) -- Node counts per type, with integer
   values for `shape`, `constraint`, `amendment`, and `profile`.
 

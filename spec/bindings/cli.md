@@ -1,4 +1,4 @@
-# Shapes Context Protocol: CLI Transport Binding
+# Shapes Specification: CLI Transport Binding
 
 **Version:** 0.1.0
 **Status:** Draft
@@ -7,7 +7,7 @@
 
 This document maps the abstract operations defined in
 [operations.md](../operations.md) to the `shapes` command-line tool. The CLI
-binding is the reference implementation of the Shapes Context Protocol.
+binding is the reference implementation of the Shapes Specification.
 
 For each operation, this document specifies the command syntax, input format,
 output format, exit codes, and stream behavior. Implementations of the CLI
@@ -122,13 +122,13 @@ All fields defined in the node's JSON Schema are included.
 ```
 $ shapes get shape 5
 id: 5
-name: Protocol Specification
+name: Specification
 description: >-
-  Formal specification of the Shapes Context Protocol...
+  Formal specification of the Shapes Specification...
 status: promoted
 intent:
   kind: documentation
-  summary: Protocol spec defining schemas, operations, invariants, and bindings
+  summary: Spec defining schemas, operations, invariants, and bindings
   source: human
 ...
 ```
@@ -163,7 +163,7 @@ shapes list [node_type] [--status <status>] [--kind <kind>]
 ```yaml
 - node_type: shape
   id: 5
-  name: Protocol Specification
+  name: Specification
   status: promoted
   kind: documentation
 ```
@@ -221,7 +221,7 @@ $ shapes tree shape --root 1 --depth 2
   [2] Core Graph Engine (component, promoted) [C:6,7]
   [3] Specification Website (component, promoted) [C:6]
   [4] Command Layer (component, promoted) [C:6]
-  [5] Protocol Specification (documentation, promoted) [C:6]
+  [5] Specification (documentation, promoted) [C:6]
   ...
 ```
 

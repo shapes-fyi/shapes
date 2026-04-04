@@ -18,7 +18,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "An Open Context Protocol for capturing the intent, structure, and constraints of any project — a shared surface for AI agents and humans.",
+          "An open specification for capturing the intent, structure, and constraints of any project — a shared surface for AI agents and humans.",
       },
     ],
     links: [

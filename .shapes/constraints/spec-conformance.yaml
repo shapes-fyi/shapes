@@ -4,7 +4,7 @@ description: >-
   The CLI implements the shapes.fyi specification and must not diverge from it.
   All node types, fields, lifecycle states, and graph semantics must match the
   spec. The CLI may add convenience features (like ASCII tree rendering) but
-  must not redefine protocol semantics.
+  must not redefine spec semantics.
 profile: 1
 kind: requirement
 rule: >-

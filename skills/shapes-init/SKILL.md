@@ -1,7 +1,7 @@
 ---
 name: shapes-init
 description: >
-  Bootstraps the Shapes Context Protocol for an existing project. Explores
+  Bootstraps the Shapes Specification for an existing project. Explores
   the codebase, interviews the engineer about architecture and constraints,
   creates a Profile defining what fields matter, then generates a rich graph
   of shapes and constraints capturing the project's intent, rules, and
@@ -112,7 +112,7 @@ Continue with additional rounds if answers reveal unexplored areas.
 ## Step 4: Define the Profile
 
 Before creating shapes, decide with the engineer what fields matter for this
-project. The protocol's Intent is an open map — a Profile declares which
+project. The spec's Intent is an open map — a Profile declares which
 domain-specific fields are required vs optional, what kinds are valid, and
 how the lifecycle works.
 

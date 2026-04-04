@@ -1,4 +1,4 @@
-# Shapes Context Protocol: HTTP Transport Binding
+# Shapes Specification: HTTP Transport Binding
 
 **Version:** 0.1.0
 **Status:** Draft
@@ -6,7 +6,7 @@
 ## Introduction
 
 This document maps the abstract operations defined in
-[operations.md](../operations.md) to HTTP endpoints. Each protocol operation
+[operations.md](../operations.md) to HTTP endpoints. Each spec operation
 maps to exactly one HTTP route. All request and response bodies use JSON.
 
 For each endpoint, this document specifies the HTTP method, path, parameters,
@@ -88,7 +88,7 @@ and a JSON error body with the following structure:
 **Abstract operation:** `discover`
 
 **Description:** Check whether a Shapes graph exists and return summary
-metadata including the protocol version and node counts. This endpoint
+metadata including the spec version and node counts. This endpoint
 follows the well-known URI convention defined in
 [RFC 8615](https://www.rfc-editor.org/rfc/rfc8615) and is also specified
 in [discovery.md](../discovery.md) Mechanism 3.
@@ -107,7 +107,7 @@ Status: `200 OK`
   "properties": {
     "version": {
       "type": "string",
-      "description": "Shapes Context Protocol version of the graph."
+      "description": "Shapes Specification version of the graph."
     },
     "node_counts": {
       "type": "object",
@@ -489,7 +489,7 @@ Status: `201 Created`
   "properties": {
     "version": {
       "type": "string",
-      "description": "Shapes Context Protocol version of the created graph."
+      "description": "Shapes Specification version of the created graph."
     },
     "path": {
       "type": "string",

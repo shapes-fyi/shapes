@@ -1,11 +1,11 @@
 id: 7
 name: Intent Open Map
 description: >-
-  The Intent struct is the protocol's extensibility mechanism. It has three
+  The Intent struct is the specification's extensibility mechanism. It has three
   required fields (kind, summary, source) and a flattened extra HashMap that
   accepts arbitrary YAML key-value pairs. Profiles govern which extra fields
   are required vs optional for a given project, and validation enforces these
-  declarations. This pattern allows the same protocol to serve software
+  declarations. This pattern allows the same specification to serve software
   engineering, research, editorial, and other domains without changing the
   core data model.
 profile: 1

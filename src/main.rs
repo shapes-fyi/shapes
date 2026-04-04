@@ -15,7 +15,7 @@ use model::{AmendmentModel, ConstraintId, Enforcement, NodeType, ShapeId, Versio
 #[command(
     name = "shapes",
     version,
-    about = "Shapes Context Protocol CLI — create, query, and navigate project intent, constraints, and boundaries",
+    about = "Shapes Specification CLI — create, query, and navigate project intent, constraints, and boundaries",
     long_about = "Shapes captures the intent, constraints, and boundaries of a project as a structured,\n\
                   queryable graph (DAG). Four node types: Shape (what to build), Constraint (rules that\n\
                   must hold), Amendment (change records), Profile (governance). Use this CLI to create\n\

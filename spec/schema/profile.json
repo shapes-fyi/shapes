@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shapes.fyi/schema/v0.1.0/profile.json",
   "title": "Profile",
-  "description": "Governance configuration in the Shapes Context Protocol. Profiles define lifecycle statuses, gate conditions, field requirements, versioning schemes, and amendment rules that shapes and constraints must follow.",
+  "description": "Governance configuration in the Shapes Specification. Profiles define lifecycle statuses, gate conditions, field requirements, versioning schemes, and amendment rules that shapes and constraints must follow.",
   "type": "object",
   "required": ["id", "name", "description", "status", "intent"],
   "additionalProperties": false,

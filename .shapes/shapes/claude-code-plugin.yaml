@@ -1,9 +1,9 @@
 id: 6
 name: Claude Code Plugin
 description: >-
-  Plugin and skills for Claude Code that teach AI agents the Shapes Context
-  Protocol and the context-first workflow. Includes three skills: context
-  (auto-loaded when .shapes/ exists, teaches protocol concepts), init
+  Plugin and skills for Claude Code that teach AI agents the Shapes
+  Specification and the context-first workflow. Includes three skills: context
+  (auto-loaded when .shapes/ exists, teaches spec concepts), init
   (bootstraps shapes through code analysis and engineer interview), and
   maintain (audits existing graph for quality and coverage). The plugin
   registers via plugin.json and skills via SKILL.md files.
@@ -27,7 +27,7 @@ intent:
     the mechanism Claude Code uses for domain-specific agent behaviors.
   non_goals: >-
     Not a general-purpose agent framework — skills are specific to Claude Code.
-    Does not implement the protocol itself — skills teach agents to use the CLI.
+    Does not implement the specification itself — skills teach agents to use the CLI.
 constraints:
   - 7
 parents:
@@ -51,7 +51,7 @@ realization:
       - scheme: path
         value: skills/shapes-context/SKILL.md
         metadata:
-          summary: Context skill — protocol knowledge, four node types, two DAGs, context-first workflow
+          summary: Context skill — spec knowledge, four node types, two DAGs, context-first workflow
     role: primary
   - bindings:
       - scheme: path

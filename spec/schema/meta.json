@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shapes.fyi/schema/v0.1.0/meta.json",
   "title": "Meta",
-  "description": "Schema for the .shapes/meta.yaml file. Identifies the protocol version used by this shapes graph.",
+  "description": "Schema for the .shapes/meta.yaml file. Identifies the spec version used by this shapes graph.",
   "type": "object",
   "required": ["version"],
   "additionalProperties": true,
@@ -10,7 +10,7 @@
     "version": {
       "type": "string",
       "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(-(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(\\.(0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?$",
-      "description": "Semantic version of the Shapes Context Protocol used by this project."
+      "description": "Semantic version of the Shapes Specification used by this project."
     }
   }
 }

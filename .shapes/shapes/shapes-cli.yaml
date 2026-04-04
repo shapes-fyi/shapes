@@ -1,7 +1,7 @@
 id: 1
 name: Shapes CLI
 description: >-
-  Monorepo implementing the Shapes Context Protocol. Contains a Rust CLI that
+  Monorepo implementing the Shapes Specification. Contains a Rust CLI that
   provides AI coding agents with structured, queryable access to project intent,
   constraints, and boundaries stored as two directed acyclic graphs, plus a web
   specification site (shapes.fyi) with interactive schema exploration, and a
@@ -13,7 +13,7 @@ status: promoted
 intent:
   kind: system
   summary: >-
-    Rust CLI implementing the Shapes Context Protocol — gives AI agents
+    Rust CLI implementing the Shapes Specification — gives AI agents
     structured access to project intent, constraints, and boundaries
   source: human
   goals: >-

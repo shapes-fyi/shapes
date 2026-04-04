@@ -71,7 +71,7 @@ The plugin provides three skills:
 <table>
 <tr><th>Skill</th><th>When to use</th></tr>
 <tr><td nowrap><code>/shapes:shapes-init</code></td><td>Bootstrap shapes for a new project. Explores your codebase, interviews you about architecture and constraints, then generates a full context graph.</td></tr>
-<tr><td nowrap><code>/shapes:shapes-context</code></td><td>Load the protocol knowledge before working. Auto-loads when a <code>.shapes/</code> directory exists, or invoke manually to teach the agent the context-first workflow.</td></tr>
+<tr><td nowrap><code>/shapes:shapes-context</code></td><td>Load the specification knowledge before working. Auto-loads when a <code>.shapes/</code> directory exists, or invoke manually to teach the agent the context-first workflow.</td></tr>
 <tr><td nowrap><code>/shapes:shapes-maintain</code></td><td>Audit an existing graph. Run periodically to catch drift — stale realizations, coverage gaps, shallow nodes, and structural issues.</td></tr>
 </table>
 
@@ -188,7 +188,7 @@ Profiles make Shapes domain-agnostic. A Profile defines:
 - **Lifecycle gates** — preconditions for state transitions
 - **Amendment model** — how changes are applied (merge, overlay, append-only)
 
-Each project has its own Profile. A game studio and a fintech company use the same protocol with completely different vocabularies.
+Each project has its own Profile. A game studio and a fintech company use the same specification with completely different vocabularies.
 
 ## Typical Workflow
 
@@ -276,7 +276,7 @@ Run `shapes --help` or `shapes <command> --help` for full flag reference.
 
 **shapes-init** is interactive. The agent explores your codebase, then interviews you in rounds covering purpose, architecture, constraints, domain knowledge, and project history. It creates a Profile, generates shapes and constraints, links them with realizations, and validates the result.
 
-**shapes-context** teaches the agent the protocol and the context-first workflow: run `shapes tree` to see the big picture, `shapes query constraints` to discover rules, and `shapes get` to read intent — before doing any work. Auto-loads when a `.shapes/` directory exists, or invoke manually with `/shapes:shapes-context`.
+**shapes-context** teaches the agent the specification and the context-first workflow: run `shapes tree` to see the big picture, `shapes query constraints` to discover rules, and `shapes get` to read intent — before doing any work. Auto-loads when a `.shapes/` directory exists, or invoke manually with `/shapes:shapes-context`.
 
 **shapes-maintain** catches drift. Files get renamed, features get removed, new modules appear. The maintain skill detects when shapes no longer match reality and helps you fix it.
 
@@ -295,7 +295,7 @@ Agents and tools can discover a Shapes graph through three mechanisms:
 This is a monorepo containing:
 
 - **`src/`** — `shapes-cli`, a Rust CLI to create and query the context graph
-- **`spec/`** — the protocol specification (protocol, operations, invariants, discovery)
+- **`spec/`** — the specification (operations, invariants, discovery)
 - **`apps/web/`** — the [shapes.fyi](https://shapes.fyi) specification website (TanStack Start, React 19, Vite)
 - **`packages/ui/`** — shared UI component library (shadcn/ui, Base UI, Tailwind CSS v4)
 - **`skills/`** — agent skills (`/shapes:shapes-init`, `/shapes:shapes-context`, `/shapes:shapes-maintain`)

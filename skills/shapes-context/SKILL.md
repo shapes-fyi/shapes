@@ -1,7 +1,7 @@
 ---
 name: shapes-context
 description: >
-  Teaches the Shapes Context Protocol and shapes-first workflow. Triggers
+  Teaches the Shapes Specification and shapes-first workflow. Triggers
   when starting work in a project with a .shapes/ directory, or when exploring
   project architecture, intent, constraints, or shape graph structure. Covers
   node types, DAGs, lifecycle, bindings, profiles, and the shapes-first
@@ -9,12 +9,12 @@ description: >
 user-invocable: true
 ---
 
-# Shapes Context Protocol
+# Shapes Specification
 
 ## Contents
 
 - The Shapes-First Principle
-- The Protocol (node types, DAGs, intent, profiles, bindings, lifecycle)
+- The Spec (node types, DAGs, intent, profiles, bindings, lifecycle)
 - Shapes-First Workflow
 - Writing Good Shapes and Constraints
 - Related Skills
@@ -54,9 +54,9 @@ cargo install --git https://github.com/shapes-fyi/shapes
 
 Run `shapes --help` and `shapes <command> --help` for all commands and flags.
 
-## The Protocol
+## The Specification
 
-Shapes is an Open Context Protocol that captures the **intent**, **constraints**,
+Shapes is an open specification that captures the **intent**, **constraints**,
 and **boundaries** of a project as a structured, queryable graph. It is
 **domain-agnostic** — it applies to software, research, writing, and any
 structured endeavor. Only the Profile configuration and Intent vocabulary
@@ -92,7 +92,7 @@ required fields:
 - **source** — origin (human, ai, system)
 
 Beyond these, Intent is an **open map**. Each domain extends it with its own
-vocabulary. The protocol doesn't prescribe which fields exist — that's the
+vocabulary. The spec doesn't prescribe which fields exist — that's the
 Profile's job.
 
 ### Profiles: Defining What Fields Matter

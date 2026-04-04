@@ -22,7 +22,7 @@ intent:
   goals: >-
     Catch all graph integrity issues that could cause incorrect agent behavior.
     Each ValidationIssue now carries an `invariant` field identifying which
-    protocol invariant (INV-001 through INV-011) was violated. INV-011
+    spec invariant (INV-001 through INV-011) was violated. INV-011
     (duplicate ID detection) was added. INV-009 (reciprocal links) upgraded
     from warning to error. An agent relying on constraint inheritance must be
     able to trust that the DAG is acyclic and all references resolve.

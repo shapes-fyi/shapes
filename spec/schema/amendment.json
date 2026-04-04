@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://shapes.fyi/schema/v0.1.0/amendment.json",
   "title": "Amendment",
-  "description": "Immutable change record in the Shapes Context Protocol. Captures who changed what, why, and with what impact. Once created, amendments are append-only — they are never modified or deleted.",
+  "description": "Immutable change record in the Shapes Specification. Captures who changed what, why, and with what impact. Once created, amendments are append-only — they are never modified or deleted.",
   "type": "object",
   "required": ["id", "name", "description", "targets", "status", "intent", "initiated_by"],
   "additionalProperties": false,

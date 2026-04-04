@@ -1,11 +1,11 @@
 id: 16
 name: No Amendment Profile Flag
 description: >-
-  The protocol specification does not define a profile field on the Amendment
-  schema. Adding --profile to amendment create would create a CLI surface
-  that diverges from the spec.
+  The specification does not define a profile field on the Amendment schema.
+  Adding --profile to amendment create would create a CLI surface that
+  diverges from the spec.
 kind: boundary
-rule: Amendments MUST NOT have a --profile flag unless the protocol spec adds a profile field to the Amendment schema
+rule: Amendments MUST NOT have a --profile flag unless the spec adds a profile field to the Amendment schema
 enforcement: manual
 status: proposed
 profile: 1

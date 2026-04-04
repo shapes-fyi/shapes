@@ -135,7 +135,7 @@ function HomePage() {
           <div className={`grid grid-cols-1 border-y ${BORDER} md:grid-cols-2`}>
             <div className={`p-8 md:border-r ${BORDER} md:p-12 lg:p-14`}>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
-                Open Context Protocol
+                Open Specification
               </p>
               <h1 className="mt-5 font-serif text-5xl leading-[0.9] font-semibold tracking-[-0.04em] sm:text-6xl lg:text-7xl">
                 Shapes
@@ -182,14 +182,14 @@ function HomePage() {
 
       <SectionDivider />
 
-      {/* ─── The Protocol ─── */}
+      {/* ─── The Spec ─── */}
       <section>
         <div className="mx-auto max-w-5xl px-6 sm:px-10 lg:px-16">
           <div className={`border-y ${BORDER}`}>
             {/* Header cell */}
             <div className={`border-b ${BORDER} p-8 md:p-12 lg:p-14`}>
               <p className="text-xs font-semibold uppercase tracking-[0.25em] text-muted-foreground">
-                The Protocol
+                The Spec
               </p>
               <h2 className="mt-4 max-w-xl font-serif text-3xl font-semibold tracking-[-0.02em] sm:text-4xl">
                 Four primitives, two graphs
@@ -305,7 +305,7 @@ function HomePage() {
               >
                 specification
               </Link>{" "}
-              for the full protocol.
+              for the full spec.
             </p>
           </div>
         </div>

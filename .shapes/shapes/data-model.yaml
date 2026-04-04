@@ -2,7 +2,7 @@ id: 2
 name: Data Model
 description: >-
   Serde-backed Rust data structures defining the four node types of the Shapes
-  protocol: Shape, Constraint, Amendment, and Profile. Also includes shared
+  Specification: Shape, Constraint, Amendment, and Profile. Also includes shared
   types like Intent (open map), Status (seven-state lifecycle), Realization
   (code bindings), Evidence (constraint proofs), and Provenance (decision
   history). All types derive Serialize/Deserialize for YAML and JSON output.
@@ -15,7 +15,7 @@ intent:
     Amendment, Profile
   source: human
   goals: >-
-    Provide a faithful Rust representation of every Shapes protocol concept.
+    Provide a faithful Rust representation of every Shapes Specification concept.
     Types must round-trip through YAML serialization without data loss. The
     Intent open-map pattern must allow arbitrary extra fields while keeping
     required fields typed. Untagged enums (ShapeRef, ConstraintRef) must allow

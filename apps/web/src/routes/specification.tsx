@@ -78,7 +78,7 @@ function SpecPage() {
                 matters, and what must hold true. The graph is the shared
                 contract between agents and humans: a single, versionable
                 representation of a project's intent, history, and boundaries.
-                The protocol is domain-agnostic and applies to software,
+                The specification is domain-agnostic and applies to software,
                 research, writing, and any other structured endeavor.
               </p>
             </section>

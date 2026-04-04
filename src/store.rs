@@ -43,7 +43,7 @@ pub trait NodeStore {
 }
 
 // ---------------------------------------------------------------------------
-// Meta — protocol version marker
+// Meta — spec version marker
 // ---------------------------------------------------------------------------
 
 #[derive(Debug, Serialize, Deserialize)]

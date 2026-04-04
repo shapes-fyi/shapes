@@ -22,7 +22,7 @@ intent:
     rationale. The interview process should draw out unwritten rules and
     domain knowledge that no amount of code reading would reveal.
   rationale: >-
-    Manually writing YAML shapes files is tedious and requires deep protocol
+    Manually writing YAML shapes files is tedious and requires deep spec
     knowledge. An interactive skill that combines code analysis with engineer
     interview produces better results faster. The interview rounds are ordered
     to build understanding progressively.

@@ -5,34 +5,33 @@
 The following names are trademarks of shapes-fyi:
 
 - **Shapes**
-- **Open Context Protocol**
-- **Shapes Context Protocol**
+- **Shapes Specification**
 
-These marks identify the official Shapes project, its protocol
-specification, and associated tools. This policy governs how these marks
+These marks identify the official Shapes project, its specification,
+and associated tools. This policy governs how these marks
 may be used by others.
 
 ## Acceptable Uses
 
 You **may** use our marks without prior permission in the following ways:
 
-- **Factual references** — referring to the Shapes protocol in
+- **Factual references** — referring to the Shapes Specification in
   documentation, articles, talks, academic papers, or blog posts
-  (e.g., "this tool implements the Shapes protocol")
+  (e.g., "this tool implements the Shapes Specification")
 - **Compatibility statements** — stating that your product or service
-  is compatible with or implements the Shapes protocol
-  (e.g., "compatible with Shapes", "implements the Open Context Protocol")
+  is compatible with or implements the Shapes Specification
+  (e.g., "compatible with Shapes", "implements the Shapes Specification")
 - **Source attribution** — crediting the Shapes project when using or
-  building on the protocol specification or reference implementation
+  building on the specification or reference implementation
 - **Unmodified distribution** — redistributing the official software
   or specification with marks intact, as permitted by the Apache 2.0 license
 
 ## Required Attribution
 
 Any product, service, or project that implements or builds on the Shapes
-protocol **must**:
+Specification **must**:
 
-1. Clearly state that it uses or implements the Shapes protocol
+1. Clearly state that it uses or implements the Shapes Specification
 2. Include a link to the official repository
    (https://github.com/shapes-fyi/shapes) or specification
 3. Include the NOTICE file contents as required by the Apache 2.0 license
@@ -50,24 +49,24 @@ written permission from shapes-fyi:
 - **Modified marks** — using altered versions of our marks (e.g., different
   capitalization, abbreviations, or combinations with other words) in a way
   that could cause confusion with the official project
-- **Rebranding** — taking the protocol specification or reference
+- **Rebranding** — taking the specification or reference
   implementation and presenting it under a different name as if it were
-  a different protocol
+  a different specification
 
 ## Derivative Implementations
 
-You are free to create your own implementations of the Shapes protocol.
+You are free to create your own implementations of the Shapes Specification.
 Derivative implementations **must**:
 
-- Clearly state that they implement the Shapes protocol
+- Clearly state that they implement the Shapes Specification
 - Link to the official specification
 - Not claim to be the official implementation unless authorized by shapes-fyi
 - Not use our marks in their product name without written permission
 
 You **may** describe your implementation using phrases like:
-- "An implementation of the Shapes protocol"
-- "Compatible with the Open Context Protocol"
-- "Built on the Shapes Context Protocol"
+- "An implementation of the Shapes Specification"
+- "Compatible with the Shapes Specification"
+- "Built on the Shapes Specification"
 
 ## Enforcement
 

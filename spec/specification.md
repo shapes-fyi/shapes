@@ -1,4 +1,4 @@
-# Shapes Context Protocol
+# Shapes Specification
 
 **Version:** 0.1.0 -- Working Draft -- March 2026
 
@@ -12,12 +12,12 @@ interpreted as described in [RFC 2119](https://www.ietf.org/rfc/rfc2119.txt).
 
 ## 1. The Intent Layer
 
-Shapes is an Open Context Protocol that defines a semantic layer for
+Shapes is an open specification that defines a semantic layer for
 collaboration between agents and humans. This layer -- the **intent layer** --
 captures *what* is to be built and *why*, while lower layers address *how* it
 is done.
 
-The protocol captures five categories of structured information:
+The specification captures five categories of structured information:
 
 - **Intent** -- Purpose and motivation behind each unit of work.
 - **Constraints** -- Strict invariants and enforcement rules that work MUST
@@ -57,11 +57,11 @@ that any agent can read, evaluate, and act on.
 
 ## 3. The DAG
 
-The protocol is format-agnostic and storage-agnostic. Examples in this
+The specification is format-agnostic and storage-agnostic. Examples in this
 document use YAML for readability; implementations MAY use any serialization
 format.
 
-The protocol maintains two composition DAGs:
+The specification maintains two composition DAGs:
 
 1. **Shape composition graph** -- Shapes compose hierarchically through
    parent-child relationships, representing decomposition of work (systems
@@ -95,7 +95,7 @@ a **reference by ID** to a standalone node defined elsewhere in the graph.
 
 ## 4. Node Types
 
-The protocol defines four node types. Each is specified below with its
+The specification defines four node types. Each is specified below with its
 required and optional fields. Formal schemas are in the `schema/` directory.
 
 ### 4.1 Shape
@@ -322,7 +322,7 @@ See `schema/provenance.json`.
 
 ## 8. Operations
 
-The protocol defines 10 abstract operations: 8 core read operations that
+The specification defines 10 abstract operations: 8 core read operations that
 conforming implementations MUST implement, and 2 write operations that
 implementations SHOULD implement.
 
@@ -365,7 +365,7 @@ conditions.
 
 ## 9. Invariants
 
-The protocol defines 11 structural invariants (INV-001 through INV-011). All
+The specification defines 11 structural invariants (INV-001 through INV-011). All
 are MUST-level with error severity. A graph that violates any invariant is in
 an invalid state and MUST be reported by the `validate` operation.
 
@@ -390,7 +390,7 @@ detection methods for each invariant.
 
 ## 10. Discovery
 
-Discovery is the prerequisite for all other protocol operations. Three
+Discovery is the prerequisite for all other spec operations. Three
 mechanisms are defined. An implementation MUST support at least one.
 Consumers SHOULD attempt mechanisms in the order listed and use the first
 that succeeds.
@@ -400,9 +400,9 @@ that succeeds.
    the current working directory to the filesystem root. This is the primary
    mechanism for local tooling and CLI-based agents.
 
-2. **MCP** -- An MCP server implementing the protocol MUST advertise a
+2. **MCP** -- An MCP server implementing the specification MUST advertise a
    `shapes_discover` tool. The presence of any `shapes_`-prefixed tools in
-   the MCP tool list signals protocol support.
+   the MCP tool list signals spec support.
 
 3. **HTTP** -- `GET /.well-known/shapes` returns graph metadata as JSON with
    a `200 OK` response, or `404 Not Found` if no graph is available. This
@@ -419,7 +419,7 @@ mechanism.
 
 ## 11. Conformance
 
-An implementation conforms to the Shapes Context Protocol if and only if:
+An implementation conforms to the Shapes Specification if and only if:
 
 1. It implements all MUST-level operations as defined in
    [operations.md](operations.md).
@@ -442,7 +442,7 @@ vector inventory and execution procedure.
 ## 12. Future Extensions
 
 The following are identified extension points for future versions of the
-protocol. They are non-normative and carry no requirements in v0.1.0.
+specification. They are non-normative and carry no requirements in v0.1.0.
 
 - **Profile DAG** -- Add `parents` and `children` to Profile for governance
   inheritance (organization -> team -> project profiles).
@@ -475,7 +475,7 @@ All schemas use JSON Schema Draft 2020-12 and are published under the
 | [`schema/provenance.json`](schema/provenance.json) | Decision history and origin record. |
 | [`schema/node-id.json`](schema/node-id.json) | Opaque node identifier (non-negative integer or non-empty string). |
 | [`schema/parent-ref.json`](schema/parent-ref.json) | Parent reference with optional role and reason. |
-| [`schema/meta.json`](schema/meta.json) | Graph metadata (protocol version and next-ID counters). |
+| [`schema/meta.json`](schema/meta.json) | Graph metadata (spec version and next-ID counters). |
 
 ---
 

@@ -15,7 +15,7 @@ intent:
     Interactive YAML schema viewer with clickable regions and field descriptions
   source: human
   goals: >-
-    Let readers explore the protocol's data model interactively by clicking
+    Let readers explore the spec's data model interactively by clicking
     fields in a YAML schema view and seeing descriptions, types, and
     constraints for each field. Make the schema self-documenting without
     requiring readers to open source code.

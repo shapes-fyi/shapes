@@ -1,4 +1,4 @@
-# Shapes Context Protocol: MCP Server Transport Binding
+# Shapes Specification: MCP Server Transport Binding
 
 **Version:** 0.1.0
 **Status:** Draft
@@ -7,7 +7,7 @@
 
 This document maps the abstract operations defined in
 [operations.md](../operations.md) to MCP (Model Context Protocol) tools.
-Each protocol operation maps to exactly one MCP tool. All tools accept JSON
+Each spec operation maps to exactly one MCP tool. All tools accept JSON
 parameters and return JSON responses.
 
 For each tool, this document specifies the tool name, description, input
@@ -75,7 +75,7 @@ content block describing the failure.
 **Abstract operation:** `discover`
 
 **Description:** Check whether a Shapes graph exists and return summary
-metadata including the protocol version and node counts.
+metadata including the spec version and node counts.
 
 **Input Schema:**
 
@@ -100,7 +100,7 @@ configuration.
   "properties": {
     "version": {
       "type": "string",
-      "description": "Shapes Context Protocol version of the graph."
+      "description": "Shapes Specification version of the graph."
     },
     "node_counts": {
       "type": "object",
@@ -561,7 +561,7 @@ structure and returns the version and path of the created graph.
   "properties": {
     "version": {
       "type": "string",
-      "description": "Shapes Context Protocol version of the created graph."
+      "description": "Shapes Specification version of the created graph."
     },
     "path": {
       "type": "string",

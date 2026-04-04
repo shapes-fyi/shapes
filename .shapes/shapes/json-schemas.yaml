@@ -1,7 +1,7 @@
 id: 26
 name: JSON Schemas
 description: >-
-  Formal JSON Schema Draft 2020-12 definitions for all protocol node types and
+  Formal JSON Schema Draft 2020-12 definitions for all spec node types and
   shared types. Machine-readable schema definitions that any implementation can
   validate against. 13 schema files covering shapes, constraints, amendments,
   profiles, and all shared types.
@@ -10,8 +10,8 @@ status: proposed
 intent:
   kind: feature
   summary: >-
-    Formal JSON Schema Draft 2020-12 definitions for all protocol node types
-    and shared types
+    Formal JSON Schema Draft 2020-12 definitions for all spec node types and
+    shared types
   source: human
   goals: >-
     Machine-readable schema definitions that any implementation can validate

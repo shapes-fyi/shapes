@@ -12,19 +12,19 @@ status: proposed
 intent:
   kind: module
   summary: >-
-    Public specification website for the Shapes Context Protocol — reference
-    docs plus interactive schema exploration
+    Public specification website for the Shapes Specification — reference docs
+    plus interactive schema exploration
   source: human
   goals: >-
-    Provide an authoritative, readable reference for the Shapes Context Protocol
+    Provide an authoritative, readable reference for the Shapes Specification
     that makes the spec accessible to anyone, not just CLI users. Enable
     interactive schema exploration so readers can understand the data model
-    without reading Rust source code. Render protocol relationships as Mermaid
+    without reading Rust source code. Render spec relationships as Mermaid
     diagrams for visual learners.
   rationale: >-
-    A dedicated website lowers the barrier to understanding the protocol. The
-    spec is the primary artifact — the CLI is one implementation, but the
-    protocol itself needs a home that is tool-agnostic. TanStack Start was
+    A dedicated website lowers the barrier to understanding the specification.
+    The spec is the primary artifact — the CLI is one implementation, but the
+    specification itself needs a home that is tool-agnostic. TanStack Start was
     chosen for modern SSR with React 19 features, file-based routing simplicity,
     and Vite's fast dev experience.
   non_goals: >-

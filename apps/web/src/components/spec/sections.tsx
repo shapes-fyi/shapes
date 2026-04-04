@@ -45,13 +45,13 @@ export const sections: Array<SpecSection> = [
     content: (
       <div className="space-y-6">
         <p>
-          Shapes is an Open Context Protocol that defines a semantic layer for
+          Shapes is an open specification that defines a semantic layer for
           collaboration between agents and humans. This layer — the intent
           layer — captures <em>what</em> is to be built and <em>why</em>, while
           lower layers address <em>how</em> it is done.
         </p>
 
-        <p>The protocol captures the following explicitly:</p>
+        <p>The specification captures the following explicitly:</p>
 
         <ul className="space-y-2 pl-5 marker:text-primary">
           <li>
@@ -368,7 +368,7 @@ export const sections: Array<SpecSection> = [
         </p>
 
         <p>
-          Shapes addresses this gap. The protocol captures intent, constraints,
+          Shapes addresses this gap. The specification captures intent, constraints,
           bindings, and amendment history as first-class structured records,
           forming a queryable graph that any agent — regardless of
           architecture — can read, evaluate, and act on.
@@ -383,20 +383,20 @@ export const sections: Array<SpecSection> = [
     content: (
       <div className="space-y-6">
         <p>
-          The protocol is format-agnostic and storage-agnostic. Examples in this
+          The specification is format-agnostic and storage-agnostic. Examples in this
           specification use YAML for readability; implementations MAY use any
           serialization format.
         </p>
 
         <p>
-          The Shapes Context Protocol is architected as a Directed Acyclic Graph
-          (DAG). The protocol maintains two composition DAGs: the Shape
+          The Shapes Specification is architected as a Directed Acyclic Graph
+          (DAG). The specification maintains two composition DAGs: the Shape
           composition graph and the Constraint composition graph. These
           structures express systems of systems — where nodes compose
           hierarchically and cross-reference laterally without cycles.
         </p>
 
-        <p>The protocol defines four node types:</p>
+        <p>The specification defines four node types:</p>
 
         <ul className="space-y-2 pl-5 marker:text-primary">
           <li>
@@ -946,13 +946,13 @@ export const sections: Array<SpecSection> = [
     content: (
       <div className="space-y-6">
         <p>
-          Bindings connect protocol records to external artifacts, test results,
+          Bindings connect spec records to external artifacts, test results,
           and provenance sources. A Binding is a typed reference — a{" "}
           <code className="text-foreground">scheme</code> that identifies the
           kind of reference (a URI, a file path, a query, a custom selector)
           and a{" "}
           <code className="text-foreground">value</code> that resolves to
-          the target. Bindings appear throughout the protocol wherever a record
+          the target. Bindings appear throughout the spec wherever a record
           needs to point to an external resource.
         </p>
 
@@ -1038,7 +1038,7 @@ export const sections: Array<SpecSection> = [
             <p>
               Provenance tracks the origin and decision history of any node in
               the graph — Shape, Constraint, Amendment, or Profile. The
-              protocol is agnostic to the provenance systems used. Sessions,
+              specification is agnostic to the provenance systems used. Sessions,
               transcripts, discussions, and any other decision artifacts MAY be
               incorporated as Provenance entries.
             </p>
@@ -1136,7 +1136,7 @@ export const sections: Array<SpecSection> = [
         </p>
 
         <p>
-          Since the protocol is cross-domain and agnostic over the actual work,
+          Since the specification is cross-domain and agnostic over the actual work,
           a Profile MAY encode any domain-specific lifecycle — an SDLC, an ADLC
           (Agentic Development Life Cycle), an editorial workflow, or a research
           methodology.
@@ -1153,7 +1153,7 @@ export const sections: Array<SpecSection> = [
           <code className="text-foreground">true</code> must be present on
           governed records; when the flag is omitted it defaults to{" "}
           <code className="text-foreground">false</code>, making the field
-          optional. This makes the protocol extensible without modifying the
+          optional. This makes the specification extensible without modifying the
           core schema.
         </p>
 

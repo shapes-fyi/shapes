@@ -18,7 +18,7 @@ intent:
     node data is the canonical identifier.
   source: human
   rationale: >-
-    An MCP server or HTTP API has no filenames. The protocol is
+    An MCP server or HTTP API has no filenames. The specification is
     storage-agnostic — identity must come from the data itself, not from how it
     is stored.
   impact_if_violated: >-

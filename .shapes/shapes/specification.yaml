@@ -1,8 +1,8 @@
 id: 23
-name: Protocol Specification
+name: Specification
 description: >-
-  Formal, implementation-agnostic protocol specification with JSON schemas,
-  typed operations, invariants, discovery mechanisms, transport bindings, and
+  Formal, implementation-agnostic specification with JSON schemas, typed
+  operations, invariants, discovery mechanisms, transport bindings, and
   conformance tests. Defines what any Shapes implementation must satisfy
   independent of transport or language.
 profile: 1
@@ -10,8 +10,8 @@ status: proposed
 intent:
   kind: module
   summary: >-
-    Formal, implementation-agnostic protocol specification with JSON schemas,
-    typed operations, invariants, discovery mechanisms, transport bindings, and
+    Formal, implementation-agnostic specification with JSON schemas, typed
+    operations, invariants, discovery mechanisms, transport bindings, and
     conformance tests
   source: human
   goals: >-
@@ -19,8 +19,8 @@ intent:
     Enable alternative implementations (Python, Go, MCP server) without
     reverse-engineering the Rust CLI.
   rationale: >-
-    The protocol was implicit in the CLI. Making it explicit separates the
-    abstract protocol from concrete implementation.
+    The specification was implicit in the CLI. Making it explicit separates the
+    abstract spec from concrete implementation.
   non_goals: >-
     Not a tutorial or user guide. Not implementation advice.
 parents:
@@ -38,9 +38,9 @@ children:
 realization:
   - bindings:
       - scheme: path
-        value: spec/protocol.md
+        value: spec/specification.md
         metadata:
-          summary: Core protocol definition — node types, fields, lifecycle states, graph semantics
+          summary: Core specification — node types, fields, lifecycle states, graph semantics
     role: primary
   - bindings:
       - scheme: path

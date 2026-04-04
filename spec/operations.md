@@ -1,17 +1,17 @@
-# Shapes Context Protocol: Abstract Operation Catalog
+# Shapes Specification: Abstract Operation Catalog
 
 **Version:** 0.1.0
 **Status:** Draft
 
 ## Introduction
 
-This document defines the abstract operations of the Shapes Context Protocol.
+This document defines the abstract operations of the Shapes Specification.
 Each operation is specified independently of any transport or binding (CLI,
 MCP, HTTP, in-process library). A binding specification maps these abstract
 operations to a concrete interface; this document defines only the semantics,
 parameters, return types, preconditions, postconditions, and error conditions.
 
-An implementation that exposes a Shapes Context Protocol interface MUST or
+An implementation that exposes a Shapes Specification interface MUST or
 SHOULD implement each operation according to the requirement levels specified
 below.
 
@@ -60,7 +60,7 @@ type NodeId = integer (>= 0) | string (non-empty)
 ```
 
 An opaque node identifier. Implementations MAY restrict to integers or strings;
-the protocol permits either. Two IDs are equal if and only if they have the
+the specification permits either. Two IDs are equal if and only if they have the
 same type and the same value. IDs are scoped to a node type namespace: a Shape
 with `id: 5` and a Constraint with `id: 5` are distinct nodes.
 
@@ -511,7 +511,7 @@ for each node type). After `init`, the graph contains zero nodes and is valid.
 }
 ```
 
-- `version`: The Shapes Context Protocol version of the newly created graph.
+- `version`: The Shapes Specification version of the newly created graph.
 - `path`: The absolute or relative path to the created graph root.
 
 **Preconditions:**

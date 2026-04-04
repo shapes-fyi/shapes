@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Shapes Context Protocol — CLI Binding Conformance Runner
+# Shapes Specification — CLI Binding Conformance Runner
 #
-# Runs all test vectors against a CLI implementation of the Shapes protocol.
+# Runs all test vectors against a CLI implementation of the Shapes spec.
 # This runner is specific to the CLI binding (spec/bindings/cli.md).
 # Other bindings (MCP, HTTP) need their own harness that reads the same
 # test vector fixtures.
