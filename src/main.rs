@@ -2,6 +2,7 @@ mod commands;
 mod error;
 mod model;
 mod store;
+mod templates;
 
 use std::process::ExitCode;
 
@@ -10,6 +11,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 use error::CliError;
 
 use model::{AmendmentModel, ConstraintId, Enforcement, NodeType, ShapeId, VersionImpact};
+use templates::TemplateKind;
 
 #[derive(Parser)]
 #[command(
@@ -42,7 +44,13 @@ enum OutputFormat {
 enum Command {
     /// Initialize a new .shapes/ directory in the current working directory.
     /// Creates meta.yaml and subdirectories for shapes, constraints, amendments, and profiles.
-    Init,
+    /// The chosen template controls scaffolding hints for `shapes create`; it is OPTIONAL
+    /// guidance, not enforcement. Profiles are how you opt into enforcement.
+    Init {
+        /// Scaffolding template — software (default), research, editorial, or minimal
+        #[arg(long, value_enum, default_value = "software")]
+        template: TemplateKind,
+    },
 
     /// Create a new node from flags or a YAML file.
     /// The node gets an auto-assigned ID and starts in 'proposed' status.
@@ -122,15 +130,17 @@ enum Command {
 enum CreateCommand {
     /// Create a Shape — captures what is being built and why.
     /// Shapes are the primary nodes in the Shape DAG.
-    /// Kinds: system, service, feature, module, interface, data-flow, pattern.
-    /// Edit the generated YAML to add children, constraints, realizations, and rich intent.
+    /// Without `--from`, emits a YAML scaffold with `TODO:` placeholders for every
+    /// expected field, including commented stub sections for parents/children/
+    /// constraints/realization. Read the file and fill in the TODOs.
     Shape {
         /// Shape name
+        #[arg(long, required_unless_present = "from")]
+        name: Option<String>,
+        /// Intent kind. Defaults to the active template's default shape kind.
+        /// Common kinds: system, service, feature, module, interface, data-flow, pattern
         #[arg(long)]
-        name: String,
-        /// Intent kind (default: feature). Common kinds: system, service, feature, module, interface, data-flow, pattern
-        #[arg(long, default_value = "feature")]
-        kind: String,
+        kind: Option<String>,
         /// Brief summary of the shape's purpose
         #[arg(long)]
         summary: Option<String>,
@@ -140,29 +150,33 @@ enum CreateCommand {
         /// Apply a governance profile by ID — sets profile reference and pre-populates required fields
         #[arg(long, conflicts_with = "from")]
         profile: Option<u64>,
-        /// Full description (defaults to name if omitted)
+        /// Full description (defaults to a TODO placeholder if omitted)
         #[arg(long)]
         description: Option<String>,
+        /// Override the active template just for this scaffold (does not modify meta.yaml)
+        #[arg(long, value_enum, conflicts_with = "from")]
+        template: Option<TemplateKind>,
         /// Read full YAML definition from file (use - for stdin). Mutually exclusive with other flags.
-        #[arg(long, conflicts_with_all = &["name", "kind", "summary", "source", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "kind", "summary", "source", "description", "template"])]
         from: Option<String>,
     },
 
     /// Create a Constraint — a rule or invariant that must be satisfied.
     /// Constraints form their own DAG and are referenced by shapes.
-    /// Kinds: invariant, requirement, boundary, guideline, limit, policy.
-    /// The 'rule' field should be specific enough to verify by reading code.
+    /// Without `--from`, emits a YAML scaffold with `TODO:` placeholders.
+    /// `--enforcement` accepts only `manual` (human review) or `machine` (automated check).
     Constraint {
         /// Constraint name
+        #[arg(long, required_unless_present = "from")]
+        name: Option<String>,
+        /// Constraint kind. Defaults to the active template's default constraint kind.
+        /// Common kinds: invariant, requirement, boundary, guideline, limit, policy
         #[arg(long)]
-        name: String,
-        /// Constraint kind (default: requirement). Kinds: invariant, requirement, boundary, guideline, limit, policy
-        #[arg(long, default_value = "requirement")]
-        kind: String,
+        kind: Option<String>,
         /// The rule text — a specific, falsifiable statement of what must hold
         #[arg(long)]
         rule: Option<String>,
-        /// How enforced: manual (human review) or machine (automated checks)
+        /// How enforced: `manual` (human review) or `machine` (automated checks)
         #[arg(long, default_value = "manual")]
         enforcement: Enforcement,
         /// Brief summary
@@ -177,11 +191,14 @@ enum CreateCommand {
         /// Apply a governance profile by ID — sets profile reference and pre-populates required fields
         #[arg(long, conflicts_with = "from")]
         profile: Option<u64>,
-        /// Full description (defaults to name if omitted)
+        /// Full description (defaults to a TODO placeholder if omitted)
         #[arg(long)]
         description: Option<String>,
+        /// Override the active template just for this scaffold (does not modify meta.yaml)
+        #[arg(long, value_enum, conflicts_with = "from")]
+        template: Option<TemplateKind>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent-kind", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent_kind", "description", "template"])]
         from: Option<String>,
     },
 
@@ -189,8 +206,8 @@ enum CreateCommand {
     /// Use amendments to record significant changes to canonical nodes.
     Amendment {
         /// Amendment name
-        #[arg(long)]
-        name: String,
+        #[arg(long, required_unless_present = "from")]
+        name: Option<String>,
         /// Target shape IDs (repeatable: --target-shape 1 --target-shape 2)
         #[arg(long = "target-shape")]
         target_shapes: Vec<ShapeId>,
@@ -215,10 +232,13 @@ enum CreateCommand {
     },
 
     /// Create a Profile — governance configuration defining lifecycle gates, field requirements, and amendment rules.
+    /// Profiles are OPTIONAL — shapes and constraints work fine without one. Attach a Profile
+    /// only when you want to enforce field requirements and kind restrictions.
+    /// Without `--from`, emits a Profile pre-populated from the active template.
     Profile {
         /// Profile name
-        #[arg(long)]
-        name: String,
+        #[arg(long, required_unless_present = "from")]
+        name: Option<String>,
         /// Brief summary
         #[arg(long)]
         summary: Option<String>,
@@ -228,11 +248,14 @@ enum CreateCommand {
         /// How amendments are applied: merge, overlay, edition, or append-only
         #[arg(long, default_value = "merge")]
         amendment_model: AmendmentModel,
-        /// Full description (defaults to name if omitted)
+        /// Full description (defaults to a TODO placeholder if omitted)
         #[arg(long)]
         description: Option<String>,
+        /// Override the active template just for this scaffold (does not modify meta.yaml)
+        #[arg(long, value_enum, conflicts_with = "from")]
+        template: Option<TemplateKind>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "summary", "source", "amendment-model", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "summary", "source", "amendment_model", "description", "template"])]
         from: Option<String>,
     },
 }
@@ -291,7 +314,7 @@ fn main() -> ExitCode {
 
 fn run(cli: Cli) -> Result<(), CliError> {
     match cli.command {
-        Command::Init => commands::init()?,
+        Command::Init { template } => commands::init(template)?,
 
         Command::Create { node, id_only } => commands::create(node, id_only, cli.format)?,
 

@@ -49,12 +49,17 @@ pub trait NodeStore {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Meta {
     pub version: String,
+    /// Active scaffolding template (e.g. "software", "research"). Optional
+    /// for back-compat with stores written before templates existed.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub template: Option<String>,
 }
 
 impl Meta {
-    fn new() -> Self {
+    fn new(template: Option<&str>) -> Self {
         Meta {
             version: "0.1.0".into(),
+            template: template.map(str::to_string),
         }
     }
 }
@@ -94,7 +99,9 @@ impl FileStore {
     }
 
     /// Initialize a new .shapes/ store in the given directory.
-    pub fn init(dir: &Path) -> Result<Self> {
+    /// `template` is the scaffolding template to record in `meta.yaml`;
+    /// pass `None` for the legacy template-less behavior.
+    pub fn init(dir: &Path, template: Option<&str>) -> Result<Self> {
         let root = dir.join(SHAPES_DIR);
         if root.is_dir() {
             bail!(".shapes/ directory already exists.");
@@ -111,12 +118,45 @@ impl FileStore {
                 .with_context(|| format!("failed to create .shapes/{}/", node_type.dir_name()))?;
         }
 
-        let meta = Meta::new();
+        let meta = Meta::new(template);
         let meta_path = root.join(META_FILE);
         let yaml = serde_yml::to_string(&meta)?;
         fs::write(&meta_path, yaml).context("failed to write meta.yaml")?;
 
         Ok(FileStore { root })
+    }
+
+    /// Read the store's `meta.yaml`. Returns the parsed Meta or an error if
+    /// the file is missing or malformed.
+    pub fn read_meta(&self) -> Result<Meta> {
+        let path = self.root.join(META_FILE);
+        let content = fs::read_to_string(&path)
+            .with_context(|| format!("failed to read {}", path.display()))?;
+        Ok(serde_yml::from_str(&content)?)
+    }
+
+    /// Save a node by writing a pre-formatted YAML string directly.
+    /// Used by the scaffold writers, which emit YAML with comments and
+    /// `TODO:` placeholders that would be lost if round-tripped through
+    /// serde. The caller is responsible for ensuring `content` parses as
+    /// a node of `node_type` with the given `id` and `name`.
+    pub fn save_raw(
+        &self,
+        node_type: NodeType,
+        id: u64,
+        name: &str,
+        content: &str,
+    ) -> Result<PathBuf> {
+        if let Ok(existing) = self.find_file(node_type, id) {
+            fs::write(&existing, content)
+                .with_context(|| format!("failed to write {}", existing.display()))?;
+            return Ok(existing);
+        }
+        let slug = slugify(name);
+        let path = self.type_dir(node_type).join(format!("{id}-{slug}.yaml"));
+        fs::write(&path, content)
+            .with_context(|| format!("failed to write {}", path.display()))?;
+        Ok(path)
     }
 
     /// Save a node to disk as YAML, generating a descriptive filename.

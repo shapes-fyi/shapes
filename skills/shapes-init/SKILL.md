@@ -21,11 +21,10 @@ the engineer's head. Code tells you *what* exists. Shapes capture *why*.
 - Step 1: Initialize the Store
 - Step 2: Explore the Project
 - Step 3: Interview the Engineer
-- Step 4: Define the Profile
-- Step 5: Create Shapes
-- Step 6: Create Constraints
-- Step 7: Link Everything
-- Step 8: Validate and Show
+- Step 4: Create Shapes
+- Step 5: Create Constraints
+- Step 6: (Optional) Create a Profile
+- Step 7: Validate and Show
 
 ## Progress Checklist
 
@@ -33,24 +32,29 @@ Copy this checklist and track your progress:
 
 ```
 Bootstrap Progress:
-- [ ] Step 1: Store initialized (`shapes init`)
+- [ ] Step 1: Store initialized (`shapes init --template <kind>`)
 - [ ] Step 2: Project explored (manifest, docs, structure, source, tests, CI)
 - [ ] Step 3: Engineer interviewed (all rounds complete, understanding confirmed)
-- [ ] Step 4: Profile defined (fields, kinds, lifecycle chosen and created)
-- [ ] Step 5: Shapes created (root + children, rich descriptions, realizations)
-- [ ] Step 6: Constraints created (specific rules, descriptions with "why")
-- [ ] Step 7: Everything linked (reciprocal parent/child, constraint refs, realizations)
-- [ ] Step 8: Validated clean (`shapes validate` exit code 0)
+- [ ] Step 4: Shapes created and TODO placeholders filled in
+- [ ] Step 5: Constraints created and TODO placeholders filled in
+- [ ] Step 6: (Optional) Profile created if enforcement is desired
+- [ ] Step 7: Validated clean (`shapes validate` exit code 0)
 ```
 
 ## Step 1: Initialize the Store
 
+Pick the template that matches the project's domain:
+
 ```bash
-shapes init
+shapes init                       # software (default)
+shapes init --template research   # experiments, datasets, hypotheses
+shapes init --template editorial  # books, articles, narratives
+shapes init --template minimal    # only `rationale` is required
 ```
 
-This creates the `.shapes/` directory with `meta.yaml` and subdirectories for
-shapes, constraints, amendments, and profiles.
+The template controls what fields appear in scaffolded shapes and
+constraints — it is *guidance*, not enforcement. Enforcement is opt-in
+via Profiles (Step 6).
 
 ## Step 2: Explore the Project
 
@@ -109,237 +113,96 @@ the next batch. Continue until you truly understand the project.
 After each round, summarize and check understanding with AskUserQuestion.
 Continue with additional rounds if answers reveal unexplored areas.
 
-## Step 4: Define the Profile
+## Step 4: Create Shapes
 
-Before creating shapes, decide with the engineer what fields matter for this
-project. The spec's Intent is an open map — a Profile declares which
-domain-specific fields are required vs optional, what kinds are valid, and
-how the lifecycle works.
-
-Use **AskUserQuestion** with `multiSelect: true` to let the engineer pick
-from sensible defaults, then ask if they want to add any custom fields.
-
-### Shape Intent Fields
-
-Start with the recommended defaults for the project's domain. Present these
-as pre-selected and let the engineer remove what doesn't apply, then add
-custom fields.
-
-**Software projects (recommended defaults):**
-- `goals` — what this shape must achieve
-- `non_goals` — what is explicitly out of scope
-- `rationale` — why this approach was chosen over alternatives
-- `requirements` — specific functional requirements
-
-**Software projects (optional, add if relevant):**
-- `acceptance_criteria` — measurable conditions for completion
-- `data_flow` — how data moves through this component
-- `failure_modes` — what can go wrong and how it's mitigated
-- `dependencies` — what this component depends on
-- `api_contract` — the interface this component exposes
-
-**Research projects (recommended defaults):**
-- `hypotheses`, `success_criteria`, `methodology`, `variables`
-
-**Editorial/writing projects (recommended defaults):**
-- `themes`, `target_audience`, `tone`
-
-After the engineer confirms, ask: "Any custom fields specific to your project
-that aren't in this list?" Let them add domain-specific fields.
-
-### Constraint Intent Fields
-
-Similarly, present options for constraint intents:
-- `rationale` — why this rule exists (the origin story)
-- `impact_if_violated` — what breaks and how badly
-- `exceptions` — known cases where the rule doesn't apply
-- `verification_method` — how to check compliance
-
-### Shape and Constraint Kinds
-
-Present kind options and let the engineer select which are relevant:
-
-**Shape kinds:**
-- `system`, `service`, `feature`, `module`, `interface`, `data-flow`, `pattern`
-- Plus any custom kinds the engineer suggests
-
-**Constraint kinds:**
-- `invariant`, `requirement`, `boundary`, `guideline`, `limit`, `policy`
-- Plus any custom kinds
-
-### Create the Profile
+Each call to `shapes create shape` writes a YAML file with `TODO:`
+placeholders for every field the active template expects, plus commented
+stub blocks for `parents`, `children`, `constraints`, and `realization`.
+Your job is to **`Read` the file and replace each `TODO:` with real
+content**, uncommenting the stub blocks you need and deleting the ones
+you don't.
 
 ```bash
-shapes create profile --name "<ProjectName> Profile" \
-  --summary "Governance configuration for <ProjectName>"
+shapes create shape --name "<ShapeName>" --kind <kind>
 ```
 
-Edit the Profile YAML to declare the selected fields, allowed kinds,
-lifecycle gates, and amendment model. Use this structure:
+Flags:
+- `--name` (required) — the shape's name.
+- `--kind` (optional) — defaults to the active template's default kind.
+- `--description`, `--summary` (optional) — pre-fill those fields instead
+  of leaving TODOs.
+- `--profile <id>` (optional) — attach a Profile for enforcement (Step 6).
 
-```yaml
-field_defs:
-  intent:
-    - name: goals
-      description: "What this shape must achieve"
-      required: true
-    - name: non_goals
-      description: "What is explicitly out of scope"
-      required: false
-    - name: rationale
-      description: "Why this approach was chosen"
-      required: true
-allowed_kinds:
-  shapes:
-    - system
-    - module
-    - feature
-    - interface
-  constraints:
-    - invariant
-    - limit
-    - guideline
-    - requirement
-lifecycle:
-  gates:
-    - from: proposed
-      to: promoted
-      preconditions:
-        - "All required intent fields populated"
-    - from: promoted
-      to: canonical
-      preconditions:
-        - "Realization bindings present"
-amendment_model: merge
-```
+After running it, **read the created file** (the path is printed to
+stderr) and use `Edit` to fill in the TODOs. Use `Edit`, not `Write` —
+`Write` requires reading the file first anyway, and `Edit` is safer for
+targeted changes.
 
-Each gate requires `from` (source state), `to` (target state), and
-`preconditions` (list of strings).
+Workflow per shape:
 
-The Profile ensures consistency: `shapes validate` checks that all governed
-nodes satisfy the Profile's field requirements.
+1. `shapes create shape --name X --kind feature` → note the file path.
+2. `Read` the file. Every required field appears as `TODO: <hint>`. Every
+   optional field appears as a commented `# field: TODO: <hint>` line.
+   Stub `parents`/`children`/`constraints`/`realization` blocks are
+   commented out at the bottom.
+3. `Edit` the file: replace each TODO with real content; uncomment and
+   fill in the stub blocks you need (set `parents:` for child shapes,
+   `children:` for parent shapes, `constraints:` for governing rules,
+   `realization:` for source-file pointers); delete stubs you don't need.
+4. Repeat for each shape. Create children before their parent if you want
+   to reference child IDs in the parent's `children:` block, or create
+   the parent first and reference its ID in each child's `parents:` block
+   — both are fine.
 
-## Step 5: Create Shapes
+Shapes should be **rich and detailed**. Go deep — not just top-level
+modules, but interfaces, patterns, data flows, and sub-features.
 
-Create the top-level shape first, then decompose into children:
+## Step 5: Create Constraints
+
+Same flow as shapes:
 
 ```bash
-shapes create shape --name "<ProjectName>" --kind system \
-  --summary "<description>"
+shapes create constraint --name "<Name>" --kind invariant --enforcement machine
 ```
 
-Edit the YAML to flesh it out. Minimum viable shape structure:
+`--enforcement` accepts only **`manual`** (human review) or **`machine`**
+(automated check) — never `human`.
 
-```yaml
-intent:
-  kind: system
-  summary: "<one-line description>"
-  source: human
-  goals: "<what this must achieve>"
-  rationale: "<why this approach>"
-profile: <profile-id>
-status:
-  state: proposed
-realization:
-  - bindings:
-      - scheme: path
-        value: src/main.rs
-        metadata:
-          summary: "<what's in this file relevant to this shape>"
-    role: primary
-```
+The scaffold writes TODO placeholders for `description`, `rule`,
+`intent.rationale`, and any other required fields the template declares,
+plus commented stub blocks for `parents`/`children`/`realization`/
+`evidence`. `Read` and `Edit` exactly as in Step 4.
 
-Reference the Profile by ID in the `profile` field. Use whatever Intent
-fields the Profile declares.
+Attach constraints to the shapes they govern by uncommenting the
+`constraints:` block in each shape's YAML and listing the constraint IDs.
 
-Then create child shapes for components, features, interfaces, patterns —
-whatever decomposition captures the project's structure. Link them via
-parent/child references in the YAML.
+## Step 6: (Optional) Create a Profile
 
-Shapes should be **rich and detailed**. The `description` should be a
-paragraph, not a phrase. The `intent` should use the fields the Profile
-defines. Include `realization` bindings pointing to actual source files.
-
-Go deep — not just top-level modules, but interfaces, patterns, data flows,
-and sub-features. The real value comes from shapes that capture what an
-engineer carries in their head.
-
-## Step 6: Create Constraints
-
-Constraints capture rules that prevent bugs, security issues, and
-architectural drift. They are the most valuable part for agents.
+Profiles are **optional** and only needed if you want enforcement —
+required intent fields, kind validation, lifecycle gates. If you're just
+documenting intent and constraints, skip this step.
 
 ```bash
-shapes create constraint --name "<Name>" --kind invariant \
-  --rule "<specific, falsifiable rule>" --enforcement machine
+shapes create profile --name "<ProjectName> Profile"
 ```
 
-Edit each constraint's YAML. Minimum viable constraint structure:
+The scaffold seeds the Profile with the active template's field and kind
+declarations as a sensible starting point. `Read` the file and edit:
+toggle `required: true|false` per field, add or remove kinds, adjust the
+lifecycle gates. Then attach the Profile to shapes/constraints by passing
+`--profile <id>` to subsequent `shapes create` calls (or by editing
+existing nodes' `profile:` field).
 
-```yaml
-intent:
-  kind: invariant
-  summary: "<one-line description>"
-  source: human
-  description: "<why this rule exists — the incident or requirement>"
-  rule: "<specific, falsifiable invariant>"
-  rationale: "<what breaks if violated>"
-status:
-  state: proposed
-```
-
-Each constraint should include:
-- A `description` explaining why the rule exists — the incident, decision,
-  or requirement that created it
-- A `rule` specific enough to verify by reading code
-- `realization` pointing to where the constraint is enforced
-- `evidence` linking to tests or reviews that verify it
-
-Constraint kinds: invariant, requirement, boundary, guideline, limit, policy.
-
-## Step 7: Link Everything
-
-Edit YAML files to establish relationships:
-
-**Parent/child** (both sides must be set):
-```yaml
-# In child
-parents:
-  - id: 1
-    role: component
-
-# In parent
-children:
-  - shape: 2
-    role: component
-```
-
-**Constraint references**:
-```yaml
-constraints:
-  - 1
-  - 2
-```
-
-**Realizations** (use `scheme: path` with `metadata.summary`):
-```yaml
-realization:
-  - bindings:
-      - scheme: path
-        value: src/auth/mod.rs
-        metadata:
-          summary: OAuth2 login flow — token exchange, session creation, refresh logic
-    role: primary
-```
-
-## Step 8: Validate and Show
+## Step 7: Validate and Show
 
 ```bash
 shapes validate
 ```
 
 If `shapes validate` reports errors (exit code 2), fix each issue and
-re-validate. Repeat until exit code 0 — do not proceed with errors.
+re-validate. Repeat until exit code 0 — do not proceed with errors. The
+most common failure is leftover `TODO:` placeholders that didn't get
+edited; grep the `.shapes/` tree for `TODO:` to find them.
 
 Once clean, show the final structure:
 
