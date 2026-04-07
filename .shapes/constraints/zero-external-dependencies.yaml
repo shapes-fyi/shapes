@@ -11,7 +11,7 @@ rule: >-
   The CLI requires only the filesystem — no database, network, or running
   service dependencies at runtime
 enforcement: manual
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: Zero External Dependencies at Runtime

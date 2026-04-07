@@ -11,7 +11,7 @@ rule: >-
   Neither the Shape DAG nor the Constraint DAG may contain cycles — validated
   by three-color DFS
 enforcement: machine
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: No Cycles in DAGs

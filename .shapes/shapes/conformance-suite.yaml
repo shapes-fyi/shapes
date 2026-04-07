@@ -6,7 +6,7 @@ description: >-
   test vectors — 3 valid graphs must pass, 11 invalid graphs must fail with
   specific invariant IDs.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: >-

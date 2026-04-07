@@ -7,7 +7,7 @@ description: >-
   switching. OKLCH color tokens in globals.css define both light and dark
   palettes, enabling smooth theme transitions.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: >-

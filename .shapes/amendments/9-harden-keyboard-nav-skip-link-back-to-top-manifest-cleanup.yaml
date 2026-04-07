@@ -4,7 +4,7 @@ description: Production-readiness sweep on the specification page and the root l
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Production-readiness pass on the spec page. Adds vim-style keyboard navigation (j/k/G/g g), a skip-to-content link, lowers the back-to-top threshold from 90% to 20%, fixes the leftover Create TanStack App Sample manifest, and replaces the generic root meta description. Edge-case sweep on text wrap and long content.

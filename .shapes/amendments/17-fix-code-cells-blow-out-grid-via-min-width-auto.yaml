@@ -4,7 +4,7 @@ description: A CSS Grid gotcha that the prior visual fix amendment did not catch
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Code blocks in In Practice and Install escape their bordered boxes because the grid items containing them default to min-width auto, refusing to shrink below the intrinsic width of the longest unwrappable line in the pre. The CodeBlock's overflow-x-auto never activates because the cell itself expands. Adding min-w-0 to the grid items lets the track minmax(0, 1fr) actually clamp the cell, so overflow-x-auto kicks in and the text scrolls horizontally inside the bordered box.

@@ -4,7 +4,7 @@ description: >-
   Governance configuration for the shapes-cli project. Defines required and
   optional intent fields, allowed kinds, and validation rules for all shapes
   and constraints in this repository.
-status: promoted
+status: canonical
 intent:
   kind: governance
   summary: Governance configuration for the shapes-cli project

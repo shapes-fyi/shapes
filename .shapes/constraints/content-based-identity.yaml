@@ -10,7 +10,7 @@ rule: >-
   Node identity is determined by the id field in the data, not by filename or
   storage location
 enforcement: machine
-status: proposed
+status: canonical
 intent:
   kind: requirement
   summary: >-

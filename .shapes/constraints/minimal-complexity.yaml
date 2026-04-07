@@ -11,7 +11,7 @@ rule: >-
   Prefer the simplest correct implementation — do not add abstractions,
   generics, or configurability until a concrete need exists
 enforcement: manual
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: Minimal Complexity

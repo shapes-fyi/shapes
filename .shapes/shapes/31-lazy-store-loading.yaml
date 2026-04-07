@@ -4,7 +4,7 @@ description: >-
   Add lazy/streaming node loading for large stores. Currently
   build_adjacency and validate load all nodes of a type upfront which
   is fine for hundreds of nodes but would need lazy loading for thousands.
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: feature

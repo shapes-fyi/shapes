@@ -6,7 +6,7 @@ description: >-
   validate against. 13 schema files covering shapes, constraints, amendments,
   profiles, and all shared types.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: >-

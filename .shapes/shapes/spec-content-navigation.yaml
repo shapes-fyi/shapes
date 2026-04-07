@@ -7,7 +7,7 @@ description: >-
   intersection-observer-based active section tracking, scroll progress
   indicator, and linked headings with anchor URLs for deep linking.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: >-

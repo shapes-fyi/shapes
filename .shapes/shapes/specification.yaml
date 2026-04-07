@@ -6,7 +6,7 @@ description: >-
   conformance tests. Defines what any Shapes implementation must satisfy
   independent of transport or language.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: module
   summary: >-

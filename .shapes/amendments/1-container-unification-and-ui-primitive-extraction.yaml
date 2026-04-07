@@ -4,7 +4,7 @@ description: First step of an end-to-end visual overhaul of the specification we
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Normalize web app container padding and extract shared layout primitives from apps/web into packages/ui, unifying nav, hero, sections, and footer on a single container token pattern.

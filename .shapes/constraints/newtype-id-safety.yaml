@@ -8,7 +8,7 @@ description: >-
 kind: invariant
 rule: All node ID fields in model structs MUST use the corresponding newtype wrapper (ShapeId, ConstraintId, AmendmentId, ProfileId), not bare u64
 enforcement: machine
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: requirement

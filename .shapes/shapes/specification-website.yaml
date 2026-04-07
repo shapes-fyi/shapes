@@ -8,7 +8,7 @@ description: >-
   file-based routing via TanStack Router. Independent from the CLI at runtime —
   shares the monorepo but not code or data.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: module
   summary: >-

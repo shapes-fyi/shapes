@@ -7,7 +7,7 @@ description: >-
 kind: boundary
 rule: Amendments MUST NOT have a --profile flag unless the spec adds a profile field to the Amendment schema
 enforcement: manual
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: requirement

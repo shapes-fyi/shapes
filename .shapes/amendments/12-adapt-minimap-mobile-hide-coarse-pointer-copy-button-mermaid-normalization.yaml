@@ -4,7 +4,7 @@ description: Responsive and input-method sweep that catches the gaps the visual 
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Responsive sweep targeting the touch and small-viewport gaps that the visual overhaul did not address. Hides the section minimap below md (it relies on hover and overlaps content on phones). Makes the CodeBlock copy button visible by default on coarse-pointer devices. Normalizes the Mermaid figcaption to the new typography tokens.

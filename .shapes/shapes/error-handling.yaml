@@ -7,7 +7,7 @@ description: >-
   and CliError (top-level wrapper that maps errors to exit codes 0/1/2).
   The CliError::Other variant wraps anyhow::Error for backward compatibility
   during incremental migration from anyhow.
-status: promoted
+status: canonical
 profile: 1
 intent:
   kind: module

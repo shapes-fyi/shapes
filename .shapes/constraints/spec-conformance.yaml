@@ -11,7 +11,7 @@ rule: >-
   The CLI must faithfully implement the shapes.fyi specification — it must not
   invent new semantics or node types beyond the spec
 enforcement: manual
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: Spec Conformance

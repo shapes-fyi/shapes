@@ -5,7 +5,7 @@ targets:
   shape_ids:
   - 17
   - 21
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Activates the unused --water token and introduces semantic color for the Shapes lifecycle vocabulary (canonical, promoted, proposed) plus cross-DAG references on the Two Graphs demonstration. Deletes the unused --earth token. Colors numbered section labels and adds route-aware nav active state. Strategic, meaning-carrying color rather than decorative.

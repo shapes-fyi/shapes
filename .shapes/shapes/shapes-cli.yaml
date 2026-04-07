@@ -9,7 +9,7 @@ description: >-
   operation so agents can discover context via CLI commands on demand without
   needing a running server or pre-loaded prompts.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: system
   summary: >-

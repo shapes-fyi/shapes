@@ -9,7 +9,7 @@ description: >-
   successors list. Custom serde serialization outputs bare strings for default
   details and tagged maps otherwise, matching the spec's YAML format.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: pattern
   summary: >-

@@ -4,7 +4,7 @@ description: Three small, quiet delight moments that reward attention and curios
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Three quiet, brand-appropriate delight moments. Native title-attribute tooltips on lifecycle tags in the Two Graphs demonstration explain the vocabulary on hover. The browser tab title on the spec page reflects the currently visible section as the reader scrolls. A single console greeting on first mount rewards developers reading the source.

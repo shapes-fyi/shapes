@@ -4,7 +4,7 @@ description: Adds the first cross-app layout primitives to the shared UI library
 targets:
   shape_ids:
   - 21
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Adds three composable layout primitives (Container, SectionLabel, SectionDivider) to packages/ui to replace repeated inline layout patterns in apps/web. Establishes the design system vocabulary beyond Button.

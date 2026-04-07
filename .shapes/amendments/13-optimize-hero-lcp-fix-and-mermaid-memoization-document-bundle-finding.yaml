@@ -4,7 +4,7 @@ description: Two surgical performance fixes that improve perceived load and runt
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Two surgical performance fixes plus a documented finding. Renders the hero SectionLabel and wordmark statically so the LCP element is visible at first paint instead of behind a 700ms motion entrance. Memoizes the Mermaid renderMermaidSVG call so each diagram is computed once per (title, diagram) instead of on every render. Documents the 1.6 MB specification chunk caused by client-side bundling of beautiful-mermaid + elkjs as a known issue scoped to a follow-up dedicated amendment.
