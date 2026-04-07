@@ -1,0 +1,29 @@
+id: 26
+name: Justified allow Attributes
+description: >-
+  Every #[allow(...)] attribute in the CLI crate carries an inline comment
+  explaining why the lint is suppressed and, when applicable, when the
+  suppression can be removed.
+kind: guideline
+rule: >-
+  Every #[allow(...)] in src/ is accompanied by a // line comment explaining
+  why the lint is suppressed and, where applicable, the condition under
+  which the allow can be removed. Unexplained #[allow] is a violation.
+enforcement: manual
+status: proposed
+profile: 1
+intent:
+  kind: guideline
+  summary: Every #[allow(...)] is justified by an inline comment
+  source: ai
+  rationale: >-
+    Lint suppressions accumulate silently and outlive their reasons. The
+    current crate already follows this practice in spirit (src/error.rs:12,
+    src/error.rs:44, src/store.rs:33, src/store.rs:78) — formalizing it
+    means new allows cannot land without context.
+  impact_if_violated: >-
+    Suppressions become load-bearing technical debt that nobody can safely
+    remove because the original justification is gone.
+  verification_method: >-
+    Grep for `#[allow` in src/; for each hit, confirm a justifying // comment
+    on the preceding or same line.

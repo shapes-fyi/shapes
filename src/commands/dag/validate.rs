@@ -1,3 +1,10 @@
+//! Graph integrity checks (`shapes validate`).
+//!
+//! Implements every cross-node invariant: cycle detection, reciprocal
+//! parent/child links, valid ID references, append-only ID
+//! discipline, and the assorted INV-* checks emitted into
+//! [`ValidationIssue`].
+
 use std::collections::{BTreeMap, HashSet};
 use std::fmt;
 
@@ -7,15 +14,18 @@ use serde::Serialize;
 use crate::model::*;
 use crate::store::NodeStore;
 
-// ---------------------------------------------------------------------------
-// Validation types
-// ---------------------------------------------------------------------------
-
+/// Severity classification for a [`ValidationIssue`].
+//
+// `dead_code` is allowed because `Warning` is part of the public
+// vocabulary even though every issue currently emitted is an
+// `Error`. Remove this allow once a check produces warnings.
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
-#[allow(dead_code)]
 pub enum Severity {
+    /// A hard violation that breaks an invariant.
     Error,
+    /// A soft violation that should be looked at.
     Warning,
 }
 
@@ -46,10 +56,6 @@ impl fmt::Display for ValidationIssue {
         )
     }
 }
-
-// ---------------------------------------------------------------------------
-// Validate
-// ---------------------------------------------------------------------------
 
 pub fn validate(store: &impl NodeStore) -> Result<Vec<ValidationIssue>> {
     let mut issues = Vec::new();
@@ -86,16 +92,36 @@ pub fn validate(store: &impl NodeStore) -> Result<Vec<ValidationIssue>> {
         map
     }
 
-    let shapes: BTreeMap<ShapeId, Shape> =
-        load_all_or_warn(store, &shape_ids, NodeType::Shape, ShapeId::new, &mut issues);
-    let constraints: BTreeMap<ConstraintId, Constraint> =
-        load_all_or_warn(store, &constraint_ids, NodeType::Constraint, ConstraintId::new, &mut issues);
-    let amendments: BTreeMap<AmendmentId, Amendment> =
-        load_all_or_warn(store, &amendment_ids, NodeType::Amendment, AmendmentId::new, &mut issues);
-    let profiles: BTreeMap<ProfileId, Profile> =
-        load_all_or_warn(store, &profile_ids, NodeType::Profile, ProfileId::new, &mut issues);
+    let shapes: BTreeMap<ShapeId, Shape> = load_all_or_warn(
+        store,
+        &shape_ids,
+        NodeType::Shape,
+        ShapeId::new,
+        &mut issues,
+    );
+    let constraints: BTreeMap<ConstraintId, Constraint> = load_all_or_warn(
+        store,
+        &constraint_ids,
+        NodeType::Constraint,
+        ConstraintId::new,
+        &mut issues,
+    );
+    let amendments: BTreeMap<AmendmentId, Amendment> = load_all_or_warn(
+        store,
+        &amendment_ids,
+        NodeType::Amendment,
+        AmendmentId::new,
+        &mut issues,
+    );
+    let profiles: BTreeMap<ProfileId, Profile> = load_all_or_warn(
+        store,
+        &profile_ids,
+        NodeType::Profile,
+        ProfileId::new,
+        &mut issues,
+    );
 
-    // --- ID uniqueness (INV-011) ---
+    // ID uniqueness (INV-011)
     fn check_duplicate_ids(ids: &[u64], type_name: &str, issues: &mut Vec<ValidationIssue>) {
         let mut seen = HashSet::new();
         for &id in ids {
@@ -116,81 +142,167 @@ pub fn validate(store: &impl NodeStore) -> Result<Vec<ValidationIssue>> {
     check_duplicate_ids(&amendment_ids, "amendment", &mut issues);
     check_duplicate_ids(&profile_ids, "profile", &mut issues);
 
-    // --- Cycle detection ---
-    detect_cycles_in(&shapes, "shape", "INV-001", |s: &Shape| s.child_ids(), &mut issues);
-    detect_cycles_in(&constraints, "constraint", "INV-002", |c: &Constraint| c.child_ids(), &mut issues);
+    // Cycle detection
+    detect_cycles_in(
+        &shapes,
+        "shape",
+        "INV-001",
+        |s: &Shape| s.child_ids(),
+        &mut issues,
+    );
+    detect_cycles_in(
+        &constraints,
+        "constraint",
+        "INV-002",
+        |c: &Constraint| c.child_ids(),
+        &mut issues,
+    );
 
-    // --- Dangling references ---
+    // Dangling references
     for (&id, shape) in &shapes {
         for &cid in &shape.constraints {
             if !constraints.contains_key(&cid) {
-                issues.push(ValidationIssue { invariant: "INV-003".into(), severity: Severity::Error, node_type: "shape".into(), node_id: id.to_string(), message: format!("references non-existent constraint {cid}") });
+                issues.push(ValidationIssue {
+                    invariant: "INV-003".into(),
+                    severity: Severity::Error,
+                    node_type: "shape".into(),
+                    node_id: id.to_string(),
+                    message: format!("references non-existent constraint {cid}"),
+                });
             }
         }
         for p in &shape.parents {
             if !shapes.contains_key(&p.id) {
-                issues.push(ValidationIssue { invariant: "INV-004".into(), severity: Severity::Error, node_type: "shape".into(), node_id: id.to_string(), message: format!("references non-existent parent shape {}", p.id) });
+                issues.push(ValidationIssue {
+                    invariant: "INV-004".into(),
+                    severity: Severity::Error,
+                    node_type: "shape".into(),
+                    node_id: id.to_string(),
+                    message: format!("references non-existent parent shape {}", p.id),
+                });
             }
         }
         for child_id in shape.child_ids() {
             if !shapes.contains_key(&child_id) {
-                issues.push(ValidationIssue { invariant: "INV-005".into(), severity: Severity::Error, node_type: "shape".into(), node_id: id.to_string(), message: format!("references non-existent child shape {child_id}") });
+                issues.push(ValidationIssue {
+                    invariant: "INV-005".into(),
+                    severity: Severity::Error,
+                    node_type: "shape".into(),
+                    node_id: id.to_string(),
+                    message: format!("references non-existent child shape {child_id}"),
+                });
             }
         }
         if let Some(pid) = shape.profile
             && !profiles.contains_key(&pid)
         {
-            issues.push(ValidationIssue { invariant: "INV-006".into(), severity: Severity::Error, node_type: "shape".into(), node_id: id.to_string(), message: format!("references non-existent profile {pid}") });
+            issues.push(ValidationIssue {
+                invariant: "INV-006".into(),
+                severity: Severity::Error,
+                node_type: "shape".into(),
+                node_id: id.to_string(),
+                message: format!("references non-existent profile {pid}"),
+            });
         }
     }
 
     for (&id, constraint) in &constraints {
         for p in &constraint.parents {
             if !constraints.contains_key(&p.id) {
-                issues.push(ValidationIssue { invariant: "INV-004".into(), severity: Severity::Error, node_type: "constraint".into(), node_id: id.to_string(), message: format!("references non-existent parent constraint {}", p.id) });
+                issues.push(ValidationIssue {
+                    invariant: "INV-004".into(),
+                    severity: Severity::Error,
+                    node_type: "constraint".into(),
+                    node_id: id.to_string(),
+                    message: format!("references non-existent parent constraint {}", p.id),
+                });
             }
         }
         for child_id in constraint.child_ids() {
             if !constraints.contains_key(&child_id) {
-                issues.push(ValidationIssue { invariant: "INV-005".into(), severity: Severity::Error, node_type: "constraint".into(), node_id: id.to_string(), message: format!("references non-existent child constraint {child_id}") });
+                issues.push(ValidationIssue {
+                    invariant: "INV-005".into(),
+                    severity: Severity::Error,
+                    node_type: "constraint".into(),
+                    node_id: id.to_string(),
+                    message: format!("references non-existent child constraint {child_id}"),
+                });
             }
         }
         if let Some(pid) = constraint.profile
             && !profiles.contains_key(&pid)
         {
-            issues.push(ValidationIssue { invariant: "INV-006".into(), severity: Severity::Error, node_type: "constraint".into(), node_id: id.to_string(), message: format!("references non-existent profile {pid}") });
+            issues.push(ValidationIssue {
+                invariant: "INV-006".into(),
+                severity: Severity::Error,
+                node_type: "constraint".into(),
+                node_id: id.to_string(),
+                message: format!("references non-existent profile {pid}"),
+            });
         }
     }
 
-    // --- Amendment validation ---
+    // Amendment validation
     for (&id, amendment) in &amendments {
         if amendment.targets.is_empty() {
-            issues.push(ValidationIssue { invariant: "INV-007".into(), severity: Severity::Error, node_type: "amendment".into(), node_id: id.to_string(), message: "amendment has no targets".into() });
+            issues.push(ValidationIssue {
+                invariant: "INV-007".into(),
+                severity: Severity::Error,
+                node_type: "amendment".into(),
+                node_id: id.to_string(),
+                message: "amendment has no targets".into(),
+            });
         }
         for &sid in &amendment.targets.shape_ids {
             if !shapes.contains_key(&sid) {
-                issues.push(ValidationIssue { invariant: "INV-008".into(), severity: Severity::Error, node_type: "amendment".into(), node_id: id.to_string(), message: format!("targets non-existent shape {sid}") });
+                issues.push(ValidationIssue {
+                    invariant: "INV-008".into(),
+                    severity: Severity::Error,
+                    node_type: "amendment".into(),
+                    node_id: id.to_string(),
+                    message: format!("targets non-existent shape {sid}"),
+                });
             }
         }
         for &cid in &amendment.targets.constraint_ids {
             if !constraints.contains_key(&cid) {
-                issues.push(ValidationIssue { invariant: "INV-008".into(), severity: Severity::Error, node_type: "amendment".into(), node_id: id.to_string(), message: format!("targets non-existent constraint {cid}") });
+                issues.push(ValidationIssue {
+                    invariant: "INV-008".into(),
+                    severity: Severity::Error,
+                    node_type: "amendment".into(),
+                    node_id: id.to_string(),
+                    message: format!("targets non-existent constraint {cid}"),
+                });
             }
         }
         for &pid in &amendment.targets.profile_ids {
             if !profiles.contains_key(&pid) {
-                issues.push(ValidationIssue { invariant: "INV-008".into(), severity: Severity::Error, node_type: "amendment".into(), node_id: id.to_string(), message: format!("targets non-existent profile {pid}") });
+                issues.push(ValidationIssue {
+                    invariant: "INV-008".into(),
+                    severity: Severity::Error,
+                    node_type: "amendment".into(),
+                    node_id: id.to_string(),
+                    message: format!("targets non-existent profile {pid}"),
+                });
             }
         }
     }
 
-    // --- Reciprocal parent/child link checks ---
+    // Reciprocal parent/child link checks
     for (&id, shape) in &shapes {
         for child_id in shape.child_ids() {
             if let Some(child) = shapes.get(&child_id)
                 && !child.parents.iter().any(|p| p.id == id)
             {
-                issues.push(ValidationIssue { invariant: "INV-009".into(), severity: Severity::Error, node_type: "shape".into(), node_id: id.to_string(), message: format!("lists shape {child_id} as child, but child does not list {id} as parent") });
+                issues.push(ValidationIssue {
+                    invariant: "INV-009".into(),
+                    severity: Severity::Error,
+                    node_type: "shape".into(),
+                    node_id: id.to_string(),
+                    message: format!(
+                        "lists shape {child_id} as child, but child does not list {id} as parent"
+                    ),
+                });
             }
         }
     }
@@ -205,12 +317,19 @@ pub fn validate(store: &impl NodeStore) -> Result<Vec<ValidationIssue>> {
         }
     }
 
-    // --- Profile field validation ---
+    // Profile field validation
     for (&id, shape) in &shapes {
         if let Some(pid) = shape.profile
             && let Some(profile) = profiles.get(&pid)
         {
-            validate_profile_fields(profile, "shape", id.get(), &shape.intent, &shape.metadata, &mut issues);
+            validate_profile_fields(
+                profile,
+                "shape",
+                id.get(),
+                &shape.intent,
+                &shape.metadata,
+                &mut issues,
+            );
         }
     }
 
@@ -218,16 +337,19 @@ pub fn validate(store: &impl NodeStore) -> Result<Vec<ValidationIssue>> {
         if let Some(pid) = constraint.profile
             && let Some(profile) = profiles.get(&pid)
         {
-            validate_profile_fields(profile, "constraint", id.get(), &constraint.intent, &constraint.metadata, &mut issues);
+            validate_profile_fields(
+                profile,
+                "constraint",
+                id.get(),
+                &constraint.intent,
+                &constraint.metadata,
+                &mut issues,
+            );
         }
     }
 
     Ok(issues)
 }
-
-// ---------------------------------------------------------------------------
-// DFS three-color cycle detection — generic over ID type
-// ---------------------------------------------------------------------------
 
 fn detect_cycles_in<Id: Copy + Eq + Ord + std::hash::Hash + fmt::Display, T>(
     nodes: &BTreeMap<Id, T>,
@@ -237,7 +359,11 @@ fn detect_cycles_in<Id: Copy + Eq + Ord + std::hash::Hash + fmt::Display, T>(
     issues: &mut Vec<ValidationIssue>,
 ) {
     #[derive(Clone, Copy, PartialEq)]
-    enum Color { White, Gray, Black }
+    enum Color {
+        White,
+        Gray,
+        Black,
+    }
 
     let mut colors: BTreeMap<Id, Color> = nodes.keys().map(|&id| (id, Color::White)).collect();
 
@@ -264,7 +390,15 @@ fn detect_cycles_in<Id: Copy + Eq + Ord + std::hash::Hash + fmt::Display, T>(
                         });
                     }
                     Some(Color::White) => {
-                        dfs(child_id, nodes, colors, get_children, type_name, invariant, issues);
+                        dfs(
+                            child_id,
+                            nodes,
+                            colors,
+                            get_children,
+                            type_name,
+                            invariant,
+                            issues,
+                        );
                     }
                     _ => {}
                 }
@@ -276,14 +410,18 @@ fn detect_cycles_in<Id: Copy + Eq + Ord + std::hash::Hash + fmt::Display, T>(
     let ids: Vec<Id> = nodes.keys().copied().collect();
     for id in ids {
         if colors.get(&id) == Some(&Color::White) {
-            dfs(id, nodes, &mut colors, &get_children, type_name, invariant, issues);
+            dfs(
+                id,
+                nodes,
+                &mut colors,
+                &get_children,
+                type_name,
+                invariant,
+                issues,
+            );
         }
     }
 }
-
-// ---------------------------------------------------------------------------
-// Profile field validation
-// ---------------------------------------------------------------------------
 
 fn validate_profile_fields(
     profile: &Profile,
@@ -293,7 +431,9 @@ fn validate_profile_fields(
     metadata: &BTreeMap<String, serde_yml::Value>,
     issues: &mut Vec<ValidationIssue>,
 ) {
-    let Some(ref fields) = profile.fields else { return };
+    let Some(ref fields) = profile.fields else {
+        return;
+    };
     let section = match node_type {
         "shape" => &fields.shape,
         "constraint" => &fields.constraint,

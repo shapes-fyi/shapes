@@ -1,0 +1,37 @@
+id: 23
+name: Borrow Over Owned Strings
+description: >-
+  Function and method parameters take borrowed types (&str, &[T], &Path)
+  unless the callee genuinely needs ownership. .to_string() is reserved for
+  crossing an ownership boundary, never for shoring up a type mismatch on a
+  literal.
+kind: guideline
+rule: >-
+  Function and method parameters take &str unless the function must take
+  ownership, store the value, or mutate it. .to_string() is forbidden on
+  &'static str literals and on values already typed as String — use
+  .to_owned() or pass a reference. Same principle applies to &[T] vs Vec<T>
+  and &Path vs PathBuf.
+enforcement: manual
+status: proposed
+profile: 1
+intent:
+  kind: guideline
+  summary: Prefer &str / &[T] / &Path in parameters; no needless allocations
+  source: ai
+  rationale: >-
+    Owned types in parameter positions force callers into unnecessary
+    allocations and obscure the data-flow. Cow is intentionally not part of
+    this rule because pulling it in fights constraint:9 Minimal Complexity.
+    Known offenders: src/commands/mod.rs:150 and :202 call .to_string() on
+    &'static str fields from a template struct.
+  impact_if_violated: >-
+    Allocation noise on hot paths, callers paying conversion costs that the
+    callee never needed, and a public API that signals owned data when only
+    a borrow is required.
+  exceptions: >-
+    Constructors and Into-style conversions that genuinely store the value;
+    serde-derived structs whose fields back the on-disk YAML format.
+  verification_method: >-
+    Code review at PR time; targeted grep for `.to_string()` immediately
+    following a `&'static str` literal or a String-typed expression.

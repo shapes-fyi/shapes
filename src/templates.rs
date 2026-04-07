@@ -40,10 +40,6 @@ pub struct KindHint {
     pub description: &'static str,
 }
 
-// ---------------------------------------------------------------------------
-// Clap enum surface
-// ---------------------------------------------------------------------------
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 #[clap(rename_all = "kebab-case")]
 pub enum TemplateKind {
@@ -89,10 +85,6 @@ pub fn resolve(name: Option<&str>) -> &'static Template {
         _ => &SOFTWARE,
     }
 }
-
-// ---------------------------------------------------------------------------
-// Software template
-// ---------------------------------------------------------------------------
 
 pub static SOFTWARE: Template = Template {
     name: "software",
@@ -201,10 +193,6 @@ pub static SOFTWARE: Template = Template {
     default_constraint_kind: "invariant",
 };
 
-// ---------------------------------------------------------------------------
-// Research template
-// ---------------------------------------------------------------------------
-
 pub static RESEARCH: Template = Template {
     name: "research",
     description: "Research project — experiments, datasets, findings",
@@ -291,10 +279,6 @@ pub static RESEARCH: Template = Template {
     default_constraint_kind: "methodology",
 };
 
-// ---------------------------------------------------------------------------
-// Editorial template
-// ---------------------------------------------------------------------------
-
 pub static EDITORIAL: Template = Template {
     name: "editorial",
     description: "Editorial / writing project — books, articles, narratives",
@@ -379,10 +363,6 @@ pub static EDITORIAL: Template = Template {
     default_shape_kind: "chapter",
     default_constraint_kind: "voice",
 };
-
-// ---------------------------------------------------------------------------
-// Minimal template
-// ---------------------------------------------------------------------------
 
 pub static MINIMAL: Template = Template {
     name: "minimal",

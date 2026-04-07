@@ -1,3 +1,15 @@
+//! Crate root for the `shapes` CLI binary.
+//!
+//! Wires together the four top-level modules ([`commands`], [`error`],
+//! [`model`], [`store`], [`templates`]), defines the [`clap`] parser, and
+//! dispatches each subcommand to its handler in [`commands`]. The crate
+//! also pins the project-wide lint baseline below — see constraint 24
+//! (Crate-Root Lint Discipline) in `.shapes/`.
+
+#![deny(unsafe_code)]
+#![warn(rust_2018_idioms)]
+#![deny(missing_docs)]
+
 mod commands;
 mod error;
 mod model;
@@ -260,9 +272,12 @@ enum CreateCommand {
     },
 }
 
+/// Selects which DAG (`shape` or `constraint`) a query operates on.
 #[derive(Clone, Copy, ValueEnum)]
 pub enum DagType {
+    /// The shape DAG.
     Shape,
+    /// The constraint DAG.
     Constraint,
 }
 

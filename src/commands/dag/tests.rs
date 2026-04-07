@@ -5,7 +5,7 @@ use serde::Serialize;
 use serde::de::DeserializeOwned;
 
 use crate::model::*;
-use crate::model::common::{Intent, Status};
+use crate::model::{Intent, Status};
 use crate::store::NodeStore;
 
 use super::validate::validate;

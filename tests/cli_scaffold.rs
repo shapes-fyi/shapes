@@ -55,23 +55,45 @@ fn read_only_yaml_in(dir: &TempDir, subdir: &str) -> String {
 fn software_shape_scaffold_has_required_fields_and_stubs() {
     let dir = fresh_store("software");
     shapes_in(&dir)
-        .args(["create", "shape", "--name", "AuthService", "--kind", "service"])
+        .args([
+            "create",
+            "shape",
+            "--name",
+            "AuthService",
+            "--kind",
+            "service",
+        ])
         .assert()
         .success();
 
     let yaml = read_only_yaml_in(&dir, "shapes");
 
     // Header comment with template name
-    assert!(yaml.contains("template: software"), "missing template header: {yaml}");
+    assert!(
+        yaml.contains("template: software"),
+        "missing template header: {yaml}"
+    );
 
     // Description and required intent fields are TODO blocks
-    assert!(yaml.contains("description: |\n    TODO:"), "missing description TODO");
+    assert!(
+        yaml.contains("description: |\n    TODO:"),
+        "missing description TODO"
+    );
     assert!(yaml.contains("goals: |\n    TODO:"), "missing goals TODO");
-    assert!(yaml.contains("rationale: |\n    TODO:"), "missing rationale TODO");
+    assert!(
+        yaml.contains("rationale: |\n    TODO:"),
+        "missing rationale TODO"
+    );
 
     // Optional fields are commented out (not enforced)
-    assert!(yaml.contains("# non_goals:"), "non_goals should be commented");
-    assert!(yaml.contains("# requirements:"), "requirements should be commented");
+    assert!(
+        yaml.contains("# non_goals:"),
+        "non_goals should be commented"
+    );
+    assert!(
+        yaml.contains("# requirements:"),
+        "requirements should be commented"
+    );
 
     // Stub sections present as comments
     assert!(yaml.contains("# parents:"), "parents stub missing");
@@ -80,7 +102,10 @@ fn software_shape_scaffold_has_required_fields_and_stubs() {
     assert!(yaml.contains("# realization:"), "realization stub missing");
 
     // Validate parses & passes
-    shapes_in(&dir).args(["get", "shape", "1"]).assert().success();
+    shapes_in(&dir)
+        .args(["get", "shape", "1"])
+        .assert()
+        .success();
     shapes_in(&dir).arg("validate").assert().success();
 }
 
@@ -88,20 +113,42 @@ fn software_shape_scaffold_has_required_fields_and_stubs() {
 fn software_constraint_scaffold_has_rule_and_evidence_stub() {
     let dir = fresh_store("software");
     shapes_in(&dir)
-        .args(["create", "constraint", "--name", "NoUnsafeBlocks", "--kind", "invariant"])
+        .args([
+            "create",
+            "constraint",
+            "--name",
+            "NoUnsafeBlocks",
+            "--kind",
+            "invariant",
+        ])
         .assert()
         .success();
 
     let yaml = read_only_yaml_in(&dir, "constraints");
 
     assert!(yaml.contains("template: software"));
-    assert!(yaml.contains("rule: |\n    TODO:"), "rule should be a TODO block");
-    assert!(yaml.contains("rationale: |\n    TODO:"), "rationale required for software constraints");
-    assert!(yaml.contains("# impact_if_violated:"), "impact stub missing");
+    assert!(
+        yaml.contains("rule: |\n    TODO:"),
+        "rule should be a TODO block"
+    );
+    assert!(
+        yaml.contains("rationale: |\n    TODO:"),
+        "rationale required for software constraints"
+    );
+    assert!(
+        yaml.contains("# impact_if_violated:"),
+        "impact stub missing"
+    );
     assert!(yaml.contains("# evidence:"), "evidence stub missing");
-    assert!(yaml.contains("enforcement: manual"), "default enforcement should be manual");
+    assert!(
+        yaml.contains("enforcement: manual"),
+        "default enforcement should be manual"
+    );
 
-    shapes_in(&dir).args(["get", "constraint", "1"]).assert().success();
+    shapes_in(&dir)
+        .args(["get", "constraint", "1"])
+        .assert()
+        .success();
     shapes_in(&dir).arg("validate").assert().success();
 }
 
@@ -116,7 +163,10 @@ fn software_profile_scaffold_seeds_template_fields() {
     let yaml = read_only_yaml_in(&dir, "profiles");
 
     // Profile preamble explains optionality
-    assert!(yaml.contains("Profiles are\n# OPTIONAL"), "profile preamble missing");
+    assert!(
+        yaml.contains("Profiles are\n# OPTIONAL"),
+        "profile preamble missing"
+    );
 
     // Software template's required fields are seeded
     assert!(yaml.contains("name: \"goals\""));
@@ -128,7 +178,10 @@ fn software_profile_scaffold_seeds_template_fields() {
     assert!(yaml.contains("from: proposed"));
     assert!(yaml.contains("to: promoted"));
 
-    shapes_in(&dir).args(["get", "profile", "1"]).assert().success();
+    shapes_in(&dir)
+        .args(["get", "profile", "1"])
+        .assert()
+        .success();
     shapes_in(&dir).arg("validate").assert().success();
 }
 
@@ -207,7 +260,10 @@ fn from_stdin_path_still_works_without_name_flag() {
         .write_stdin(yaml_input)
         .assert()
         .success();
-    shapes_in(&dir).args(["get", "shape", "1"]).assert().success();
+    shapes_in(&dir)
+        .args(["get", "shape", "1"])
+        .assert()
+        .success();
 }
 
 // ---------------------------------------------------------------------------
@@ -219,16 +275,29 @@ fn per_call_template_override_does_not_modify_meta() {
     let dir = fresh_store("software");
     // Override to research for one call
     shapes_in(&dir)
-        .args(["create", "shape", "--name", "OneOff", "--template", "research"])
+        .args([
+            "create",
+            "shape",
+            "--name",
+            "OneOff",
+            "--template",
+            "research",
+        ])
         .assert()
         .success();
 
     let yaml = read_only_yaml_in(&dir, "shapes");
-    assert!(yaml.contains("template: research"), "override should produce research scaffold");
+    assert!(
+        yaml.contains("template: research"),
+        "override should produce research scaffold"
+    );
 
     // meta.yaml should still say software
     let meta = fs::read_to_string(dir.path().join(".shapes/meta.yaml")).unwrap();
-    assert!(meta.contains("template: software"), "meta should be unchanged");
+    assert!(
+        meta.contains("template: software"),
+        "meta should be unchanged"
+    );
 }
 
 // ---------------------------------------------------------------------------
@@ -499,17 +568,18 @@ fn list_and_tree_and_inheritance_work_after_linking_parent_and_child() {
         .args(["query", "ancestors", "shape", "2"])
         .assert()
         .success();
-    let ancestors_stdout =
-        String::from_utf8_lossy(&ancestors.get_output().stdout).to_string();
+    let ancestors_stdout = String::from_utf8_lossy(&ancestors.get_output().stdout).to_string();
     assert!(ancestors_stdout.contains("1"), "ancestors should include 1");
 
     let descendants = shapes_in(&dir)
         .args(["query", "descendants", "shape", "1"])
         .assert()
         .success();
-    let descendants_stdout =
-        String::from_utf8_lossy(&descendants.get_output().stdout).to_string();
-    assert!(descendants_stdout.contains("2"), "descendants should include 2");
+    let descendants_stdout = String::from_utf8_lossy(&descendants.get_output().stdout).to_string();
+    assert!(
+        descendants_stdout.contains("2"),
+        "descendants should include 2"
+    );
 
     // Constraint inheritance: child should see TheRule even though it's
     // declared on the parent.
@@ -517,8 +587,7 @@ fn list_and_tree_and_inheritance_work_after_linking_parent_and_child() {
         .args(["query", "constraints", "2"])
         .assert()
         .success();
-    let constraints_stdout =
-        String::from_utf8_lossy(&constraints.get_output().stdout).to_string();
+    let constraints_stdout = String::from_utf8_lossy(&constraints.get_output().stdout).to_string();
     assert!(
         constraints_stdout.contains("TheRule"),
         "child should inherit TheRule from parent: {constraints_stdout}",
@@ -627,7 +696,10 @@ fn list_supports_json_format() {
         .assert()
         .success();
     let stdout = String::from_utf8_lossy(&assert.get_output().stdout).to_string();
-    assert!(stdout.trim_start().starts_with('['), "expected JSON array, got: {stdout}");
+    assert!(
+        stdout.trim_start().starts_with('['),
+        "expected JSON array, got: {stdout}"
+    );
     assert!(stdout.contains("\"id\""));
     assert!(stdout.contains("\"name\""));
 }

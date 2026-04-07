@@ -1,0 +1,33 @@
+id: 27
+name: No Silent unwrap or expect
+description: >-
+  Non-test code may use .unwrap() / .expect() only when the surrounding code
+  carries a comment documenting the invariant that makes the call
+  infallible. The expect() message alone is not enough.
+kind: guideline
+rule: >-
+  .unwrap() and .expect() in non-test code (outside #[cfg(test)], #[test], and
+  tests/ modules) require an adjacent comment documenting the invariant that
+  makes the call infallible. expect() messages alone do not satisfy this —
+  the comment must explain why the invariant holds.
+enforcement: manual
+status: proposed
+profile: 1
+intent:
+  kind: guideline
+  summary: Non-test unwrap/expect must be accompanied by an invariant comment
+  source: ai
+  rationale: >-
+    Panics in a CLI binary surface as opaque crashes for users. The
+    discipline of writing the invariant comment forces the author to either
+    confirm the call is truly infallible or convert it into proper error
+    handling. The existing expect() at src/commands/mod.rs:148 already
+    documents its clap-derived invariant — formalize that practice.
+  impact_if_violated: >-
+    Panics ship to users with no diagnostic context; reviewers cannot tell
+    whether a panic site is "safe" without re-deriving the invariant.
+  exceptions: >-
+    Tests, benchmarks, build scripts.
+  verification_method: >-
+    Grep for `.unwrap()` and `.expect(` outside #[cfg(test)] blocks; verify
+    each call has an adjacent justifying comment.

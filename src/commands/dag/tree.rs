@@ -4,7 +4,12 @@ use crate::DagType;
 use crate::model::*;
 use crate::store::NodeStore;
 
-pub fn print_tree(store: &impl NodeStore, dag_type: DagType, root: Option<u64>, max_depth: usize) -> Result<()> {
+pub fn print_tree(
+    store: &impl NodeStore,
+    dag_type: DagType,
+    root: Option<u64>,
+    max_depth: usize,
+) -> Result<()> {
     let label = match dag_type {
         DagType::Shape => "shape",
         DagType::Constraint => "constraint",
@@ -25,8 +30,7 @@ pub fn print_tree(store: &impl NodeStore, dag_type: DagType, root: Option<u64>, 
         if i > 0 {
             println!();
         }
-        let (root_label, child_ids, constraint_ids) =
-            get_node_info(store, dag_type, *root_id)?;
+        let (root_label, child_ids, constraint_ids) = get_node_info(store, dag_type, *root_id)?;
         println!("{root_label}");
 
         if max_depth == 0 {
@@ -36,7 +40,11 @@ pub fn print_tree(store: &impl NodeStore, dag_type: DagType, root: Option<u64>, 
         let total = constraint_ids.len() + child_ids.len();
         for (ci, cid) in constraint_ids.iter().enumerate() {
             let is_last = ci + 1 == total;
-            let connector = if is_last { "\u{2514}\u{2500}\u{2500} " } else { "\u{251c}\u{2500}\u{2500} " };
+            let connector = if is_last {
+                "\u{2514}\u{2500}\u{2500} "
+            } else {
+                "\u{251c}\u{2500}\u{2500} "
+            };
             let cname = store
                 .load::<Constraint>(NodeType::Constraint, *cid)
                 .map(|c| c.name)
