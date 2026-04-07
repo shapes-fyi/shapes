@@ -1,19 +1,84 @@
 id: 23
 name: 'Profile-Aware Create: scope demotion; scaffolding moves to templates'
-description: Demotes the Profile-Aware Create feature to its kind-validation core. The apply_profile_fields/apply_field_group helpers that auto-populated required intent fields with TODO placeholders are removed; that responsibility now lives in the templates + scaffold modules (shape 32) and fires for every `shapes create` call regardless of whether a Profile is attached.
+description: >-
+  Demotes the Profile-Aware Create feature to its kind-validation core. The
+  apply_profile_fields/apply_field_group helpers that auto-populated
+  required intent fields with TODO placeholders are removed; that
+  responsibility now lives in the templates + scaffold modules (shape 32)
+  and fires for every `shapes create` call regardless of whether a Profile
+  is attached.
 targets:
   shape_ids:
-  - 28
+    - 28
 status: proposed
 intent:
   kind: amendment
-  summary: '--profile still validates kinds and sets the profile field, but no longer drives intent field pre-population — that''s now the template''s job, and it works for every create call, not just profile-attached ones.'
+  summary: >-
+    --profile still validates kinds and sets the profile field, but no
+    longer drives intent field pre-population — that's now the template's
+    job, and it works for every create call, not just profile-attached
+    ones.
   source: ai
-  affected_files: src/commands/mod.rs — apply_profile_fields and apply_field_group deleted; load_profile and validate_kind_against_profile retained; Profile loading moved inside `if let Some(pid) = profile` blocks in each create arm. src/model/mod.rs — unused AmendmentRules re-export removed.
-  goals: Keep --profile useful for opt-in kind validation. Remove the dead apply_profile_fields code path. Document the new division of labor (templates = hints, profiles = enforcement).
-  non_goals: Does not remove the --profile flag itself. Does not change Profile semantics for downstream features (lifecycle gates, amendment rules). Does not migrate the existing repo's Profile.
-  rationale: The original Profile-Aware Create feature gated TODO placeholders behind Profile attachment, which made fresh stores produce empty skeletons (because no Profile existed yet). Templates separate the "what fields exist" question from the "what fields are enforced" question, letting the CLI emit rich scaffolds for every project — Profile or no Profile. The kind-validation half of this feature remains useful and is kept.
+  goals: >-
+    Keep --profile useful for opt-in kind validation. Remove the dead
+    apply_profile_fields code path. Document the new division of labor
+    (templates = hints, profiles = enforcement).
+  non_goals: >-
+    Does not remove the --profile flag itself. Does not change Profile
+    semantics for downstream features (lifecycle gates, amendment rules).
+    Does not migrate the existing repo's Profile.
+  rationale: >-
+    The original Profile-Aware Create feature gated TODO placeholders
+    behind Profile attachment, which made fresh stores produce empty
+    skeletons (because no Profile existed yet). Templates separate the
+    "what fields exist" question from the "what fields are enforced"
+    question, letting the CLI emit rich scaffolds for every project —
+    Profile or no Profile. The kind-validation half of this feature
+    remains useful and is kept.
   spec_section: N/A — feature scope change
-  verification: '`cargo build` clean (no dead-code warnings). `cargo test` 14/14. The new Scaffold System (shape 32) absorbs the TODO-placeholder responsibility and is governed by the Profiles Optional in Create invariant (constraint 17).'
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/mod.rs
+        metadata:
+          summary: >-
+            apply_profile_fields and apply_field_group helpers deleted.
+            load_profile and validate_kind_against_profile retained.
+            Profile loading moved inside `if let Some(pid) = profile`
+            blocks in each create arm so the Profile is only consulted
+            when the user explicitly passes --profile.
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/model/mod.rs
+        metadata:
+          summary: >-
+            Unused `AmendmentRules` re-export removed (it was only
+            referenced by the deleted apply_profile_fields path).
+    role: supporting
+evidence:
+  - id: kind-validation-still-works
+    type: test
+    bindings:
+      - scheme: path
+        value: tests/cli_scaffold.rs
+        metadata:
+          summary: >-
+            `profile_kind_validation_rejects_disallowed_kind` and
+            `profile_kind_validation_accepts_allowed_kind` confirm the
+            surviving half of the feature — --profile still validates
+            kinds against the profile's allowed-kinds list.
+  - id: dead-code-removed
+    type: review
+    bindings:
+      - scheme: path
+        value: src/commands/mod.rs
+        metadata:
+          summary: >-
+            `cargo build` and `cargo clippy --all-targets -- -D warnings`
+            both pass with zero dead-code warnings, confirming the
+            removal is complete and nothing else depended on the deleted
+            helpers.
+    trusted: true
 initiated_by:
   type: ai
