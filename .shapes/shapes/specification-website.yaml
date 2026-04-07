@@ -51,13 +51,38 @@ realization:
       - scheme: path
         value: apps/web/src/routes/specification.tsx
         metadata:
-          summary: Specification page — section rendering, table of contents, scroll progress, minimap, back-to-top. Wraps content in <Container as="article" size="wide"> with the spec-specific vertical padding.
+          summary: >-
+            Specification reading surface. Wraps content in
+            <Container as="article" size="wide"> with a max-w-[68ch]
+            inner column for comfortable serif reading measure.
+            Section rendering, numbered TOC with foreground reading
+            color, scroll progress bar, minimap (lg+ only per
+            amendment:12), back-to-top button (visible after 20%
+            scroll per amendment:9). Mounts useKeyboardNav for
+            vim-style j/k/G/gg navigation, useActiveSection for
+            scroll tracking, and a tab-title wayfinding effect that
+            updates document.title as the active section changes
+            (amendment:10). Skip-to-content link is the first
+            focusable element (amendment:9).
     role: primary
   - bindings:
       - scheme: path
         value: apps/web/src/routes/index.tsx
         metadata:
-          summary: Home/landing page — hero with tree example, 2x2 primitives grid, code example, get-started CLI install block. Uses <Container>, <SectionLabel>, <SectionDivider>, <Footer>, and <CodeBlock>. Scheduled for distill/bolder/arrange/typeset rework.
+          summary: >-
+            Home page after the impeccable pipeline. Hero with the
+            "Shapes" wordmark and tree example (asymmetric 5/7 grid,
+            static h1 + h2 for LCP, motion-staggered supporting
+            children). TwoGraphs structural demonstration replacing
+            the deleted 2x2 primitives grid: framed dual-DAG view
+            with semantic lifecycle color and water cross-DAG
+            references. In Practice and Install sections stacked
+            vertically with CodeBlock wrap for full-visibility no
+            horizontal scroll. Inline ShapesTree component
+            tokenizes ASCII trees with lifecycle and reference
+            spans. useConsoleGreeting effect logs a one-time
+            session greeting. Pulls Container, SectionLabel,
+            SectionDivider, Footer, CodeBlock, and Reveal.
     role: primary
   - bindings:
       - scheme: path
@@ -70,16 +95,27 @@ realization:
         value: apps/web/src/components/nav.tsx
         metadata:
           summary: >-
-            Top navigation — sticky, scroll-aware blur, variant/align props.
-            Consumes the shared Container primitive with size narrow on spec
-            pages and size default on home so nav padding stays locked to
-            the canonical token on every breakpoint.
+            Top navigation — sticky, scroll-aware backdrop blur, with
+            variant and align props. Consumes the shared Container
+            primitive with size narrow on spec pages and size default
+            on home. The flex content is wrapped in an inner
+            px-6 sm:px-10 lg:px-14 div so the wordmark and link
+            cluster sit clear of the GridLines vertical rails and
+            visually align with the hero cell content (amendment:16).
+            The Specification link uses TanStack Router activeProps
+            for route-aware text-primary state.
     role: primary
   - bindings:
       - scheme: path
         value: apps/web/src/components/footer.tsx
         metadata:
-          summary: Site footer — extracted from the inline footer in index.tsx during amendment:1. Consumes <Container> for alignment. App-level (not packages/ui) because it owns site-specific route links.
+          summary: >-
+            Site footer extracted from the inline footer in index.tsx
+            (amendment:1). Wraps flex content in an inner
+            px-6 sm:px-10 lg:px-14 div mirroring the nav so wordmark
+            and links sit clear of the GridLines rails (amendment:16).
+            Uses py-16 sm:py-20 closure spacing. App-level (not
+            packages/ui) because it owns site-specific route links.
     role: primary
   - bindings:
       - scheme: path
@@ -91,19 +127,22 @@ realization:
       - scheme: path
         value: apps/web/src/components/spec/code-block.tsx
         metadata:
-          summary: Syntax-highlighted code block with copy button, language badge, optional caption. Custom YAML tokenizer with markdown links inside comments. Reused by both index.tsx (hero tree example) and specification.tsx (all YAML examples).
+          summary: >-
+            Syntax-highlighted code block with copy button, language
+            badge, and optional caption. Custom YAML tokenizer with
+            markdown links inside comments. Copy button visible on
+            coarse-pointer devices via the [@media(pointer:coarse)]
+            modifier (amendment:12). Optional wrap prop toggles
+            whitespace-pre-wrap break-all so long YAML and shell
+            lines wrap instead of horizontal scroll (amendment:18).
+            Reused by index.tsx (hero tree, In Practice, Install)
+            and specification.tsx (all spec YAML examples).
     role: primary
   - bindings:
       - scheme: path
         value: apps/web/src/components/spec/schema-explorer.tsx
         metadata:
           summary: Interactive schema field viewer — line-level highlighting of focused fields. Bound to the Schema Explorer feature (shape:18).
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: apps/web/src/components/spec/mermaid-diagram.tsx
-        metadata:
-          summary: Mermaid diagram renderer via beautiful-mermaid — theme-aware via CSS variables, with error boundary. Bound to the Mermaid Visualization feature (shape:19).
     role: supporting
   - bindings:
       - scheme: path
@@ -127,7 +166,14 @@ realization:
       - scheme: path
         value: apps/web/src/components/spec/example-toggle.tsx
         metadata:
-          summary: Interactive node selector for cross-domain examples (software, research, editorial). Renders Mermaid diagrams and YAML definitions for selected nodes.
+          summary: >-
+            Interactive node selector for cross-domain examples
+            (software, research, editorial). Renders Mermaid diagrams
+            and YAML definitions for selected nodes. Lazy-loads
+            beautiful-mermaid via dynamic import inside useEffect
+            (amendment:14) so the spec page initial JS chunk dropped
+            from 1,652 KB to 111 KB. Diagrams populate after the
+            chunk arrives — the YAML pane is visible immediately.
     role: supporting
   - bindings:
       - scheme: path
@@ -157,7 +203,7 @@ realization:
       - scheme: path
         value: apps/web/package.json
         metadata:
-          summary: Web app dependencies and build scripts.
+          summary: Web app dependencies and build scripts. Includes motion (for hero entrance choreography and scroll-triggered Reveal added in amendment:7) and beautiful-mermaid (lazy-loaded into its own client chunk by ExampleToggle per amendment:14).
     role: supporting
 metadata:
   team: core
