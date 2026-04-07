@@ -80,9 +80,9 @@ const SHAPE_TREE = `shape:1 Platform [canonical]
 └── shape:4 API Gateway [promoted]`
 
 const CONSTRAINT_TREE = `constraint:1 Security Policy
-├── constraint:5 Uptime SLA          → shape:4
-├── constraint:7 Rate Limiting       → shape:7
-└── constraint:8 MFA Required        → shape:3`
+├── constraint:5 Uptime SLA → shape:4
+├── constraint:7 Rate Limiting → shape:7
+└── constraint:8 MFA Required → shape:3`
 
 const SHAPE_EXAMPLE = `shape:
   id: 12
@@ -285,10 +285,13 @@ function TwoGraphs() {
             </p>
           </div>
 
-          {/* Dual DAG demonstration */}
-          <div className={`grid grid-cols-1 md:grid-cols-2`}>
+          {/* Dual DAG demonstration — stacks below xl so each tree
+              gets the full inner container width and never clips, then
+              switches to a true side-by-side parallel demonstration at
+              xl+ where there's enough horizontal room for both. */}
+          <div className={`grid grid-cols-1 xl:grid-cols-2`}>
             <div
-              className={`border-b ${BORDER} min-w-0 px-6 py-10 sm:px-10 md:border-r md:border-b-0 lg:px-14 lg:py-14`}
+              className={`border-b ${BORDER} min-w-0 px-6 py-10 sm:px-10 lg:px-14 lg:py-14 xl:border-r xl:border-b-0`}
             >
               <div className="flex items-baseline justify-between gap-4">
                 <span className="font-ui text-tiny font-medium tracking-label text-muted-foreground uppercase">
@@ -377,7 +380,7 @@ function HomePage() {
             animate="visible"
           >
             <div
-              className={`min-w-0 p-6 sm:p-10 md:col-span-5 md:border-r ${BORDER} lg:p-14`}
+              className={`min-w-0 p-6 sm:p-10 md:col-span-6 md:border-r ${BORDER} lg:p-14`}
             >
               {/*
                * SectionLabel + h1 render statically (no motion variants)
@@ -385,9 +388,14 @@ function HomePage() {
                * screen on first paint instead of waiting for the 700ms
                * motion entrance. Supporting content (paragraph, buttons,
                * code) still staggers in via heroChild children below.
+               * The h1 scale is sized so the wordmark fits its 6/12
+               * cell with comfortable breathing room from the right
+               * border at every breakpoint, while the matching 6/12
+               * code cell stays wide enough for the ASCII tree's
+               * longest line.
                */}
               <SectionLabel number={1}>Open Specification</SectionLabel>
-              <h1 className="mt-6 font-serif text-7xl leading-display font-semibold tracking-display sm:text-8xl lg:text-9xl">
+              <h1 className="mt-6 font-serif text-6xl leading-display font-semibold tracking-display sm:text-7xl xl:text-8xl">
                 Shapes
               </h1>
               <motion.p
@@ -427,7 +435,7 @@ function HomePage() {
 
             <motion.div
               variants={heroChild}
-              className={`flex min-w-0 items-center border-t ${BORDER} p-6 sm:p-10 md:col-span-7 md:border-t-0 lg:p-14`}
+              className={`flex min-w-0 items-center border-t ${BORDER} p-6 sm:p-10 md:col-span-6 md:border-t-0 lg:p-14`}
             >
               <CodeBlock className="w-full">{TREE_EXAMPLE}</CodeBlock>
             </motion.div>
