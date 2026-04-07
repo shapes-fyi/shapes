@@ -1,0 +1,27 @@
+id: 18
+name: Scaffold YAML Round-Trips Through Serde
+description: Every YAML document the scaffold writer emits must parse cleanly back into the corresponding model struct via serde_yml, and the resulting node must pass `shapes validate`. This guarantees that subsequent CLI commands (`shapes get`, `shapes validate`, `shapes tree`, etc.) work against freshly-scaffolded files without requiring the agent to first edit them.
+kind: invariant
+rule: For every scaffold writer (scaffold_shape, scaffold_constraint, scaffold_profile), `serde_yml::from_str::<Node>(scaffold_output)` succeeds and `shapes validate` exits 0 against a store containing only that node.
+enforcement: machine
+profile: 1
+status: proposed
+intent:
+  kind: invariant
+  summary: Scaffold output must always deserialize via serde and pass shapes validate immediately after creation, before any TODO is filled in.
+  source: ai
+  impact_if_violated: '`shapes get <id>` fails on freshly created nodes. `shapes validate` reports parse errors instead of useful diagnostics. The create-then- Edit workflow breaks at the first step. The init skill''s instructions become incorrect.'
+  rationale: The scaffold writer is hand-rolled YAML, not serde output, so it can drift from the model schema. If a freshly created file failed to deserialize, the entire workflow would break — `shapes get`, `shapes list`, and `shapes validate` would all error before the agent could even start filling in TODOs. Integration tests pin this guarantee.
+realization:
+- bindings:
+  - scheme: path
+    value: src/commands/scaffold.rs
+    metadata:
+      summary: yaml_string and yaml_block helpers escape values; required Shape/Constraint/Profile fields are always emitted at the top level so deserialization never fails on missing required fields
+  role: primary
+- bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: every test asserts `shapes get` and `shapes validate` succeed against the scaffolded node before any TODO is filled
+  role: supporting

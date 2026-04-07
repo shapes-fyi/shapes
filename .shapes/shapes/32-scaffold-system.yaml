@@ -1,0 +1,37 @@
+id: 32
+name: Scaffold System
+description: 'CLI-side scaffolding that emits rich YAML files for shapes, constraints, and profiles. Composed of two pieces: a `templates` module declaring per-domain field and kind hints (software, research, editorial, minimal), and a `scaffold` module that hand-rolls YAML strings with TODO-block placeholders for required intent fields, commented stubs for optional fields, and commented stub sections for parents/children/constraints/realization/ evidence. Activated by `shapes create {shape,constraint,profile}` whenever `--from` is not used. Bypasses serde at write time so first-fill comments survive on disk; subsequent saves through the regular store path serialize cleanly via serde and produce comment-free files.'
+profile: 1
+status: proposed
+intent:
+  kind: module
+  summary: Templated YAML scaffold writer for `shapes create` that emits rich TODO placeholders and stub sections so authored files are self-documenting.
+  source: ai
+  goals: Make `shapes create` produce files an editor (human or agent) can read directly to know exactly which fields still need to be filled in. Replace the create-then-Write dance with create-then-Edit-the-TODOs. Provide domain-aware defaults via templates so the active project type drives which fields appear without forcing the user to author a Profile first.
+  non_goals: Does not perform Profile-driven scaffolding when `--profile <id>` is passed — the static template still drives field hints in that case (tracked as a follow-up). Does not preserve scaffold comments across subsequent saves; comments are first-fill hints only. Does not enforce anything — templates are guidance, enforcement remains the Profile's job.
+  rationale: The previous `shapes create` skeleton produced near-empty YAML (description equal to name, no parents/children/constraints/realization, no intent fields), forcing skill authors to teach agents to overwrite the file with hand-authored YAML against a schema the skill itself documented incorrectly. Moving the scaffolding into the CLI lets every consumer benefit, makes Profiles strictly optional (templates carry the hints instead), and produces files that are useful on first read.
+constraints:
+- 17
+- 18
+realization:
+- bindings:
+  - scheme: path
+    value: src/templates.rs
+    metadata:
+      summary: Template/FieldHint/KindHint structs, TemplateKind clap enum, SOFTWARE/RESEARCH/EDITORIAL/MINIMAL static templates, resolve() lookup with software fallback for back-compat
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/scaffold.rs
+    metadata:
+      summary: scaffold_shape, scaffold_constraint, scaffold_profile YAML emitters with TODO blocks, commented stub sections for parents/children/constraints/realization/evidence, and yaml_string/yaml_block escape helpers
+  role: primary
+- bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '8 integration tests covering all four templates, --from regression, and per-call --template override using assert_cmd + tempfile'
+  role: supporting
+parents:
+- id: 4
+  role: feature

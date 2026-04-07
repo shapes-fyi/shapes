@@ -227,7 +227,7 @@ enum CreateCommand {
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "target-shape", "target-constraint", "summary", "source", "version-impact", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "target_shapes", "target_constraints", "summary", "source", "version_impact", "description"])]
         from: Option<String>,
     },
 

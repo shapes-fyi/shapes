@@ -32,6 +32,7 @@ constraints:
   - 6
   - 9
   - 16
+  - 17
 parents:
   - id: 1
     role: component
@@ -42,10 +43,20 @@ children:
     role: feature
   - shape: 28
     role: feature
+  - shape: 32
+    role: feature
 realization:
   - bindings:
       - scheme: path
         value: src/commands/mod.rs
         metadata:
-          summary: Command handlers — init(), create(), get(), list(), tree(), query(), validate() with --format json outputting structured ValidationIssue array with invariant IDs, output serialization
+          summary: >-
+            Command handlers — init(template), create() delegating to the
+            scaffold writer when --from is absent, get(), list(), tree(),
+            query(), validate() with --format json output. resolve_template
+            picks the active template from meta.yaml or per-call --template
+            override. apply_profile_fields removed; --profile now only
+            validates kinds.
     role: primary
+amendment_log:
+  - 20

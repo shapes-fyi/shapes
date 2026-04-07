@@ -1,0 +1,19 @@
+id: 21
+name: 'CLI Interface: --template flag on init and create; --name optional under --from'
+description: Adds `--template <software|research|editorial|minimal>` to `shapes init` (default software) and as a per-call override on `shapes create {shape,constraint,profile}`. Marks `--name` as `required_unless_present = "from"` on shape/constraint/amendment/profile create so heredoc authoring no longer requires a redundant --name flag. Fixes pre-existing kebab-case clap arg-id bugs in conflicts_with_all (intent_kind, amendment_model, target_shapes, target_constraints, version_impact).
+targets:
+  shape_ids:
+  - 10
+status: proposed
+intent:
+  kind: amendment
+  summary: '`--template` flag on init + create; --name optional when --from is used; clap arg-id strings normalized to snake_case for conflicts_with.'
+  source: ai
+  affected_files: src/main.rs — Init takes --template; CreateCommand::Shape/Constraint/ Profile take Option<TemplateKind> --template; Shape/Constraint/Amendment/ Profile name fields become Option<String> with required_unless_present; conflicts_with strings normalized to snake_case.
+  goals: Provide a discoverable, declarative way to pick a scaffolding template. Make `--from -` heredoc creation ergonomic. Keep all other CLI surfaces unchanged so existing agents still work.
+  non_goals: Does not change exit codes. Does not add new top-level commands. Does not change --format json output. Does not change `shapes init`'s behavior when invoked with no flags (defaults to software template).
+  rationale: Templates need a way to be selected at init time and overridden per call. The previous CLI rejected `shapes create shape --from -` because --name was structurally required even though the from path provides it in YAML; this is fixed by required_unless_present. Several pre-existing clap conflicts_with kebab-case bugs only surfaced once the new --template flag triggered clap's debug_assert validation; all are normalized to snake_case in this change.
+  spec_section: N/A — CLI surface extension
+  verification: '`cargo test --test cli_scaffold` 8/8. Manual: `shapes init --template research`, `shapes create shape --name X --template editorial` (override works), heredoc `shapes create shape --from -` (no --name required, succeeds). `shapes create shape` with neither --name nor --from prints a helpful clap error.'
+initiated_by:
+  type: ai

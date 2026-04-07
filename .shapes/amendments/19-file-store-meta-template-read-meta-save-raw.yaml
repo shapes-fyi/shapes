@@ -1,0 +1,19 @@
+id: 19
+name: 'File Store: meta template, read_meta, save_raw'
+description: Extends FileStore to record an active scaffolding template in meta.yaml, read it back, and accept raw YAML strings on save so the new scaffold writer can produce comment-bearing files without round-tripping through serde.
+targets:
+  shape_ids:
+  - 3
+status: proposed
+intent:
+  kind: amendment
+  summary: Meta gains optional `template:` field; FileStore::init takes a template; new read_meta() and save_raw() helpers expose meta-reading and raw-YAML writes for the scaffold path.
+  source: ai
+  affected_files: 'src/store.rs — Meta gains `template: Option<String>`; Meta::new takes Option<&str>; FileStore::init takes template parameter; new read_meta() returns parsed Meta; new save_raw() writes a raw YAML string to a generated `{id}-{slug}.yaml` path (or overwrites by ID if present).'
+  goals: 'Persist the active template across CLI invocations. Allow callers to write fully-formed YAML strings without going through serde. Preserve back-compat: stores written before this change parse fine because `Meta.template` is `Option<String>` with `#[serde(default)]`.'
+  non_goals: 'Does not change the file naming convention (still `{id}-{slug}.yaml`). Does not change ID allocation. Does not introduce new file formats. Does not break existing stores — `read_meta()` returns `template: None` on stores without the field, and the scaffold path falls back to "software".'
+  rationale: The new scaffold writer hand-rolls YAML with `# TODO:` comments and stub sections that would be lost if round-tripped through serde. To support that, FileStore needs a write path that takes pre-formatted content instead of a Serialize value. Recording the template in meta.yaml lets `shapes create` pick the right scaffold defaults without per-call flags.
+  spec_section: N/A — internal store extension
+  verification: '`cargo test` 14/14. `cargo clippy --all-targets -- -D warnings` clean. Smoke test: `shapes init --template research` writes `template: research` to meta.yaml; subsequent `shapes create shape` reads it and emits a research-flavored scaffold; `shapes get` and `shapes validate` succeed.'
+initiated_by:
+  type: ai

@@ -46,5 +46,13 @@ realization:
       - scheme: path
         value: src/store.rs
         metadata:
-          summary: NodeStore trait (load, list_ids, next_id, load_all) + FileStore impl. Scans YAML files by id field, generates {id}-{slug}.yaml filenames. MockStore in dag.rs tests.
+          summary: >-
+            NodeStore trait (load, list_ids, next_id, load_all) + FileStore
+            impl. Scans YAML files by id field, generates {id}-{slug}.yaml
+            filenames. Meta carries optional `template:` for the active
+            scaffolding template. read_meta() returns parsed Meta;
+            save_raw() writes a pre-formatted YAML string for the scaffold
+            writer. MockStore in dag.rs tests.
     role: primary
+amendment_log:
+  - 19

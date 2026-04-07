@@ -2,34 +2,47 @@ id: 28
 name: Profile-Aware Create
 description: >-
   The --profile flag on shape and constraint create commands loads the
-  referenced profile, validates the --kind value against allowed kinds,
-  and pre-populates required intent and metadata fields with TODO
-  placeholders. Optional fields are omitted. Conflicts with --from.
+  referenced profile and validates the --kind value against the profile's
+  allowed kinds. The TODO-placeholder pre-population that this feature
+  originally provided has been moved into the Scaffold System (shape 32),
+  which fires for every create call regardless of whether a Profile is
+  attached. --profile remains useful for opt-in kind validation; it
+  conflicts with --from.
 status: proposed
 profile: 1
 intent:
   kind: feature
   summary: >-
-    The --profile flag on shape/constraint create auto-populates required
-    fields and validates kinds against profile
+    The --profile flag on shape/constraint create validates kind against
+    the profile's allowed kinds and sets the resulting node's profile
+    reference. Scaffolding TODO placeholders is now the Scaffold System's
+    job (shape 32).
   source: human
   goals: >-
-    Enable --profile flag on shape/constraint create to auto-populate
-    required fields from a governance profile and validate kind against
-    allowed kinds
+    Enable --profile flag on shape/constraint create to validate kind
+    against allowed kinds and persist the profile reference. Pre-population
+    of intent fields is delegated to the template-driven scaffold writer.
   rationale: >-
-    Without profile integration at creation time, users must manually add
-    all required fields after creating a node, which is error-prone and
-    tedious
+    The original Profile-Aware Create feature gated TODO placeholders behind
+    Profile attachment, which made fresh stores produce empty skeletons
+    because no Profile existed yet. Templates separate "what fields exist"
+    from "what fields are enforced", letting the CLI emit rich scaffolds
+    for every project — Profile or no Profile. The kind-validation half of
+    this feature remains useful and is kept here.
 parents:
   - id: 4
     role: feature
+constraints:
+  - 17
 realization:
   - bindings:
       - scheme: path
         value: src/commands/mod.rs
         metadata:
-          summary: load_profile, validate_kind_against_profile, apply_profile_fields, apply_field_group helpers
+          summary: >-
+            load_profile and validate_kind_against_profile helpers; Profile
+            loading is gated behind `if let Some(pid) = profile` in each
+            create arm. apply_profile_fields and apply_field_group removed.
     role: primary
   - bindings:
       - scheme: path
@@ -37,3 +50,5 @@ realization:
         metadata:
           summary: --profile flag on CreateCommand::Shape and CreateCommand::Constraint
     role: supporting
+amendment_log:
+  - 23

@@ -1,0 +1,19 @@
+id: 20
+name: 'Command Layer: scaffold module, create-path refactor, remove apply_profile_fields'
+description: Rewrites the create() match arms for Shape, Constraint, and Profile to delegate to the new scaffold writer when --from is not provided. Adds the `scaffold` submodule. Removes the now-superseded apply_profile_fields and apply_field_group helpers. Adds resolve_template() to pick the right template per call (per-call --template wins over meta.yaml).
+targets:
+  shape_ids:
+  - 4
+status: proposed
+intent:
+  kind: amendment
+  summary: create() now delegates to scaffold::scaffold_{shape,constraint,profile} when --from is absent; --from path unchanged. Profile-driven intent pre-population via apply_profile_fields is removed in favor of template- driven scaffolding.
+  source: ai
+  affected_files: src/commands/mod.rs — register scaffold submodule, add resolve_template, rewrite Shape/Constraint/Profile create arms, remove apply_profile_fields and apply_field_group, add report_created helper. src/commands/scaffold.rs — new file (scope captured by shape 32).
+  goals: Replace skeleton-then-Write with create-then-Edit. Make Profiles fully optional in the create flow (constraint 17). Keep --from -, --from <path>, and --from <stdin> working unchanged for the heredoc use case. Honor the active template from meta.yaml unless overridden per-call.
+  non_goals: Does not change the create command's flag names other than making --name optional under --from and adding --template. Does not touch get/list/tree/query/validate. Does not change the amendment create path beyond fixing a pre-existing kebab-case clap arg-id bug in conflicts_with_all.
+  rationale: The previous create() skeleton produced near-empty YAML and the apply_profile_fields helper only fired when a Profile was attached AND had fields declared — which was almost never on first use because `shapes create profile` itself produced a blank Profile. Moving scaffolding into the CLI via templates makes the scaffold work immediately on `shapes init && shapes create shape`, with no Profile required. The --from path is preserved unchanged.
+  spec_section: N/A — internal command refactor
+  verification: '`cargo test` 14/14 (6 unit + 8 integration). `cargo clippy --all-targets -- -D warnings` clean. Manual smoke tests against fresh tempdirs for each template confirm the scaffold renders, parses, validates, and the --from heredoc path still works without --name.'
+initiated_by:
+  type: ai
