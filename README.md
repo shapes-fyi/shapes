@@ -60,6 +60,15 @@ cargo install --git https://github.com/shapes-fyi/shapes
 
 ### Install the Agent Skills
 
+**Claude Code (plugin):**
+
+```
+/plugin marketplace add shapes-fyi/shapes
+/plugin install shapes@shapes
+```
+
+**Other agents (skills):**
+
 ```bash
 npx skills add shapes-fyi/shapes
 ```
@@ -70,7 +79,7 @@ The plugin provides three skills:
 
 <table>
 <tr><th>Skill</th><th>When to use</th></tr>
-<tr><td nowrap><code>/shapes:shapes-init</code></td><td>Bootstrap shapes for a new project. Explores your codebase, interviews you about architecture and constraints, then generates a full context graph.</td></tr>
+<tr><td nowrap><code>/shapes:shapes-init</code></td><td>Bootstrap shapes for a new or existing project. Explores your codebase, interviews you about architecture and constraints, then generates a full context graph.</td></tr>
 <tr><td nowrap><code>/shapes:shapes-context</code></td><td>Load the specification knowledge before working. Auto-loads when a <code>.shapes/</code> directory exists, or invoke manually to teach the agent the context-first workflow.</td></tr>
 <tr><td nowrap><code>/shapes:shapes-maintain</code></td><td>Audit an existing graph. Run periodically to catch drift — stale realizations, coverage gaps, shallow nodes, and structural issues.</td></tr>
 </table>
@@ -274,7 +283,7 @@ Run `shapes --help` or `shapes <command> --help` for full flag reference.
 
 ## Agent Skills
 
-**shapes-init** is interactive. The agent explores your codebase, then interviews you in rounds covering purpose, architecture, constraints, domain knowledge, and project history. It creates a Profile, generates shapes and constraints, links them with realizations, and validates the result.
+**shapes-init** is interactive and works on both greenfield and existing projects. The agent explores your codebase, then interviews you in rounds covering purpose, architecture, constraints, domain knowledge, and project history. It creates a Profile, generates shapes and constraints, links them with realizations, and validates the result.
 
 **shapes-context** teaches the agent the specification and the context-first workflow: run `shapes tree` to see the big picture, `shapes query constraints` to discover rules, and `shapes get` to read intent — before doing any work. Auto-loads when a `.shapes/` directory exists, or invoke manually with `/shapes:shapes-context`.
 
