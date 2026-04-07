@@ -1,0 +1,52 @@
+id: 2
+name: 'Shared layout primitives added: Container, SectionLabel, SectionDivider'
+description: Adds the first cross-app layout primitives to the shared UI library, expanding the design system vocabulary beyond Button.
+targets:
+  shape_ids:
+  - 21
+status: proposed
+intent:
+  kind: amendment
+  summary: Adds three composable layout primitives (Container, SectionLabel, SectionDivider) to packages/ui to replace repeated inline layout patterns in apps/web. Establishes the design system vocabulary beyond Button.
+  source: ai
+  rationale: >-
+    Before this amendment, packages/ui exported only Button. Every container,
+    eyebrow label, and section divider in apps/web was inlined, and padding
+    drifted between nav and content (see amendment:1 on shape:17). Extracting
+    these three primitives creates a minimal shared vocabulary that the rest
+    of the visual overhaul can build on, and gives one canonical source for
+    layout tokens. Kept deliberately small — only patterns that were already
+    repeated 3+ times in apps/web were extracted. Container is polymorphic
+    via an 'as' prop so it can render as div, article, etc. SectionLabel
+    supports an optional 'number' prop for future numbered (§01 · LABEL)
+    treatment without breaking existing call sites.
+  goals: >-
+    Single source of truth for horizontal container padding and max-width.
+    Shared eyebrow label and divider components with consistent typography.
+    Composable primitives that later overhaul steps (distill, bolder,
+    typeset) can refine in one place rather than in every caller.
+  non_goals: >-
+    Not extracting every repeated class string — only structurally meaningful
+    patterns. Not adding new dependencies. Not changing the shadcn/base-ui
+    conventions or the base-lyra style.
+  spec_section: N/A — shared UI package, not spec surface
+  design_notes: >-
+    Container sizes — default (max-w-5xl) for home, wide (max-w-[78rem]) for
+    the spec article shell, narrow (max-w-3xl) for the spec-aligned nav.
+    All use the same horizontal padding scale px-6 sm:px-10 lg:px-16.
+    SectionLabel matches the eyebrow treatment used consistently in
+    index.tsx (text-xs font-semibold tracking-[0.25em] uppercase).
+    SectionDivider wraps its own Container so callers place it at section
+    boundaries without wrapping it themselves.
+affected_files:
+- path: packages/ui/src/components/container.tsx
+  change: New — polymorphic <Container as size={default|wide|narrow}> primitive.
+- path: packages/ui/src/components/section-label.tsx
+  change: New — eyebrow label with optional number prop for future §01 numbered variant.
+- path: packages/ui/src/components/section-divider.tsx
+  change: New — horizontal rule with dot ornaments, self-containerized via <Container>.
+initiated_by:
+  type: ai
+verification: >-
+  bun run format clean. bun run typecheck clean. No runtime change to
+  @workspace/ui exports beyond the three additions — Button unaffected.

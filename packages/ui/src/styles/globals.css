@@ -44,7 +44,6 @@
     --sidebar-border: oklch(0.88 0.025 75);
     --sidebar-ring: oklch(0.55 0.06 45);
     --water: oklch(0.58 0.10 235);
-    --earth: oklch(0.48 0.06 55);
     --shadow-elevated: 0 1px 2px oklch(0 0 0 / 0.04), 0 1px 4px oklch(0 0 0 / 0.06);
     --shadow-popover: 0 2px 4px oklch(0 0 0 / 0.03), 0 8px 16px oklch(0 0 0 / 0.06), 0 20px 40px oklch(0 0 0 / 0.04);
 }
@@ -82,7 +81,6 @@
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.55 0.04 60);
     --water: oklch(0.52 0.08 235);
-    --earth: oklch(0.55 0.04 65);
     --shadow-elevated: 0 1px 2px oklch(0 0 0 / 0.08), 0 1px 4px oklch(0 0 0 / 0.12);
     --shadow-popover: 0 2px 4px oklch(0 0 0 / 0.06), 0 8px 16px oklch(0 0 0 / 0.12), 0 20px 40px oklch(0 0 0 / 0.08);
 }
@@ -127,9 +125,27 @@
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
     --color-water: var(--water);
-    --color-earth: var(--earth);
     --font-sans: 'Crimson Pro Variable', 'Crimson Pro', Georgia, serif;
     --font-serif: 'Cormorant Garamond Variable', 'Cormorant Garamond', 'Palatino Linotype', Georgia, serif;
+    --font-ui: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --text-tiny: 0.625rem;
+    --text-label: 0.6875rem;
+    --text-code: 0.8125rem;
+    --tracking-display: -0.05em;
+    --tracking-heading: -0.04em;
+    --tracking-subhead: -0.02em;
+    --tracking-meta: 0.08em;
+    --tracking-label: 0.28em;
+    --tracking-label-tight: 0.18em;
+    --leading-display: 0.82;
+    --leading-heading: 0.88;
+    --leading-h1: 0.95;
+    --leading-subhead: 1.1;
+    --leading-read: 1.65;
+    --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+    --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration-reveal: 600ms;
     --animate-water-in: water-in 0.4s ease-in both;
     --animate-water-flow: water-flow 1.5s ease-in-out infinite both;
 }
@@ -148,7 +164,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     font-synthesis: none;
-    font-feature-settings: "calt" 1;
+    font-feature-settings: "calt" 1, "liga" 1, "kern" 1;
     }
   a {
     text-decoration-skip-ink: auto;
@@ -167,21 +183,6 @@
     text-wrap: pretty;
     }
 
-  /* Spec page typography scale — change these to resize globally */
-  :root {
-    --spec-body: 1.2rem;
-    --spec-body-sub: 1.15rem;
-    --spec-meta: 1.05rem;
-    --spec-toc: 1.15rem;
-    --spec-toc-sub: 1.05rem;
-    --spec-h2: 1.7rem;
-    --spec-h2-sm: 2rem;
-    --spec-h3: 1.35rem;
-    --spec-h3-sm: 1.7rem;
-    --spec-abstract: 1.15rem;
-    --spec-schema-desc: 1.1rem;
-    --spec-caption: 0.95rem;
-  }
   code, pre {
     font-variant-numeric: slashed-zero;
     }

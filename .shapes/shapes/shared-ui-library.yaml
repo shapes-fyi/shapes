@@ -48,6 +48,24 @@ realization:
     role: primary
   - bindings:
       - scheme: path
+        value: packages/ui/src/components/container.tsx
+        metadata:
+          summary: Polymorphic layout container — <Container as size={default|wide|narrow}>. Single source of truth for horizontal padding (px-6 sm:px-10 lg:px-16) and max-width tokens (max-w-5xl | max-w-[78rem] | max-w-3xl). Added in amendment:2.
+    role: primary
+  - bindings:
+      - scheme: path
+        value: packages/ui/src/components/section-label.tsx
+        metadata:
+          summary: Eyebrow section label — text-xs font-semibold tracking-[0.25em] uppercase. Optional number prop renders a §01 · LABEL numbered variant for future bolder treatment. Added in amendment:2.
+    role: primary
+  - bindings:
+      - scheme: path
+        value: packages/ui/src/components/section-divider.tsx
+        metadata:
+          summary: Horizontal section divider with dot ornaments, self-containerized via <Container>. Added in amendment:2.
+    role: primary
+  - bindings:
+      - scheme: path
         value: packages/ui/src/lib/utils.ts
         metadata:
           summary: cn() class merge utility — clsx + tailwind-merge

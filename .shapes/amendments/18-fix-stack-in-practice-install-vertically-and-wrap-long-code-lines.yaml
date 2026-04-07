@@ -1,0 +1,100 @@
+id: 18
+name: 'Fix: stack In Practice/Install vertically and wrap long code lines'
+description: Real fix for the user-reported overflow bug after amendment:17 (min-w-0) failed to fully solve it. The actual desired behavior is no horizontal scroll at all — content visible in full at every viewport.
+targets:
+  shape_ids:
+  - 17
+status: proposed
+intent:
+  kind: amendment
+  summary: User reports that the prior min-w-0 fix did not solve the bug — content is still cut off and they want to see things in full without horizontal scroll. The real fix is to stack In Practice and Install vertically so the code block gets full Container width, and add a wrap prop to CodeBlock that toggles whitespace-pre-wrap and break-all so long YAML strings and the install URL wrap to multiple lines instead of overflowing or scrolling. ASCII trees that rely on monospace alignment opt out of wrap.
+  source: ai
+  rationale: >-
+    Amendment:17 added min-w-0 to grid items so the cell could
+    shrink and the pre's overflow-x-auto could finally activate.
+    That technically fixed the layout-blowout bug, but the user
+    came back saying content is still cut off and they want
+    things visible in full with no horizontal scrolling. So the
+    requirement is stronger than I assumed: zero horizontal
+    scroll, all content visible. Doing the math: the In Practice
+    YAML longest line is 47 characters. At text-code (0.8125rem
+    = 13px) in font-mono, average char width ~7.8px, that
+    measures around 367 px. With In Practice text and code in a
+    50/50 grid split inside a max-w-5xl Container, the code
+    cell text area is 416 px only at xl+ (1280 px viewport and
+    above). Below xl, the line overflows the half-cell at every
+    viewport including lg. The user's screenshot showed roughly
+    864 px viewport, where the half-cell text area is around
+    296 px — overflow by 71 px. The Install cargo URL is even
+    longer at 56 characters (~437 px) and overflows even more
+    aggressively. The fix has two parts. First, kill the 50/50
+    grid for In Practice and Install. Stack them vertically: a
+    text section (label + heading + paragraph) on top, a code
+    section below, divided by a horizontal border. Now the code
+    block gets the FULL Container content width — which at xl+
+    is around 1040 px, comfortably wider than the 367 px YAML
+    line, and at desktop (1024 lg) is around 768 px, still
+    comfortably wider. The text heading also stops being
+    cramped because it now has full width too — drop the
+    manual br line breaks since the cell is no longer narrow.
+    Second, even at full width the mobile viewport (375 px)
+    only gives the code block ~239 px of inner text area —
+    still not enough for 367 px. So add a wrap prop to
+    CodeBlock that toggles whitespace-pre-wrap and break-all
+    on the pre. With wrap enabled, long YAML string values
+    wrap to multiple lines while indentation is preserved
+    (whitespace-pre-wrap behavior), and the install URL
+    breaks at any character (break-all) so it never escapes
+    the box. ASCII tree examples like the hero TREE_EXAMPLE
+    or the Two Graphs SHAPE_TREE / CONSTRAINT_TREE rely on
+    monospace alignment with box-drawing characters and would
+    look broken if wrapped — those use wrap=false (default).
+    Spec page CodeBlocks stay as-is (no wrap) for now —
+    the user's complaint was about the home page; can revisit
+    spec wrapping if requested.
+  goals: >-
+    In Practice and Install code blocks fully visible at every
+    viewport with no horizontal scroll. Long YAML string
+    values wrap to next line preserving indentation. Long
+    install URL breaks at any character to fit. Section
+    headings flow naturally as one or two lines on full
+    container width, no manual br needed. ASCII trees on the
+    hero and Two Graphs continue to use monospace alignment
+    (no wrap).
+  non_goals: >-
+    Does not change the spec page CodeBlock behavior. Does
+    not change the hero or Two Graphs tree rendering. Does
+    not change typography tokens, colors, or motion. Does
+    not introduce new primitives. Does not touch the Two
+    Graphs section internals. Reverts the col-span-3 split
+    from amendment:16 only on In Practice and Install
+    (everything else from amendment:16 stays).
+  spec_section: N/A — layout fix
+  affected_files: >-
+    apps/web/src/components/spec/code-block.tsx — add
+    optional wrap?: boolean prop. When true, the pre gets
+    whitespace-pre-wrap break-all in addition to its
+    existing classes; horizontal scroll is suppressed
+    because content can no longer overflow horizontally.
+    apps/web/src/routes/index.tsx — restructure In Practice
+    and Install sections from md:grid-cols-6 with col-span-3
+    splits to a vertical block stack with border-y wrapper
+    and an internal border-b between text and code. Drop
+    the manual br line breaks in both h2 elements (cells
+    are now wide). Pass wrap to the In Practice and Install
+    CodeBlock instances. Remove min-w-0 from these cells
+    since the cells no longer exist as grid items.
+  verification: >-
+    bun run format clean. bun run typecheck clean. shapes
+    validate clean. Manual browser check at 375 px, 768 px,
+    1024 px, 1440 px. At every viewport: In Practice YAML
+    fully visible with no horizontal scroll, long string
+    values wrap with indentation preserved. Install cargo
+    command fully visible with no horizontal scroll, URL
+    breaks across lines if needed. Section headings
+    "Structured intent" and "One command." flow naturally
+    on one or two lines without weird breaks. Hero and
+    Two Graphs ASCII trees continue to render with proper
+    box-drawing alignment. Spec page CodeBlocks unchanged.
+initiated_by:
+  type: ai

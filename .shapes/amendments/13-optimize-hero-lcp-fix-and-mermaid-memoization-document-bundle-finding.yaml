@@ -1,0 +1,108 @@
+id: 13
+name: 'Optimize: hero LCP fix and Mermaid memoization, document bundle finding'
+description: Two surgical performance fixes that improve perceived load and runtime work, plus a documented finding for a follow-up amendment.
+targets:
+  shape_ids:
+  - 17
+status: proposed
+intent:
+  kind: amendment
+  summary: Two surgical performance fixes plus a documented finding. Renders the hero SectionLabel and wordmark statically so the LCP element is visible at first paint instead of behind a 700ms motion entrance. Memoizes the Mermaid renderMermaidSVG call so each diagram is computed once per (title, diagram) instead of on every render. Documents the 1.6 MB specification chunk caused by client-side bundling of beautiful-mermaid + elkjs as a known issue scoped to a follow-up dedicated amendment.
+  source: ai
+  rationale: >-
+    Build inspection of the production output surfaced two real
+    performance issues and one large architectural finding. First,
+    the hero entrance choreography from /animate wraps the
+    SectionLabel and h1 wordmark in motion variants with
+    initial opacity 0 and a 700ms ease-out-quart fade and 16px
+    upward translate, kicked off after a 100ms delay. The Largest
+    Contentful Paint element on the home page is the wordmark
+    "Shapes" — at text-7xl base, 8rem on lg — and that means LCP
+    cannot fire until the motion entrance completes, regressing
+    the metric by roughly 800ms purely for visual flourish. The
+    fix is the smallest possible: render the SectionLabel and h1
+    statically, with no motion wrapping, so they hit the screen
+    on first paint. Keep the stagger choreography on the
+    supporting children — paragraph, button group, and code
+    example — so the page still feels orchestrated. The brand
+    identity (label plus wordmark) is what should hit the user
+    immediately anyway. Second, the MermaidDiagram component
+    calls renderMermaidSVG inside the function body, which means
+    every time React re-renders the component (strict mode
+    double render in development, parent re-renders in
+    production) the entire SVG layout pipeline runs again
+    against the same input. The output is identical and the DOM
+    is not updated because dangerouslySetInnerHTML preserves
+    matching HTML, so the work is wasted. useMemo with
+    dependencies [title, diagram] makes each diagram compute
+    exactly once per unique input. Third, the production build
+    of apps/web ships a specification.js client chunk of 1.6 MB,
+    dominated by beautiful-mermaid (170 kB) and elkjs (3.27 MB
+    on the server bundle, large fraction on the client too).
+    These libraries only run during SSR — the rendered SVG
+    strings are static once produced — but the bundler ships
+    them to the client because the import statement at the top
+    of mermaid-diagram.tsx is unconditional. A real fix is
+    architectural: move the renderMermaidSVG call out of the
+    React component, render diagrams at build time or via a
+    server-only loader, and ship only static SVG strings to the
+    client. That refactor is bigger than /optimize is meant to
+    be and should land in its own dedicated amendment with its
+    own constraint check. Documenting the finding here so it is
+    captured in the change history.
+  goals: >-
+    Hero LCP fires on first paint instead of waiting for the
+    700ms motion entrance. Mermaid diagrams compute their SVG
+    exactly once per unique input. Build sizes are captured as
+    a baseline for the deferred Mermaid bundle amendment.
+  non_goals: >-
+    Does not refactor MermaidDiagram to render via a server
+    loader (deferred to a dedicated amendment). Does not lazy
+    load or code-split Mermaid imports. Does not preload fonts
+    via link headers (fontsource ships font-display swap by
+    default, so font load does not block LCP — the wordmark
+    renders in the fallback Cormorant first then swaps).
+    Does not change the motion entrance for the supporting
+    hero children. Does not touch the spec page typography or
+    layout. Does not introduce new dependencies. Does not
+    change the spec content.
+  spec_section: N/A — performance refinement
+  affected_files: >-
+    apps/web/src/routes/index.tsx — unwrap the hero SectionLabel
+    and h1 from motion.div / motion.h1; render them as plain
+    elements. Keep paragraph, button group, and code example
+    inside the heroChild stagger sequence so the page still
+    has an orchestrated entrance. apps/web/src/components/spec/
+    mermaid-diagram.tsx — wrap the renderMermaidSVG call in
+    useMemo with dependencies title and diagram so each
+    diagram only computes once per unique input.
+  baseline_bundle_sizes: >-
+    Captured from `bun run build` in apps/web before the
+    deferred Mermaid amendment lands:
+    main-CELsb9M0.js 316 kB (framework + tanstack router),
+    index-D2T1Nmlu.js 131 kB (home + motion + lifecycle
+    tokenizer), code-block-K9DIKABg.js 45 kB (CodeBlock
+    YAML tokenizer), specification-BQ8-c-qz.js 1.6 MB
+    (spec page including beautiful-mermaid + elkjs).
+    Target after the deferred amendment: specification
+    chunk under 200 kB.
+  deferred_followup: >-
+    Create a dedicated amendment named "Optimize: server-only
+    Mermaid rendering" that moves renderMermaidSVG into a
+    TanStack Start server function or build-time precompute,
+    and ships only static SVG strings to the client. Expected
+    impact: 1.4 MB reduction in the spec page client chunk.
+    Constraint check should verify (a) all spec diagrams still
+    render correctly in light and dark mode, (b) Mermaid
+    error fallback still works, (c) bundle size dropped.
+  verification: >-
+    bun run format clean. bun run typecheck clean. shapes
+    validate clean. bun run build succeeds. Manual home page
+    load — wordmark visible on first paint, supporting
+    children still stagger in. React DevTools Profiler on the
+    spec page — MermaidDiagram component renders without
+    re-running renderMermaidSVG when an unrelated parent
+    re-renders. No CLS regressions on hero (still min-h-svh).
+    No visual change to motion timing on supporting children.
+initiated_by:
+  type: ai

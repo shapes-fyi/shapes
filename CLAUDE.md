@@ -62,3 +62,27 @@ Shared UI library using shadcn/ui (base-lyra style) with Base UI, Tailwind CSS v
 - Tailwind CSS v4 — styles configured via CSS (`globals.css`), not `tailwind.config.*`
 - Prettier plugin `prettier-plugin-tailwindcss` auto-sorts Tailwind classes; `cn` and `cva` calls are also sorted
 - `rsc: false` — not using React Server Components; this is a client-rendered SSR app
+
+## Design Context
+
+Full design brief lives in `.impeccable.md` at the project root. Summary for every session:
+
+### Users
+Engineering teams using AI agents as collaborative coders, plus tech leads and architects who set their constraints. Technical, time-constrained, skim-then-deep readers. Job: quickly grasp what Shapes is, why it exists, and how to start.
+
+### Brand Personality
+**Rigorous. Transparent. Structural.** Voice is precise, declarative, agent-aware — explains *why* before *what*, honest about scope and non-goals, scholarly without gatekeeping. Emotional goal: **quiet authority** — trust through restraint and craft, not volume.
+
+### Aesthetic Direction
+Modern dev-tool flagship aesthetic in the lineage of Linear / Vercel / Resend, bent toward Shapes' literary/structural identity. Three-voice typography: Cormorant Garamond (display serif) / Crimson Pro (reading serif) / Geist (UI sans). Warm OKLCh foundation with disciplined accents. Light + dark as first-class, FOUC-free.
+
+**Anti-references:** generic SaaS landing, crypto/AI hype, Notion-clone docs, brutalist Helvetica.
+
+### Design Principles
+1. **Why before what** — every element earns its place by communicating intent.
+2. **Structure is the brand** — grids, borders, hierarchies are identity, not decoration.
+3. **Quiet authority over loud confidence** — trust through restraint and precision.
+4. **Three voices, one system** — display serif, reading serif, UI sans each have one job.
+5. **Motion serves meaning** — animations reveal structure or guide attention; always honor `prefers-reduced-motion`.
+6. **Agents are first-class readers** — copy and structure must be legible to LLMs as well as humans.
+7. **OKLCh discipline** — every color flows from tokens; no arbitrary hex, no pure black/white.

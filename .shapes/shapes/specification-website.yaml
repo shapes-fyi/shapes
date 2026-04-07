@@ -49,27 +49,115 @@ children:
 realization:
   - bindings:
       - scheme: path
+        value: apps/web/src/routes/specification.tsx
+        metadata:
+          summary: Specification page — section rendering, table of contents, scroll progress, minimap, back-to-top. Wraps content in <Container as="article" size="wide"> with the spec-specific vertical padding.
+    role: primary
+  - bindings:
+      - scheme: path
         value: apps/web/src/routes/index.tsx
         metadata:
-          summary: Main spec page — section rendering, table of contents, scroll progress
+          summary: Home/landing page — hero with tree example, 2x2 primitives grid, code example, get-started CLI install block. Uses <Container>, <SectionLabel>, <SectionDivider>, <Footer>, and <CodeBlock>. Scheduled for distill/bolder/arrange/typeset rework.
     role: primary
   - bindings:
       - scheme: path
         value: apps/web/src/routes/__root.tsx
         metadata:
-          summary: Root layout — HTML shell, font loading, theme hydration script
+          summary: Root layout — HTML shell, font loading, theme hydration script (FOUC-free blocking inline script that sets .dark before hydration).
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/nav.tsx
+        metadata:
+          summary: >-
+            Top navigation — sticky, scroll-aware blur, variant/align props.
+            Consumes the shared Container primitive with size narrow on spec
+            pages and size default on home so nav padding stays locked to
+            the canonical token on every breakpoint.
+    role: primary
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/footer.tsx
+        metadata:
+          summary: Site footer — extracted from the inline footer in index.tsx during amendment:1. Consumes <Container> for alignment. App-level (not packages/ui) because it owns site-specific route links.
+    role: primary
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/sections.tsx
+        metadata:
+          summary: Specification content data — sections array and SPEC_META driving specification.tsx. Each section has an id, title, optional subsections, and rich ReactNode content. Scheduled for a voice rewrite during clarify.
+    role: primary
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/code-block.tsx
+        metadata:
+          summary: Syntax-highlighted code block with copy button, language badge, optional caption. Custom YAML tokenizer with markdown links inside comments. Reused by both index.tsx (hero tree example) and specification.tsx (all YAML examples).
+    role: primary
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/schema-explorer.tsx
+        metadata:
+          summary: Interactive schema field viewer — line-level highlighting of focused fields. Bound to the Schema Explorer feature (shape:18).
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/mermaid-diagram.tsx
+        metadata:
+          summary: Mermaid diagram renderer via beautiful-mermaid — theme-aware via CSS variables, with error boundary. Bound to the Mermaid Visualization feature (shape:19).
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/section-minimap.tsx
+        metadata:
+          summary: Floating right-side minimap with section progress bars and hover-expand popover TOC. Scroll-triggered visibility.
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/linked-heading.tsx
+        metadata:
+          summary: H2/H3 with hover-anchor link — renders the "#" affordance used throughout the spec.
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/theme-toggle.tsx
+        metadata:
+          summary: Dark/light theme toggle — persists to localStorage, toggles the .dark class on documentElement. Bound to the Theme System feature (shape:22).
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/example-toggle.tsx
+        metadata:
+          summary: Interactive node selector for cross-domain examples (software, research, editorial). Renders Mermaid diagrams and YAML definitions for selected nodes.
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/use-active-section.ts
+        metadata:
+          summary: IntersectionObserver hook tracking the currently visible spec section id. Drives the minimap and TOC active states.
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/use-keyboard-nav.ts
+        metadata:
+          summary: Vim-style keyboard navigation hook for the spec page (j/k/G/gg) added in amendment:9. Reuses the same allSectionIds array as use-active-section. Honors prefers-reduced-motion and ignores keystrokes when focus is in an editable element.
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: apps/web/src/components/spec/use-scroll-progress.ts
+        metadata:
+          summary: Hook calculating scroll progress 0-100, driving the top progress bar and back-to-top visibility threshold.
     role: supporting
   - bindings:
       - scheme: path
         value: apps/web/src/router.tsx
         metadata:
-          summary: TanStack Router configuration
+          summary: TanStack Router configuration.
     role: supporting
   - bindings:
       - scheme: path
         value: apps/web/package.json
         metadata:
-          summary: Web app dependencies and build scripts
+          summary: Web app dependencies and build scripts.
     role: supporting
 metadata:
   team: core

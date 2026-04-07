@@ -1,0 +1,56 @@
+id: 3
+name: 'Distill: strip 2x2 primitives grid and ornamental dividers'
+description: Ruthless subtractive pass on the homepage and the SectionDivider primitive, stripping elements that do not earn their place before the /bolder rebuild replaces them with structural demonstrations.
+targets:
+  shape_ids:
+  - 17
+  - 21
+status: proposed
+intent:
+  kind: amendment
+  summary: Remove the 2x2 primitives grid and the "Four primitives, two graphs" header cell from the home page. Flatten SectionDivider to a hairline by removing its three decorative dots. Trim redundant content in the Get Started block — drop the skills-install duplicate and the trailing paragraph that repeats the CTA.
+  source: ai
+  rationale: >-
+    The /impeccable:critique of the home page flagged the 2x2 primitives
+    grid as the single worst element on the site — the textbook
+    AI-landing tell the brand brief explicitly forbids as a "generic
+    SaaS landing" anti-reference. A spec about directed acyclic graphs
+    whose homepage uses a symmetrical 2x2 is a self-contradiction. The
+    SectionDivider dot ornaments are decoration without meaning — the
+    brand principle "structure is the brand" rewards structure that
+    carries information, not structure that merely looks structural.
+    The Get Started block has two near-duplicate install command boxes
+    plus a trailing paragraph that restates the CTA — classic AI
+    redundancy. Distill removes all three before /bolder rebuilds the
+    primitives explanation as structural demonstrations rather than
+    cells in a grid.
+  goals: >-
+    Cut the homepage to the minimum that still makes the product
+    intelligible on its own — hero, one concrete YAML demonstration,
+    one install path, footer. Leave space for /bolder to rebuild the
+    primitives explanation as full-width structural demonstrations.
+    Remove ornamental visual noise from the shared SectionDivider.
+  non_goals: >-
+    Does not add new content, does not touch typography, does not
+    change color, does not add motion, does not rewrite copy (that is
+    /clarify). Does not yet replace the primitives explanation — that
+    is /bolder. Does not touch the specification page.
+  spec_section: N/A — homepage refactor, no spec change
+  affected_files: >-
+    apps/web/src/routes/index.tsx — delete the "Four primitives, two
+    graphs" section (header cell plus 2x2 primitives grid). Delete the
+    now-unused primitives const. Simplify the Get Started block: keep
+    only the CLI install command, delete the Agent Skills install
+    duplicate, delete the trailing paragraph that repeats the spec CTA.
+    Remove the SectionDivider preceding the deleted section. Remove
+    the CopyButton helper if the skills install deletion makes it
+    unused. packages/ui/src/components/section-divider.tsx — remove
+    the three decorative dot spans, leaving a clean hairline border.
+  verification: >-
+    bun run format clean. bun run typecheck clean. shapes validate
+    clean. Visually the home should become shorter and less cluttered
+    without losing the hero, one concrete YAML example, or the install
+    path. SectionDivider should render as a plain hairline in both
+    light and dark modes.
+initiated_by:
+  type: ai
