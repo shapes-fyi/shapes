@@ -5,7 +5,7 @@ targets:
   shape_ids:
   - 17
   - 21
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: 'Final polish sweep. Bumps theme toggle and back-to-top buttons from size icon (32px) to size icon-lg (now 44px after the audit fix) so the entire touch-critical icon button family meets WCAG 2.5.5 AAA. Adds three remaining drift tokens: text-code for the standard mono small size used in 5 places, leading-h1 for the spec h1 specific value, and tracking-meta for the spec metadata label tracking. Routes all call sites through the new tokens.'

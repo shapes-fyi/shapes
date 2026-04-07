@@ -4,7 +4,7 @@ description: Focused bug fix pass responding to real visual issues surfaced only
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Focused bug fix for four real visual issues surfaced by running the site locally. Nav and footer wordmarks sit on the GridLines vertical rails because they lack the inner cell padding the hero uses. In Practice and Install h2 overflow their col-span-2 cells at md and lg causing mid-word break-words wrap. Two Graphs h2 overflows the title block at md and lg. Spec page minimap popover overlaps content column at md viewport.

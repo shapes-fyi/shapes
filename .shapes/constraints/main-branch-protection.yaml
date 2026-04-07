@@ -11,7 +11,7 @@ rule: >-
   signed commits (GPG/SSH), and linear history. Force pushes and branch
   deletion are blocked. Repository admins can bypass.
 enforcement: machine
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: GitHub ruleset enforcing PR reviews, signed commits, and linear history on main

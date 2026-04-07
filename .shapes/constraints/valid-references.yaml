@@ -11,7 +11,7 @@ rule: >-
   Every constraint ID, profile ID, parent ID, and child ID referenced by any
   node must resolve to an existing node of the correct type
 enforcement: machine
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: Valid References

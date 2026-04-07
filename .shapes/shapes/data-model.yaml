@@ -7,7 +7,7 @@ description: >-
   (code bindings), Evidence (constraint proofs), and Provenance (decision
   history). All types derive Serialize/Deserialize for YAML and JSON output.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: module
   summary: >-

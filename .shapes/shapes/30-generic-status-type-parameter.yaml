@@ -5,7 +5,7 @@ description: >-
   TerminalDetail.successors becomes Vec<Id> instead of Vec<u64>. This
   requires parameterizing the custom Serialize/Deserialize impls and
   ripples through every struct that contains a Status field.
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: feature

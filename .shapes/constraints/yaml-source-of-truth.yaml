@@ -11,7 +11,7 @@ rule: >-
   The .shapes/ YAML files are the canonical representation — JSON output is
   ephemeral and derived
 enforcement: manual
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: YAML Source of Truth

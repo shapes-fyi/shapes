@@ -8,7 +8,7 @@ description: >-
   to get an overview, list to find relevant shapes, get to read details, and
   query constraints to discover what rules apply before doing any work.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: feature
   summary: >-

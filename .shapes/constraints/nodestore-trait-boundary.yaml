@@ -7,7 +7,7 @@ description: >-
 kind: invariant
 rule: All read-only command logic (dag traversal, validation, tree) MUST accept &impl NodeStore, not a concrete FileStore type
 enforcement: machine
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: requirement

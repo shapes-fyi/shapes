@@ -11,7 +11,7 @@ rule: >-
   Agents must query shapes context via CLI commands on demand — shapes content
   must never be pre-injected into agent prompts
 enforcement: manual
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: Agent CLI Discovery

@@ -4,7 +4,7 @@ description: Surgical voice pass on the three highest-traffic copy moments on th
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Rewrites the highest-traffic copy on the site for clarity and concrete language without changing any spec claims. Tightens the home hero paragraph (which currently strings three abstract nouns in a row), the Two Graphs paragraph (which uses a clever look-right/look-down metaphor that confuses first-time readers), and the spec abstract (slightly long and uses 'eliminates' vaguely). Defers the per-section prose sweep of sections.tsx to a follow-up amendment so each section can be verified individually against constraint 6 (Spec Conformance).

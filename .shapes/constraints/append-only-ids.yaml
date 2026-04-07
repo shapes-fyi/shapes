@@ -13,7 +13,7 @@ rule: >-
   increasing, never reused) holds via computed derivation rather than a
   persisted counter
 enforcement: machine
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: Append-Only IDs

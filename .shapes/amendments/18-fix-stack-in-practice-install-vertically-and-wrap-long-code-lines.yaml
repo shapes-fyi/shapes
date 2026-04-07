@@ -4,7 +4,7 @@ description: Real fix for the user-reported overflow bug after amendment:17 (min
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: User reports that the prior min-w-0 fix did not solve the bug — content is still cut off and they want to see things in full without horizontal scroll. The real fix is to stack In Practice and Install vertically so the code block gets full Container width, and add a wrap prop to CodeBlock that toggles whitespace-pre-wrap and break-all so long YAML strings and the install URL wrap to multiple lines instead of overflowing or scrolling. ASCII trees that rely on monospace alignment opt out of wrap.

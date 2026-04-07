@@ -10,7 +10,7 @@ rule: >-
   Amendment nodes are append-only records — once created, their content must
   not be modified
 enforcement: manual
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: Amendment Immutability

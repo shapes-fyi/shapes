@@ -5,7 +5,7 @@ targets:
   shape_ids:
   - 17
   - 21
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: 'Installs the motion package in apps/web and adds signature motion to the home page: hero entrance choreography on page load, scroll-triggered reveal for Two Graphs / In Practice / Install sections. All animations respect prefers-reduced-motion and use ease-out-quart timing. Adds shared easing tokens to the theme.'

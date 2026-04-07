@@ -9,7 +9,7 @@ description: >-
   Errors and metadata go to stderr. No data is held in memory between
   invocations — each command is stateless.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: data-flow
   summary: >-

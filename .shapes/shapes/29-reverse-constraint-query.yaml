@@ -4,7 +4,7 @@ description: >-
   The query shapes-for-constraint command scans all shapes to find which
   ones reference a given constraint, distinguishing direct references from
   inherited ones. Output format matches ConstraintWithSource pattern.
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: feature

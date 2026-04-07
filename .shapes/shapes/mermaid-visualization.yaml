@@ -7,7 +7,7 @@ description: >-
   composition DAGs, constraint hierarchies, and data flows. Includes error
   boundary that shows a user-friendly message on render failure.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: >-

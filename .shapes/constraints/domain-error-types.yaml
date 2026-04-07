@@ -7,7 +7,7 @@ description: >-
 kind: guideline
 rule: All new command functions SHOULD return domain-specific error types (StoreError, CreateError, ValidationError) rather than anyhow::Result
 enforcement: manual
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: requirement

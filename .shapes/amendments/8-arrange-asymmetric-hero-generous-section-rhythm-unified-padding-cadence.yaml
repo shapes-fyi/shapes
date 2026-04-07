@@ -4,7 +4,7 @@ description: Layout refinement after the visual system, color, and motion are in
 targets:
   shape_ids:
   - 17
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Layout pass after the visual system is in place. Breaks the symmetric 50/50 hero into a 5/12 + 7/12 asymmetric split, increases SectionDivider vertical rhythm so major sections breathe, unifies Install proportions with In Practice (both 2/6 + 4/6), normalizes inner cell padding to the same sm/lg cadence the Container uses, and gives the footer real closure.

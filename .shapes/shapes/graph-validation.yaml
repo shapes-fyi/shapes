@@ -12,7 +12,7 @@ description: >-
   type, ID, and message. YAML parse errors are reported as warnings instead
   of being silently skipped. Exit code 2 when issues are found.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: feature
   summary: >-

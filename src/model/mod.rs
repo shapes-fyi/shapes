@@ -129,7 +129,7 @@ impl FromStr for ProfileId {
 pub use amendment::{Amendment, AmendmentTargets, InitiatedBy, InitiatedType, VersionImpact};
 pub use common::{Intent, Status};
 pub use constraint::{Constraint, Enforcement};
-pub use profile::{AmendmentModel, AmendmentRules, FieldGroup, Profile};
+pub use profile::{AmendmentModel, FieldGroup, Profile};
 pub use shape::Shape;
 
 // ---------------------------------------------------------------------------

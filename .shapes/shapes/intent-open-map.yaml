@@ -9,7 +9,7 @@ description: >-
   engineering, research, editorial, and other domains without changing the
   core data model.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: pattern
   summary: >-

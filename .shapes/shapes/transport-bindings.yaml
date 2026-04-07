@@ -5,7 +5,7 @@ description: >-
   transport-specific interfaces. Defines how abstract spec operations map to
   CLI commands and MCP tools.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: >-

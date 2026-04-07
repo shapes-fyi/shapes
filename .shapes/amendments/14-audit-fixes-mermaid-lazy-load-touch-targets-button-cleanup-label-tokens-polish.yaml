@@ -5,7 +5,7 @@ targets:
   shape_ids:
   - 17
   - 21
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: Batches the six recommended actions from the impeccable audit. Lazy-loads beautiful-mermaid into its own client chunk via dynamic import inside ExampleToggle so the spec page initial JS drops dramatically. Deletes the dead MermaidDiagram component. Bumps Button lg and icon-lg sizes to meet the 44px touch target. Simplifies the triple rounded-full workaround. Adds text-tiny and text-label semantic tokens and routes label call sites through them. Polish sweep on remaining arbitrary tracking and leading values, bg opacity step, and OpenType feature enablement.

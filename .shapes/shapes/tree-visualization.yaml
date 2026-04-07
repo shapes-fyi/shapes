@@ -7,7 +7,7 @@ description: >-
   shows ID, name, status badge, kind tag, and inline constraint reference count.
   Supports both Shape and Constraint trees via the tree subcommand.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: feature
   summary: >-

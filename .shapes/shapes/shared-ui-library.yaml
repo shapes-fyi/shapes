@@ -8,7 +8,7 @@ description: >-
   workspace imports (@workspace/ui/*). Lives in packages/ui/ as a shared
   monorepo package independent from any specific app.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: module
   summary: >-

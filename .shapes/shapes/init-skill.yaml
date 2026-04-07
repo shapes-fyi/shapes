@@ -9,7 +9,7 @@ description: >-
   and constraints linked by parent/child relationships and realization bindings.
   Validates the result and presents a summary.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: feature
   summary: >-
@@ -38,5 +38,12 @@ realization:
       - scheme: path
         value: skills/shapes-init/SKILL.md
         metadata:
-          summary: Bootstrap workflow — 8-step process from init through exploration, interview, Profile, shapes, constraints, validation
+          summary: >-
+            Bootstrap workflow — 7-step process from init (with --template
+            selection) through exploration, interview, create-then-Edit-TODO
+            for shapes and constraints, optional Profile authoring, and
+            validation. No hand-authored YAML; the CLI scaffold writer
+            produces self-documenting files with TODO placeholders.
     role: primary
+amendment_log:
+  - 22

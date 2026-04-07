@@ -8,11 +8,13 @@ use serde::Serialize;
 use crate::error::{CliError, CreateError, ValidationError};
 use crate::model::*;
 use crate::model::{ShapeId, ConstraintId, AmendmentId, ProfileId, InitiatedType};
-use crate::model::profile::{FieldGroup, FieldSection};
+use crate::model::profile::FieldSection;
 use crate::store::{FileStore, NodeStore};
+use crate::templates::{self, Template, TemplateKind};
 use crate::{CreateCommand, DagType, OutputFormat, QueryCommand};
 
 mod dag;
+mod scaffold;
 
 // ---------------------------------------------------------------------------
 // Output helper
@@ -88,59 +90,32 @@ fn validate_kind_against_profile(
     Ok(())
 }
 
-fn apply_profile_fields(
-    profile: &Profile,
-    node_type_str: &str,
-    intent_extra: &mut BTreeMap<String, serde_yml::Value>,
-    metadata: &mut BTreeMap<String, serde_yml::Value>,
-) {
-    let fields = match &profile.fields {
-        Some(f) => f,
-        None => return,
-    };
-    let section: &FieldSection = match node_type_str {
-        "shape" => match &fields.shape {
-            Some(s) => s,
-            None => return,
-        },
-        "constraint" => match &fields.constraint {
-            Some(s) => s,
-            None => return,
-        },
-        _ => return,
-    };
-    if let Some(ref group) = section.intent {
-        apply_field_group(group, intent_extra);
-    }
-    if let Some(ref group) = section.metadata {
-        apply_field_group(group, metadata);
-    }
-}
-
-fn apply_field_group(
-    group: &FieldGroup,
-    map: &mut BTreeMap<String, serde_yml::Value>,
-) {
-    for fd in &group.fields {
-        if map.contains_key(&fd.name) {
-            continue;
-        }
-        if fd.required {
-            let placeholder = format!("TODO: {}", fd.description);
-            map.insert(fd.name.clone(), serde_yml::Value::String(placeholder));
-        }
-    }
-}
-
 // ---------------------------------------------------------------------------
 // init
 // ---------------------------------------------------------------------------
 
-pub fn init() -> Result<()> {
+pub fn init(template: TemplateKind) -> Result<()> {
     let dir = env::current_dir()?;
-    FileStore::init(&dir)?;
-    eprintln!("Initialized .shapes/ in {}", dir.display());
+    FileStore::init(&dir, Some(template.as_str()))?;
+    let t = template.template();
+    eprintln!(
+        "Initialized .shapes/ in {} (template: {} — {})",
+        dir.display(),
+        t.name,
+        t.description,
+    );
     Ok(())
+}
+
+/// Resolve which template to use for a scaffold call. Per-call `--template`
+/// wins; otherwise read the active template from `meta.yaml`; otherwise
+/// fall back to `software`.
+fn resolve_template(store: &FileStore, override_kind: Option<TemplateKind>) -> &'static Template {
+    if let Some(k) = override_kind {
+        return k.template();
+    }
+    let meta_template = store.read_meta().ok().and_then(|m| m.template);
+    templates::resolve(meta_template.as_deref())
 }
 
 // ---------------------------------------------------------------------------
@@ -158,62 +133,44 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             source,
             profile,
             description,
+            template: template_override,
             from,
         } => {
             let id = ShapeId::new(store.next_id(NodeType::Shape)?);
-            let shape: Shape = if let Some(path) = from {
+
+            if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut s: Shape = serde_yml::from_str(&content)?;
                 s.id = id;
-                s
+                let saved_path = store.save(NodeType::Shape, id.get(), &s)?;
+                report_created(id_only, &id.to_string(), &saved_path, &s, format)?;
             } else {
-                let loaded_profile = match profile {
-                    Some(pid) => Some(load_profile(&store, pid)?),
-                    None => None,
-                };
+                let name = name.expect("clap requires --name when --from is absent");
+                let template = resolve_template(&store, template_override);
+                let kind_str = kind.unwrap_or_else(|| template.default_shape_kind.to_string());
 
-                if let Some(ref p) = loaded_profile {
-                    validate_kind_against_profile(p, "shape", &kind)?;
+                if let Some(pid) = profile {
+                    let p = load_profile(&store, pid)?;
+                    validate_kind_against_profile(&p, "shape", &kind_str)?;
                 }
 
-                let mut intent_extra: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
-                let mut metadata: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
-
-                if let Some(ref p) = loaded_profile {
-                    apply_profile_fields(p, "shape", &mut intent_extra, &mut metadata);
-                }
-
-                Shape {
+                let yaml = scaffold::scaffold_shape(&scaffold::ShapeScaffold {
                     id,
-                    name: name.clone(),
-                    description: description.unwrap_or_else(|| name.clone()),
-                    profile: profile.map(ProfileId::new),
-                    version: None,
-                    predecessors: vec![],
-                    status: Status::proposed(),
-                    intent: Intent {
-                        kind,
-                        summary: summary.unwrap_or(name),
-                        source: serde_yml::Value::String(source),
-                        uris: vec![],
-                        extra: intent_extra,
-                    },
-                    constraints: vec![],
-                    realization: vec![],
-                    evidence: vec![],
-                    provenance: vec![],
-                    amendment_log: vec![],
-                    parents: vec![],
-                    children: vec![],
-                    metadata,
+                    name: &name,
+                    kind: &kind_str,
+                    summary: summary.as_deref(),
+                    source: &source,
+                    description: description.as_deref(),
+                    profile,
+                    template,
+                });
+                let saved_path = store.save_raw(NodeType::Shape, id.get(), &name, &yaml)?;
+                if id_only {
+                    println!("{id}");
+                } else {
+                    eprintln!("Created {}", saved_path.display());
+                    print!("{yaml}");
                 }
-            };
-            let path = store.save(NodeType::Shape, id.get(), &shape)?;
-            if id_only {
-                println!("{id}");
-            } else {
-                eprintln!("Created {}", path.display());
-                output(&shape, format)?;
             }
         }
 
@@ -227,64 +184,49 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             intent_kind,
             profile,
             description,
+            template: template_override,
             from,
         } => {
             let id = ConstraintId::new(store.next_id(NodeType::Constraint)?);
-            let constraint: Constraint = if let Some(path) = from {
+
+            if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut c: Constraint = serde_yml::from_str(&content)?;
                 c.id = id;
-                c
+                let saved_path = store.save(NodeType::Constraint, id.get(), &c)?;
+                report_created(id_only, &id.to_string(), &saved_path, &c, format)?;
             } else {
-                let loaded_profile = match profile {
-                    Some(pid) => Some(load_profile(&store, pid)?),
-                    None => None,
-                };
+                let name = name.expect("clap requires --name when --from is absent");
+                let template = resolve_template(&store, template_override);
+                let kind_str =
+                    kind.unwrap_or_else(|| template.default_constraint_kind.to_string());
 
-                if let Some(ref p) = loaded_profile {
-                    validate_kind_against_profile(p, "constraint", &kind)?;
+                if let Some(pid) = profile {
+                    let p = load_profile(&store, pid)?;
+                    validate_kind_against_profile(&p, "constraint", &kind_str)?;
                 }
 
-                let mut intent_extra: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
-                let mut metadata: BTreeMap<String, serde_yml::Value> = BTreeMap::new();
-
-                if let Some(ref p) = loaded_profile {
-                    apply_profile_fields(p, "constraint", &mut intent_extra, &mut metadata);
-                }
-
-                let resolved_intent_kind = intent_kind.unwrap_or_else(|| kind.clone());
-                Constraint {
-                    id,
-                    name: name.clone(),
-                    description: description.unwrap_or_else(|| name.clone()),
-                    kind,
-                    rule: rule.unwrap_or_default(),
+                let yaml = scaffold::scaffold_constraint(&scaffold::ConstraintScaffold {
+                    id: id.get(),
+                    name: &name,
+                    kind: &kind_str,
+                    rule: rule.as_deref(),
                     enforcement,
-                    profile: profile.map(ProfileId::new),
-                    version: None,
-                    status: Status::proposed(),
-                    intent: Intent {
-                        kind: resolved_intent_kind,
-                        summary: summary.unwrap_or(name),
-                        source: serde_yml::Value::String(source),
-                        uris: vec![],
-                        extra: intent_extra,
-                    },
-                    realization: vec![],
-                    evidence: vec![],
-                    provenance: vec![],
-                    amendment_log: vec![],
-                    parents: vec![],
-                    children: vec![],
-                    metadata,
+                    summary: summary.as_deref(),
+                    source: &source,
+                    description: description.as_deref(),
+                    intent_kind: intent_kind.as_deref(),
+                    profile,
+                    template,
+                });
+                let saved_path =
+                    store.save_raw(NodeType::Constraint, id.get(), &name, &yaml)?;
+                if id_only {
+                    println!("{id}");
+                } else {
+                    eprintln!("Created {}", saved_path.display());
+                    print!("{yaml}");
                 }
-            };
-            let path = store.save(NodeType::Constraint, id.get(), &constraint)?;
-            if id_only {
-                println!("{id}");
-            } else {
-                eprintln!("Created {}", path.display());
-                output(&constraint, format)?;
             }
         }
 
@@ -305,6 +247,7 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                 a.id = id;
                 a
             } else {
+                let name = name.expect("clap requires --name when --from is absent");
                 Amendment {
                     id,
                     name: name.clone(),
@@ -350,49 +293,63 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             source,
             amendment_model,
             description,
+            template: template_override,
             from,
         } => {
             let id = ProfileId::new(store.next_id(NodeType::Profile)?);
-            let profile: Profile = if let Some(path) = from {
+
+            if let Some(path) = from {
                 let content = read_from(&path)?;
                 let mut p: Profile = serde_yml::from_str(&content)?;
                 p.id = id;
-                p
+                let saved_path = store.save(NodeType::Profile, id.get(), &p)?;
+                report_created(id_only, &id.to_string(), &saved_path, &p, format)?;
             } else {
-                Profile {
-                    id,
-                    name: name.clone(),
-                    description: description.unwrap_or_else(|| name.clone()),
-                    version: None,
-                    status: Status::proposed(),
-                    intent: Intent {
-                        kind: "governance".into(),
-                        summary: summary.unwrap_or(name),
-                        source: serde_yml::Value::String(source),
-                        uris: vec![],
-                        extra: Default::default(),
-                    },
-                    provenance: vec![],
-                    lifecycle: None,
-                    fields: None,
-                    versioning: None,
-                    amendment_rules: Some(AmendmentRules {
-                        application: amendment_model,
-                    }),
-                    amendment_log: vec![],
-                    metadata: BTreeMap::new(),
+                let name = name.expect("clap requires --name when --from is absent");
+                let template = resolve_template(&store, template_override);
+                let amendment_model_str = match amendment_model {
+                    AmendmentModel::Merge => "merge",
+                    AmendmentModel::Overlay => "overlay",
+                    AmendmentModel::Edition => "edition",
+                    AmendmentModel::AppendOnly => "append-only",
+                };
+                let yaml = scaffold::scaffold_profile(&scaffold::ProfileScaffold {
+                    id: id.get(),
+                    name: &name,
+                    summary: summary.as_deref(),
+                    source: &source,
+                    description: description.as_deref(),
+                    amendment_model: amendment_model_str,
+                    template,
+                });
+                let saved_path =
+                    store.save_raw(NodeType::Profile, id.get(), &name, &yaml)?;
+                if id_only {
+                    println!("{id}");
+                } else {
+                    eprintln!("Created {}", saved_path.display());
+                    print!("{yaml}");
                 }
-            };
-            let path = store.save(NodeType::Profile, id.get(), &profile)?;
-            if id_only {
-                println!("{id}");
-            } else {
-                eprintln!("Created {}", path.display());
-                output(&profile, format)?;
             }
         }
     }
 
+    Ok(())
+}
+
+fn report_created<T: Serialize>(
+    id_only: bool,
+    id: &str,
+    path: &std::path::Path,
+    node: &T,
+    format: OutputFormat,
+) -> Result<()> {
+    if id_only {
+        println!("{id}");
+    } else {
+        eprintln!("Created {}", path.display());
+        output(node, format)?;
+    }
     Ok(())
 }
 

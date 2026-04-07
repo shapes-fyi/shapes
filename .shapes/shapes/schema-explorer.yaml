@@ -8,7 +8,7 @@ description: >-
   Covers all four node types (Shape, Constraint, Amendment, Profile) with
   complete field documentation.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: >-

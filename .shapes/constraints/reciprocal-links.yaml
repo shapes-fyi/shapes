@@ -11,7 +11,7 @@ rule: >-
   If node A lists node B as a child, then B must list A as a parent, and
   vice versa
 enforcement: machine
-status: promoted
+status: canonical
 intent:
   kind: requirement
   summary: Reciprocal Links

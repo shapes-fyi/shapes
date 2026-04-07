@@ -5,7 +5,7 @@ targets:
   shape_ids:
   - 17
   - 21
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: 'Normalizes typography after /bolder: introduces semantic text-scale tokens in the shared theme, fixes the spec body reading color (muted -> foreground) and line length (max-w-3xl -> 65ch), moves spec metadata labels into the UI sans voice, and unifies tracking and leading across home page headings.'

@@ -1,0 +1,27 @@
+id: 17
+name: Profiles Optional in Create
+description: No code path in `shapes create` (shape, constraint, amendment, profile) may require a Profile to be present in the store or attached via --profile. The --profile flag is optional everywhere; omitting it still produces a fully- formed node that passes validation. Templates carry scaffolding hints; Profiles are reserved for opt-in enforcement only.
+kind: invariant
+rule: Every `shapes create` subcommand succeeds end-to-end without --profile and without any pre-existing Profile in the store, producing a node that passes `shapes validate`.
+enforcement: machine
+profile: 1
+status: canonical
+intent:
+  kind: invariant
+  summary: '`shapes create` never requires a Profile; templates carry scaffolding hints, Profiles carry optional enforcement.'
+  source: ai
+  impact_if_violated: Bootstrapping a new project requires authoring a Profile first. Fresh stores cannot be used. The init skill's three-step workflow breaks at Step 4. Agents drop back to hand-authoring YAML against an undocumented schema.
+  rationale: 'Profiles encode governance and enforcement (required fields, kind restrictions, lifecycle gates). Conflating governance with scaffolding hints would force every project to author a Profile before creating any node, raising the barrier to entry and breaking the `shapes init && shapes create shape ...` flow that the init skill now relies on. Templates separate the two concerns: pure hints vs. opt-in rules.'
+realization:
+- bindings:
+  - scheme: path
+    value: src/commands/mod.rs
+    metadata:
+      summary: create() match arms — Profile loading is gated behind `if let Some(pid) = profile`, never required
+  role: primary
+- bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '8 integration tests run `shapes init && shapes create ...` with no Profile in the store and no --profile flag'
+  role: supporting
