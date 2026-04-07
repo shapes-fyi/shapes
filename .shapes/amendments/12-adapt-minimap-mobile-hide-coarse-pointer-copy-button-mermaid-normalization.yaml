@@ -1,0 +1,77 @@
+id: 12
+name: 'Adapt: minimap mobile hide, coarse-pointer copy button, mermaid normalization'
+description: Responsive and input-method sweep that catches the gaps the visual overhaul did not address. Three focused fixes for touch and small-viewport reality.
+targets:
+  shape_ids:
+  - 17
+status: proposed
+intent:
+  kind: amendment
+  summary: Responsive sweep targeting the touch and small-viewport gaps that the visual overhaul did not address. Hides the section minimap below md (it relies on hover and overlaps content on phones). Makes the CodeBlock copy button visible by default on coarse-pointer devices. Normalizes the Mermaid figcaption to the new typography tokens.
+  source: ai
+  rationale: >-
+    Audit of the spec page on a 375px-wide phone viewport surfaced
+    three real problems. First, the SectionMinimap is rendered at
+    every breakpoint as a fixed right-edge element with hover-based
+    expansion. On a phone the dot pile sits on top of body text and
+    the popover never opens because there is no hover. The minimap
+    is decorative wayfinding for a desktop reading experience —
+    mobile readers already have the inline TOC at the top of the
+    page and the back-to-top button in the corner. Hide the minimap
+    below md (768px). Second, the CodeBlock copy button is
+    opacity-0 group-hover:opacity-100 — invisible on touch devices,
+    where there is no hover state to reveal it. The fix is the
+    pointer:coarse media query: when the device's primary input is
+    coarse (touch), make the button visible by default. Fine
+    pointers (mouse) keep the hover-reveal behavior so the button
+    does not steal attention from code on the desktop. Third, the
+    Mermaid diagram figcaption still uses the old text-sm
+    leading-[1.65] max-w-3xl pattern from before /typeset
+    introduced semantic tokens — should match the rest of the
+    spec page captions which now read text-sm leading-read
+    max-w-[68ch]. Pure consistency cleanup, but it ensures any
+    future caption width tweak only has to happen in one place.
+    Hero h1 wordmark is verified to fit on a 320px viewport at
+    the current text-7xl base — single 6-character word, ~200px
+    rendered width, fits comfortably inside the cell with p-6
+    padding. No change needed there.
+  goals: >-
+    Mobile readers do not see the desktop minimap overlapping
+    body text. Touch users can see the code copy button without
+    needing a hover state that does not exist. Mermaid figcaption
+    pulls from the same typography tokens as every other caption
+    on the spec page.
+  non_goals: >-
+    Does not redesign the minimap for mobile (a real mobile
+    minimap is a separate larger feature). Does not change the
+    hero h1 scale (verified to fit at 320px). Does not change
+    nav layout (already fits at 320px). Does not touch home
+    page sections (they already collapse to single column below
+    md). Does not change the Two Graphs heading break point.
+    Does not introduce new dependencies. Does not touch the
+    schema explorer (already responsive via lg:flex-row plus
+    min-w-0 on the YAML pane).
+  spec_section: N/A — responsive housekeeping
+  affected_files: >-
+    apps/web/src/components/spec/section-minimap.tsx — add
+    hidden md:block to the top-level fixed wrapper so the
+    minimap never renders below md. apps/web/src/components/
+    spec/code-block.tsx — add the [@media(pointer:coarse)]:
+    opacity-100 modifier alongside the existing
+    group-hover/code:opacity-100 so the copy button is visible
+    by default on touch. apps/web/src/components/spec/
+    mermaid-diagram.tsx — replace the figcaption max-w-3xl
+    text-sm leading-[1.65] pattern with max-w-[68ch] text-sm
+    leading-read in both the success and the error fallback
+    branches.
+  verification: >-
+    bun run format clean. bun run typecheck clean. shapes
+    validate clean. Manual narrow-viewport test at 375px and
+    320px — minimap is gone, page reads cleanly, TOC at top
+    is the only navigation. Touch device test (or Chrome
+    DevTools touch emulation with pointer:coarse) — copy
+    button is visible by default on every code block. Desktop
+    test — copy button still uses hover reveal, minimap is
+    visible from md and up.
+initiated_by:
+  type: ai

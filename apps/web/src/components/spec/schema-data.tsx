@@ -73,8 +73,8 @@ export const INTENT_SCHEMA: SchemaDefinition = {
       description: (
         <p>
           Optional list of external references such as issue trackers, design
-          documents, discussion threads, or lab notebooks that provide additional
-          context for this intent.
+          documents, discussion threads, or lab notebooks that provide
+          additional context for this intent.
         </p>
       ),
       lines: "  uris: [string]?",
@@ -226,8 +226,8 @@ export const SHAPE_SCHEMA: SchemaDefinition = {
       label: "constraints",
       description: (
         <p>
-          Optional list of Constraint IDs referencing standalone Constraints that
-          apply to this Shape.
+          Optional list of Constraint IDs referencing standalone Constraints
+          that apply to this Shape.
         </p>
       ),
       lines: "  constraints: [ConstraintId]?",
@@ -425,8 +425,7 @@ export const AMENDMENT_SCHEMA: SchemaDefinition = {
       description: (
         <p>
           Indicates the magnitude of the change under the profile's versioning
-          scheme (e.g.{" "}
-          <code className="text-foreground">major</code>,{" "}
+          scheme (e.g. <code className="text-foreground">major</code>,{" "}
           <code className="text-foreground">minor</code>,{" "}
           <code className="text-foreground">patch</code>). When this Amendment
           reaches Canonical, the target's version is updated per the profile's
@@ -450,9 +449,7 @@ export const AMENDMENT_SCHEMA: SchemaDefinition = {
       key: "constraints",
       label: "constraints",
       description: (
-        <p>
-          Optional Constraint IDs introduced or modified by this Amendment.
-        </p>
+        <p>Optional Constraint IDs introduced or modified by this Amendment.</p>
       ),
       lines: "  constraints: [ConstraintId]?",
     },
@@ -496,9 +493,8 @@ export const AMENDMENT_SCHEMA: SchemaDefinition = {
         <p>
           Records the actor who created this Amendment. The{" "}
           <code className="text-foreground">type</code> distinguishes human from
-          machine actors, and{" "}
-          <code className="text-foreground">identity</code> provides the
-          specific identifier.
+          machine actors, and <code className="text-foreground">identity</code>{" "}
+          provides the specific identifier.
         </p>
       ),
       lines: `  initiated_by:
@@ -529,8 +525,7 @@ export const CONSTRAINT_SCHEMA: SchemaDefinition = {
       Constraints are standalone records with their own lifecycle, referenced by
       ID from any number of Shapes and Amendments. Constraints do not
       participate in the Shape composition graph but form their own directed
-      acyclic graph through{" "}
-      <code className="text-foreground">parents</code> and{" "}
+      acyclic graph through <code className="text-foreground">parents</code> and{" "}
       <code className="text-foreground">children</code> fields, enabling
       decomposition of complex policies into sub-constraints.
     </p>
@@ -834,8 +829,9 @@ export const REALIZATION_SCHEMA: SchemaDefinition = {
       label: "bindings",
       description: (
         <p>
-          List of Binding records pointing to the concrete artifacts that realize
-          this Shape &mdash; source files, services, documents, or other Shapes.
+          List of Binding records pointing to the concrete artifacts that
+          realize this Shape &mdash; source files, services, documents, or other
+          Shapes.
         </p>
       ),
       lines: "  bindings: [Binding]",
@@ -976,9 +972,7 @@ export const PROVENANCE_SCHEMA: SchemaDefinition = {
       key: "metadata",
       label: "metadata",
       description: (
-        <p>
-          Optional open map for additional context about the provenance.
-        </p>
+        <p>Optional open map for additional context about the provenance.</p>
       ),
       lines: `  metadata:
     <string>: any`,
@@ -1005,17 +999,13 @@ export const PROFILE_SCHEMA: SchemaDefinition = {
     {
       key: "id",
       label: "id",
-      description: (
-        <p>An opaque identifier for this Profile.</p>
-      ),
+      description: <p>An opaque identifier for this Profile.</p>,
       lines: "  id: ProfileId",
     },
     {
       key: "name",
       label: "name",
-      description: (
-        <p>A human-readable name for this Profile.</p>
-      ),
+      description: <p>A human-readable name for this Profile.</p>,
       lines: "  name: string",
     },
     {
@@ -1047,9 +1037,8 @@ export const PROFILE_SCHEMA: SchemaDefinition = {
         <p>
           Lifecycle state of this Profile. Follows the same tagged union
           structure as Shape status, including optional{" "}
-          <code className="text-foreground">successors</code> on terminal
-          states and required{" "}
-          <code className="text-foreground">successors</code> on{" "}
+          <code className="text-foreground">successors</code> on terminal states
+          and required <code className="text-foreground">successors</code> on{" "}
           <code className="text-foreground">superseded</code>.
         </p>
       ),
@@ -1096,8 +1085,7 @@ export const PROFILE_SCHEMA: SchemaDefinition = {
           beyond the base set (proposed, promoted, canonical, rejected,
           superseded, abandoned, reverted) via the{" "}
           <code className="text-foreground">statuses</code> list. Each gate
-          specifies a{" "}
-          <code className="text-foreground">from</code> and{" "}
+          specifies a <code className="text-foreground">from</code> and{" "}
           <code className="text-foreground">to</code> state, with optional
           preconditions and postconditions that must be satisfied.
         </p>
@@ -1119,9 +1107,8 @@ export const PROFILE_SCHEMA: SchemaDefinition = {
       description: (
         <p>
           Declares which sub-fields are required or recognized within core
-          fields. The{" "}
-          <code className="text-foreground">shape</code> section governs Shapes
-          that reference this Profile; the{" "}
+          fields. The <code className="text-foreground">shape</code> section
+          governs Shapes that reference this Profile; the{" "}
           <code className="text-foreground">constraint</code> section governs
           Constraints. Either or both MAY be defined. For example, a software
           profile might require that Shape Intent includes{" "}
@@ -1239,9 +1226,7 @@ export const FIELDDEF_SCHEMA: SchemaDefinition = {
     {
       key: "name",
       label: "name",
-      description: (
-        <p>The name of the custom field being defined.</p>
-      ),
+      description: <p>The name of the custom field being defined.</p>,
       lines: "  name: string",
     },
     {

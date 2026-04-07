@@ -1,0 +1,81 @@
+id: 7
+name: 'Animate: motion library and scroll-triggered reveal choreography'
+description: Adds a disciplined, brand-appropriate motion layer to the home page — hero entrance choreography and scroll-triggered reveals. Introduces shared easing tokens so all motion pulls from one system.
+targets:
+  shape_ids:
+  - 17
+  - 21
+status: proposed
+intent:
+  kind: amendment
+  summary: 'Installs the motion package in apps/web and adds signature motion to the home page: hero entrance choreography on page load, scroll-triggered reveal for Two Graphs / In Practice / Install sections. All animations respect prefers-reduced-motion and use ease-out-quart timing. Adds shared easing tokens to the theme.'
+  source: ai
+  rationale: >-
+    /impeccable:animate flagged the home page as visually static after
+    /bolder and /colorize — strong typography and semantic color, but
+    zero motion to guide attention or reward the scroll. The brand
+    allows motion but only in the "quiet authority" lane: subtle,
+    purposeful, never decorative, never bouncy. The single signature
+    moment is the hero entrance choreography on page load — staggered
+    fade and slide for the section label, wordmark, paragraph, buttons,
+    and tree code block. Then, as the reader scrolls, each subsequent
+    section fades and slides into place once 20% of it is visible —
+    Two Graphs, In Practice, Install. Motion was chosen over CSS
+    keyframes because the staggered sequencing and scroll-triggered
+    whileInView pattern are verbose and error-prone in pure CSS, and
+    the motion library has first-class support for
+    prefers-reduced-motion via useReducedMotion so the brand rule
+    "motion serves meaning" stays enforceable. The motion package is a
+    compile-time library bundled into the static SSR output — it adds
+    zero runtime infrastructure, which matches the spirit of the
+    inherited constraint 8 (Zero External Dependencies at Runtime).
+    That constraint is explicitly scoped to "database, network, or
+    running service" dependencies in the CLI — infrastructure, not
+    bundled code. The web app already ships React, TanStack Start,
+    Vite, and @base-ui/react as bundled libraries under the same
+    interpretation. Shared easing tokens go into the theme so every
+    future animation pulls from one rhythm instead of drifting toward
+    the default linear ease.
+  goals: >-
+    One signature hero entrance moment on page load. Scroll-triggered
+    reveals for Two Graphs, In Practice, Install. Shared easing and
+    duration tokens. Full prefers-reduced-motion fallback (animations
+    skip entirely, content is visible without motion). No bounce or
+    elastic easing. No motion on anything that is already visible
+    above the fold on subsequent reloads. No motion on the
+    specification page — that is a reading surface, not a marketing
+    moment.
+  non_goals: >-
+    Does not add parallax, scroll hijacking, particle effects, or
+    scroll-linked transforms (that is /overdrive if it happens at
+    all). Does not animate Mermaid diagrams, schema explorer, code
+    blocks beyond the existing yaml-reveal keyframe, the minimap, or
+    the spec page progress bar. Does not animate the nav beyond its
+    existing scroll-aware backdrop behavior. Does not add hover
+    animation on buttons beyond what the Button component already
+    has. Does not animate color transitions on lifecycle tags — they
+    should read as immediately legible categories, not animated
+    elements.
+  spec_section: N/A — presentational motion
+  affected_files: >-
+    apps/web/package.json — add motion as a dependency. Exact version
+    resolved via bun install. packages/ui/src/styles/globals.css —
+    add semantic easing tokens (--ease-out-quart, --ease-out-quint,
+    --ease-out-expo) and a --duration-reveal token in @theme inline.
+    apps/web/src/routes/index.tsx — import motion, wrap the hero
+    inner content in a motion container with staggered children, and
+    wrap Two Graphs / In Practice / Install section bodies in
+    whileInView reveal wrappers. Add a useReducedMotion guard so the
+    staggered hero animation collapses to an instant reveal when
+    motion is reduced.
+  verification: >-
+    bun run format clean. bun run typecheck clean. bun install resolves
+    motion successfully. shapes validate clean. Manual check with
+    motion enabled (hero staggers in on first paint, sections reveal
+    on scroll) and with prefers-reduced-motion set to reduce (content
+    is fully visible with no transform or opacity transitions
+    running). FPS should sit at 60 on a mid-range laptop during the
+    hero entrance and each scroll reveal. No layout shift introduced
+    — all motion uses transform and opacity only.
+initiated_by:
+  type: ai

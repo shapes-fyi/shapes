@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { RiCheckLine, RiFileCopyLine } from "@remixicon/react"
-import { renderMermaidSVG } from "beautiful-mermaid"
 import { cn } from "@workspace/ui/lib/utils"
 import { HighlightedCode } from "./code-block"
 
@@ -1180,7 +1179,11 @@ export function ExampleToggle() {
       if (!g.didDrag) {
         const totalDx = e.clientX - g.startX
         const totalDy = e.clientY - g.startY
-        if (Math.abs(totalDx) < DRAG_THRESHOLD && Math.abs(totalDy) < DRAG_THRESHOLD) return
+        if (
+          Math.abs(totalDx) < DRAG_THRESHOLD &&
+          Math.abs(totalDy) < DRAG_THRESHOLD
+        )
+          return
         g.didDrag = true
         el!.setPointerCapture(e.pointerId)
         el!.style.cursor = "grabbing"
@@ -1271,17 +1274,36 @@ export function ExampleToggle() {
     }
   }, [])
 
-  // Pre-render all domain diagrams so the container keeps a stable size
-  const diagramSvgs = useMemo(() => {
-    const map: Record<string, string> = {}
-    for (const example of DOMAIN_EXAMPLES) {
-      try {
-        map[example.id] = renderMermaidSVG(example.diagram, MERMAID_COLORS)
-      } catch {
-        // diagram render failed
-      }
+  // Lazy-load beautiful-mermaid as its own client chunk so the spec page
+  // initial JS does not include Mermaid + elkjs (~1.4 MB). Diagrams render
+  // empty during SSR and on first paint, then populate after the chunk
+  // arrives. Acceptable trade-off because (a) ExampleToggle is not above
+  // the fold, (b) the YAML pane is visible immediately, and (c) the
+  // diagrams are decorative wayfinding for the YAML, not the primary
+  // affordance. See amendment:14.
+  const [diagramSvgs, setDiagramSvgs] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    let cancelled = false
+    import("beautiful-mermaid")
+      .then(({ renderMermaidSVG }) => {
+        if (cancelled) return
+        const map: Record<string, string> = {}
+        for (const example of DOMAIN_EXAMPLES) {
+          try {
+            map[example.id] = renderMermaidSVG(example.diagram, MERMAID_COLORS)
+          } catch {
+            // diagram render failed; leave entry empty
+          }
+        }
+        setDiagramSvgs(map)
+      })
+      .catch(() => {
+        // chunk failed to load; diagrams stay empty, YAML pane still works
+      })
+    return () => {
+      cancelled = true
     }
-    return map
   }, [])
 
   // Click handler for diagram nodes — React onClick bubbles from SVG children
@@ -1384,11 +1406,9 @@ export function ExampleToggle() {
           <div className="relative mx-4 mb-3 flex flex-col overflow-hidden rounded-lg border border-border/60 bg-card/50 px-3 py-3 sm:mx-5 sm:px-4 lg:mx-0 lg:mb-0 lg:w-1/2 lg:shrink-0 lg:rounded-none lg:border-0 lg:bg-transparent lg:py-4 lg:pr-4 lg:pl-6">
             <div
               ref={canvasRef}
-              className="min-h-0 flex-1 cursor-grab select-none overflow-hidden active:cursor-grabbing"
+              className="min-h-0 flex-1 cursor-grab overflow-hidden select-none active:cursor-grabbing"
               style={{ touchAction: "none" }}
-              onDoubleClick={() =>
-                setTransform(centerDiagram())
-              }
+              onDoubleClick={() => setTransform(centerDiagram())}
             >
               <div
                 className="grid [&_svg]:h-auto [&_svg]:w-full"
@@ -1595,7 +1615,7 @@ export function ExampleToggle() {
               >
                 <pre
                   ref={preRef}
-                  className="yaml-scroll h-full max-h-[25rem] overflow-x-auto overflow-y-auto px-5 pt-2 pb-5 text-[0.8125rem] leading-relaxed sm:px-6 lg:max-h-none lg:px-0 lg:pr-4"
+                  className="yaml-scroll h-full max-h-[25rem] overflow-x-auto overflow-y-auto px-5 pt-2 pb-5 text-code leading-relaxed sm:px-6 lg:max-h-none lg:px-0 lg:pr-4"
                 >
                   <code className="font-mono">
                     <HighlightedCode>{displayedNode.yaml}</HighlightedCode>

@@ -33,7 +33,7 @@ export function SectionMinimap({ activeId }: { activeId: string }) {
   return (
     <div
       ref={containerRef}
-      className={`fixed top-1/2 right-4 z-30 -translate-y-1/2 p-4 -m-4 transition-all duration-200 ease-out sm:right-6 ${
+      className={`fixed top-1/2 right-4 z-30 -m-4 hidden -translate-y-1/2 p-4 transition-all duration-200 ease-out sm:right-6 lg:block ${
         visible
           ? "pointer-events-auto translate-x-0 opacity-100"
           : "pointer-events-none translate-x-3 opacity-0"
@@ -68,7 +68,7 @@ export function SectionMinimap({ activeId }: { activeId: string }) {
         }`}
       >
         <div className="min-w-[14rem] rounded-xl border border-border/80 bg-background/95 px-4 py-3 shadow-[var(--shadow-popover)] backdrop-blur">
-          <ul className="space-y-1 text-[0.8125rem] leading-relaxed whitespace-nowrap tabular-nums">
+          <ul className="space-y-1 text-code leading-relaxed whitespace-nowrap tabular-nums">
             {sections.map((section, index) => {
               const isSectionActive =
                 activeId === section.id ||

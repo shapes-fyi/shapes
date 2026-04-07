@@ -201,11 +201,19 @@ function CodeBlock({
   children,
   caption,
   className,
+  wrap = false,
 }: {
   language?: string
   children: string
   caption?: ReactNode
   className?: string
+  /**
+   * When true, long lines wrap (whitespace-pre-wrap + break-all) instead
+   * of horizontally scrolling. Use for YAML and shell snippets where
+   * wrapping is acceptable. Leave false for ASCII tree art that relies
+   * on monospace alignment.
+   */
+  wrap?: boolean
 }) {
   const [copied, setCopied] = useState(false)
 
@@ -228,7 +236,7 @@ function CodeBlock({
             type="button"
             onClick={handleCopy}
             aria-label={copied ? "Copied" : "Copy code"}
-            className="rounded-md p-2 text-muted-foreground opacity-0 transition group-hover/code:opacity-100 hover:text-foreground focus-visible:opacity-100"
+            className="rounded-md p-2 text-muted-foreground opacity-0 transition group-hover/code:opacity-100 hover:text-foreground focus-visible:opacity-100 [@media(pointer:coarse)]:opacity-100"
           >
             {copied ? (
               <RiCheckLine className="size-3.5" />
@@ -237,12 +245,19 @@ function CodeBlock({
             )}
           </button>
           {language && (
-            <span className="text-[0.65rem] font-medium tracking-[0.22em] text-muted-foreground uppercase select-none">
+            <span className="font-ui text-tiny font-medium tracking-label-tight text-muted-foreground uppercase select-none">
               {language}
             </span>
           )}
         </div>
-        <pre className="yaml-scroll overflow-x-auto rounded-xl border border-border/80 bg-secondary/60 px-5 py-5 text-[0.8125rem] leading-relaxed sm:px-6">
+        <pre
+          className={cn(
+            "rounded-xl border border-border/80 bg-secondary/60 px-5 py-5 text-code leading-relaxed sm:px-6",
+            wrap
+              ? "break-all whitespace-pre-wrap"
+              : "yaml-scroll overflow-x-auto"
+          )}
+        >
           <code className="font-mono">
             {highlighted ? (
               <HighlightedCode>{children}</HighlightedCode>
@@ -253,7 +268,7 @@ function CodeBlock({
         </pre>
       </div>
       {caption && (
-        <figcaption className="max-w-3xl text-[length:var(--spec-caption)] leading-[1.65] text-muted-foreground">
+        <figcaption className="max-w-[68ch] text-sm leading-read text-muted-foreground">
           {caption}
         </figcaption>
       )}

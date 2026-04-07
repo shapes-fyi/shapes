@@ -1,0 +1,81 @@
+id: 10
+name: 'Delight: lifecycle tooltips, tab title wayfinding, console greeting'
+description: Three small, quiet delight moments that reward attention and curiosity without breaking the brand's "quiet authority" lane. Each one earns its place by being subtle, optional, and useful — never decorative.
+targets:
+  shape_ids:
+  - 17
+status: proposed
+intent:
+  kind: amendment
+  summary: Three quiet, brand-appropriate delight moments. Native title-attribute tooltips on lifecycle tags in the Two Graphs demonstration explain the vocabulary on hover. The browser tab title on the spec page reflects the currently visible section as the reader scrolls. A single console greeting on first mount rewards developers reading the source.
+  source: ai
+  rationale: >-
+    The brand brief explicitly says "quiet authority over loud
+    confidence" and "trust through restraint, type craft, and
+    precision — not gradients, glows, or motion for its own sake."
+    /impeccable:delight is the right place to add personality, but
+    the wrong personality kills the brand. No confetti, no animated
+    illustrations, no joke copy, no easter eggs that interrupt
+    reading. Three moves earn their place by being subtle, useful,
+    and discoverable rather than announced. First, the lifecycle
+    color tags introduced by /colorize teach the vocabulary at a
+    glance via color, but a curious reader who hovers should get
+    the second layer — what does promoted actually mean — without
+    leaving the page. Native title attributes are the lightest
+    possible tooltip primitive, ship full keyboard and screen
+    reader accessibility for free, and require zero new components.
+    Second, the spec page is a long single-scroll document, and
+    readers who keep multiple tabs open lose track of where they
+    left off. Reflecting the active section in the document.title
+    means the browser tab itself becomes wayfinding — "2.1 Shape ·
+    Shapes Spec" instead of "Specification — Shapes". This compounds
+    over time: the more tabs a reader has, the more useful it gets.
+    Third, a one-time console greeting on first mount is a quiet
+    nod to developers reading the source — the audience the brand
+    targets. The greeting renders a tiny shape graph in the same
+    monospace tree-art vocabulary the home page uses, and stays
+    completely invisible to non-developers because nobody opens
+    devtools by accident. No blinking, no styles, no
+    self-congratulation — just an honest greeting in the project's
+    own visual language.
+  goals: >-
+    Hovering a [canonical], [promoted], or [proposed] tag in the
+    Two Graphs DAGs reveals a one-line explanation. The browser
+    tab title on the spec page updates to reflect the current
+    section as the reader scrolls. A curious developer who opens
+    devtools sees one quiet brand-appropriate greeting. None of
+    these is announced, none is required, and none changes any
+    visible-on-page content.
+  non_goals: >-
+    No confetti, no celebration animations, no sound effects, no
+    cursor effects, no Konami code, no time-of-day theme drift,
+    no personality copy in error messages, no animated
+    illustrations, no easter egg routes, no gamification. Does
+    not add a new tooltip component, base-ui Tooltip, or any
+    runtime dependency. Does not animate the title change. Does
+    not log anything beyond the single first-mount greeting.
+    Does not touch the home page motion layer.
+  spec_section: N/A — presentational delight
+  affected_files: >-
+    apps/web/src/routes/index.tsx — extend renderShapesTreeLine
+    so the lifecycle and reference spans carry a native title
+    attribute with a one-line explanation. Add a small
+    useConsoleGreeting effect at the top of HomePage that fires
+    once per session. apps/web/src/routes/specification.tsx —
+    add a useEffect that updates document.title whenever activeId
+    changes, mapping the id back to the matching section or
+    subsection title via the existing sections array. Reset
+    title on unmount so the tab does not get stuck on a stale
+    section name when navigating back to the home page.
+  verification: >-
+    bun run format clean. bun run typecheck clean. shapes validate
+    clean. Manual hover test on Two Graphs lifecycle tags in both
+    columns — every tag shows its tooltip. Manual scroll test on
+    the spec page — the browser tab title updates as sections
+    change, and reverts to the home title when navigating away.
+    Devtools test — the console greeting appears once on first
+    paint, does not repeat on hot reload during a single session,
+    and does not interfere with any error or warning logs. No
+    animations introduced.
+initiated_by:
+  type: ai

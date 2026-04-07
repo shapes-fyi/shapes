@@ -38,13 +38,53 @@ realization:
       - scheme: path
         value: packages/ui/src/styles/globals.css
         metadata:
-          summary: Tailwind v4 theme config — OKLCH design tokens, light/dark palettes, animations, typography scale
+          summary: >-
+            Tailwind v4 theme config — OKLCH design tokens with
+            light/dark palettes, three-voice typography (Cormorant
+            display serif, Crimson reading serif, Geist UI sans),
+            semantic --text-* / --tracking-* / --leading-* tokens
+            (amendments 5, 14, 15), --ease-out-quart easing for
+            motion (amendment:7), semantic lifecycle/water color
+            (amendment:6 — --earth removed), tw-animate-css and
+            water-* keyframes. font-feature-settings enables calt,
+            liga, kern globally (amendment:14).
     role: primary
   - bindings:
       - scheme: path
         value: packages/ui/src/components/button.tsx
         metadata:
-          summary: Button component with class-variance-authority (CVA) variants
+          summary: >-
+            Button component built on @base-ui/react with
+            class-variance-authority variants. size lg uses h-11
+            and size icon-lg uses size-11 (44px) so every
+            touch-critical icon button meets WCAG 2.5.5 AAA
+            (amendment:14).
+    role: primary
+  - bindings:
+      - scheme: path
+        value: packages/ui/src/components/container.tsx
+        metadata:
+          summary: Polymorphic layout container — <Container as size={default|wide|narrow}>. Single source of truth for horizontal padding (px-6 sm:px-10 lg:px-16) and max-width tokens (max-w-5xl | max-w-[78rem] | max-w-3xl). Added in amendment:2.
+    role: primary
+  - bindings:
+      - scheme: path
+        value: packages/ui/src/components/section-label.tsx
+        metadata:
+          summary: >-
+            Eyebrow section label using font-ui (Geist), text-label,
+            tracking-label, uppercase. Optional number prop renders
+            the §NN numbered prefix in text-primary/80 with
+            tabular-nums (amendments 2, 4, 6).
+    role: primary
+  - bindings:
+      - scheme: path
+        value: packages/ui/src/components/section-divider.tsx
+        metadata:
+          summary: >-
+            Horizontal section divider — flat hairline border-t
+            (dots removed in amendment:3) with my-12 sm:my-20
+            lg:my-24 vertical rhythm (amendment:8). Self-contained
+            via <Container>.
     role: primary
   - bindings:
       - scheme: path

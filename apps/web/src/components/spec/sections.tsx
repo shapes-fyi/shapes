@@ -46,9 +46,9 @@ export const sections: Array<SpecSection> = [
       <div className="space-y-6">
         <p>
           Shapes is an open specification that defines a semantic layer for
-          collaboration between agents and humans. This layer — the intent
-          layer — captures <em>what</em> is to be built and <em>why</em>, while
-          lower layers address <em>how</em> it is done.
+          collaboration between agents and humans. This layer — the intent layer
+          — captures <em>what</em> is to be built and <em>why</em>, while lower
+          layers address <em>how</em> it is done.
         </p>
 
         <p>The specification captures the following explicitly:</p>
@@ -82,10 +82,10 @@ export const sections: Array<SpecSection> = [
         </ul>
 
         <p>
-          Shapes sits between agents and the work that must be done. It
-          provides a structured representation of the entire history and current
-          state of a project, enabling agents to operate with full context
-          without reconstructing it from raw artifacts alone.
+          Shapes sits between agents and the work that must be done. It provides
+          a structured representation of the entire history and current state of
+          a project, enabling agents to operate with full context without
+          reconstructing it from raw artifacts alone.
         </p>
 
         <p>
@@ -350,8 +350,8 @@ export const sections: Array<SpecSection> = [
       <div className="space-y-6">
         <p>
           Existing tools — version control, task tracking, review workflows,
-          editorial pipelines — record <em>what changed</em> but
-          not <em>why it matters</em>. Provenance-only systems capture session
+          editorial pipelines — record <em>what changed</em> but not{" "}
+          <em>why it matters</em>. Provenance-only systems capture session
           history and decision traces, yet they do not transform that history
           into a queryable, semantically structured context layer. The gap
           between raw historical records and structured intent remains.
@@ -359,18 +359,18 @@ export const sections: Array<SpecSection> = [
 
         <p>
           As projects grow in complexity, agents require a shared semantic
-          surface to plan, build, and review work without reconstructing
-          context from code and artifacts alone. Human review does not scale to
-          the volume of concurrent changes that parallelized agent workflows
+          surface to plan, build, and review work without reconstructing context
+          from code and artifacts alone. Human review does not scale to the
+          volume of concurrent changes that parallelized agent workflows
           produce. Local AI reviewers operate at the granular level without
           visibility into the broader intent and constraints of the project as a
           whole.
         </p>
 
         <p>
-          Shapes addresses this gap. The specification captures intent, constraints,
-          bindings, and amendment history as first-class structured records,
-          forming a queryable graph that any agent — regardless of
+          Shapes addresses this gap. The specification captures intent,
+          constraints, bindings, and amendment history as first-class structured
+          records, forming a queryable graph that any agent — regardless of
           architecture — can read, evaluate, and act on.
         </p>
       </div>
@@ -383,9 +383,9 @@ export const sections: Array<SpecSection> = [
     content: (
       <div className="space-y-6">
         <p>
-          The specification is format-agnostic and storage-agnostic. Examples in this
-          specification use YAML for readability; implementations MAY use any
-          serialization format.
+          The specification is format-agnostic and storage-agnostic. Examples in
+          this specification use YAML for readability; implementations MAY use
+          any serialization format.
         </p>
 
         <p>
@@ -410,8 +410,8 @@ export const sections: Array<SpecSection> = [
           </li>
           <li>
             <strong className="text-foreground">Amendment</strong> — an
-            immutable change record applied to Shapes, Constraints, or
-            Profiles to evolve the graph over time.
+            immutable change record applied to Shapes, Constraints, or Profiles
+            to evolve the graph over time.
           </li>
           <li>
             <strong className="text-foreground">Profile</strong> — a governance
@@ -449,10 +449,10 @@ export const sections: Array<SpecSection> = [
         <p>
           Both Shapes and Constraints support inline and standalone node
           references. When a child entry is an object, it is an inline node
-          definition owned by its parent. When it is a scalar, it is a
-          reference by ID to a standalone node that may live in a different
-          project or organization. This pattern applies uniformly to Shape
-          children and Constraint children.
+          definition owned by its parent. When it is a scalar, it is a reference
+          by ID to a standalone node that may live in a different project or
+          organization. This pattern applies uniformly to Shape children and
+          Constraint children.
         </p>
 
         <p>
@@ -475,8 +475,8 @@ export const sections: Array<SpecSection> = [
         <p>
           Intent captures the purpose of a Shape — <em>what</em> is to be built
           and <em>why</em>. Every Intent MUST include a{" "}
-          <code className="text-foreground">kind</code> (a domain label such
-          as <code className="text-foreground">feature</code>,{" "}
+          <code className="text-foreground">kind</code> (a domain label such as{" "}
+          <code className="text-foreground">feature</code>,{" "}
           <code className="text-foreground">experiment</code>, or{" "}
           <code className="text-foreground">chapter</code>), a human-readable{" "}
           <code className="text-foreground">summary</code>, and a{" "}
@@ -490,15 +490,13 @@ export const sections: Array<SpecSection> = [
         </p>
 
         <p>
-          Beyond the required fields, Intent is an open map. Each domain
-          extends it with its own vocabulary: a software team might add{" "}
+          Beyond the required fields, Intent is an open map. Each domain extends
+          it with its own vocabulary: a software team might add{" "}
           <code className="text-foreground">goals</code> and{" "}
-          <code className="text-foreground">non_goals</code>, a research
-          lab{" "}
+          <code className="text-foreground">non_goals</code>, a research lab{" "}
           <code className="text-foreground">hypotheses</code> and{" "}
           <code className="text-foreground">success_criteria</code>, an
-          editorial team{" "}
-          <code className="text-foreground">themes</code> and{" "}
+          editorial team <code className="text-foreground">themes</code> and{" "}
           <code className="text-foreground">target_audience</code>.
         </p>
 
@@ -551,8 +549,8 @@ export const sections: Array<SpecSection> = [
           <code className="text-foreground">limit</code>,{" "}
           <code className="text-foreground">policy</code>. Both{" "}
           <code className="text-foreground">kind</code> and{" "}
-          <code className="text-foreground">enforcement</code> are open
-          strings; Profiles and projects MAY define additional values.
+          <code className="text-foreground">enforcement</code> are open strings;
+          Profiles and projects MAY define additional values.
         </p>
 
         <SchemaExplorer
@@ -825,9 +823,9 @@ export const sections: Array<SpecSection> = [
           replacement record carries a{" "}
           <code className="text-foreground">predecessors</code> field. A record
           MUST only list predecessors that are in a terminal state.
-          Implementations MUST maintain reciprocal links: if Shape B lists
-          Shape A in its predecessors, Shape A's terminal status MUST include
-          Shape B in its successors.
+          Implementations MUST maintain reciprocal links: if Shape B lists Shape
+          A in its predecessors, Shape A's terminal status MUST include Shape B
+          in its successors.
         </p>
 
         <SchemaExplorer schema={AMENDMENT_SCHEMA} caption="Amendment schema" />
@@ -946,14 +944,13 @@ export const sections: Array<SpecSection> = [
     content: (
       <div className="space-y-6">
         <p>
-          Bindings connect spec records to external artifacts, test results,
-          and provenance sources. A Binding is a typed reference — a{" "}
+          Bindings connect spec records to external artifacts, test results, and
+          provenance sources. A Binding is a typed reference — a{" "}
           <code className="text-foreground">scheme</code> that identifies the
-          kind of reference (a URI, a file path, a query, a custom selector)
-          and a{" "}
-          <code className="text-foreground">value</code> that resolves to
-          the target. Bindings appear throughout the spec wherever a record
-          needs to point to an external resource.
+          kind of reference (a URI, a file path, a query, a custom selector) and
+          a <code className="text-foreground">value</code> that resolves to the
+          target. Bindings appear throughout the spec wherever a record needs to
+          point to an external resource.
         </p>
 
         <SchemaExplorer schema={BINDING_SCHEMA} caption="Binding schema" />
@@ -966,12 +963,11 @@ export const sections: Array<SpecSection> = [
         content: (
           <div className="space-y-6">
             <p>
-              A Realization connects a Shape to the deliverables that fulfill
-              it — source files, endpoints, design documents, published
-              chapters, or any other artifact. Each Realization MUST carry one
-              or more Bindings and a{" "}
-              <code className="text-foreground">role</code> that classifies
-              its relationship to the Shape (e.g.{" "}
+              A Realization connects a Shape to the deliverables that fulfill it
+              — source files, endpoints, design documents, published chapters,
+              or any other artifact. Each Realization MUST carry one or more
+              Bindings and a <code className="text-foreground">role</code> that
+              classifies its relationship to the Shape (e.g.{" "}
               <code className="text-foreground">primary</code>,{" "}
               <code className="text-foreground">supporting</code>,{" "}
               <code className="text-foreground">test</code>).
@@ -1011,8 +1007,8 @@ export const sections: Array<SpecSection> = [
               <code className="text-foreground">review</code>, or{" "}
               <code className="text-foreground">metric</code>), a{" "}
               <code className="text-foreground">trusted</code> indicator
-              specifying whether the result is verified, and Bindings that
-              point to the underlying results.
+              specifying whether the result is verified, and Bindings that point
+              to the underlying results.
             </p>
 
             <p>
@@ -1038,9 +1034,9 @@ export const sections: Array<SpecSection> = [
             <p>
               Provenance tracks the origin and decision history of any node in
               the graph — Shape, Constraint, Amendment, or Profile. The
-              specification is agnostic to the provenance systems used. Sessions,
-              transcripts, discussions, and any other decision artifacts MAY be
-              incorporated as Provenance entries.
+              specification is agnostic to the provenance systems used.
+              Sessions, transcripts, discussions, and any other decision
+              artifacts MAY be incorporated as Provenance entries.
             </p>
 
             <p>
@@ -1111,9 +1107,9 @@ export const sections: Array<SpecSection> = [
           Constraints, and Amendments behave within a domain. A single Profile
           MAY govern both Shapes and Constraints through separate field
           declaration sections. A Shape or standalone Constraint's{" "}
-          <code className="text-foreground">profile</code> field references
-          the Profile that governs it. Amendments inherit the Profile of
-          their targets.
+          <code className="text-foreground">profile</code> field references the
+          Profile that governs it. Amendments inherit the Profile of their
+          targets.
         </p>
 
         <p>
@@ -1136,10 +1132,10 @@ export const sections: Array<SpecSection> = [
         </p>
 
         <p>
-          Since the specification is cross-domain and agnostic over the actual work,
-          a Profile MAY encode any domain-specific lifecycle — an SDLC, an ADLC
-          (Agentic Development Life Cycle), an editorial workflow, or a research
-          methodology.
+          Since the specification is cross-domain and agnostic over the actual
+          work, a Profile MAY encode any domain-specific lifecycle — an SDLC, an
+          ADLC (Agentic Development Life Cycle), an editorial workflow, or a
+          research methodology.
         </p>
 
         <SchemaExplorer schema={PROFILE_SCHEMA} caption="Profile schema" />
@@ -1147,14 +1143,13 @@ export const sections: Array<SpecSection> = [
         <p>
           FieldDef allows a Profile to declare additional fields that nodes
           under its governance MAY or MUST carry. Each definition specifies a
-          name, an optional type annotation, and a human-readable description.
-          A FieldDef whose{" "}
-          <code className="text-foreground">required</code> flag is{" "}
-          <code className="text-foreground">true</code> must be present on
+          name, an optional type annotation, and a human-readable description. A
+          FieldDef whose <code className="text-foreground">required</code> flag
+          is <code className="text-foreground">true</code> must be present on
           governed records; when the flag is omitted it defaults to{" "}
           <code className="text-foreground">false</code>, making the field
-          optional. This makes the specification extensible without modifying the
-          core schema.
+          optional. This makes the specification extensible without modifying
+          the core schema.
         </p>
 
         <SchemaExplorer schema={FIELDDEF_SCHEMA} caption="FieldDef schema" />

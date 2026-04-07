@@ -1,0 +1,60 @@
+id: 1
+name: Container unification and UI primitive extraction
+description: First step of an end-to-end visual overhaul of the specification website. Unifies container padding across the web app and migrates inline layout patterns onto shared primitives from packages/ui.
+targets:
+  shape_ids:
+  - 17
+status: proposed
+intent:
+  kind: amendment
+  summary: Normalize web app container padding and extract shared layout primitives from apps/web into packages/ui, unifying nav, hero, sections, and footer on a single container token pattern.
+  source: ai
+  rationale: >-
+    Audit of apps/web surfaced a structural alignment bug: the top nav used
+    max-w-5xl with px-14 and sm/md/lg overrides at px-[4.5rem],
+    px-[5.5rem], and px-[7.5rem], while every hero and section container
+    used max-w-5xl px-6 sm:px-10 lg:px-16. The nav wordmark and footer did
+    not vertically align with the hero border cells at any breakpoint —
+    the rigorous/structural brand explicitly forbids this kind of drift.
+    The inline SectionDivider function and the inline footer in index.tsx
+    were also duplicated patterns waiting to be extracted. This amendment
+    reconciles padding to a single canonical token via the new Container
+    primitive, and replaces inline layout with the newly extracted
+    Container, SectionLabel, SectionDivider (from shape:21) and a new
+    app-level Footer component.
+  goals: >-
+    Vertical alignment between nav, hero, sections, and footer at every
+    breakpoint. Single source of truth for container padding and
+    max-width. Shared vocabulary (Container, SectionLabel, SectionDivider,
+    Footer) that the rest of the overhaul (distill, bolder, arrange,
+    typeset) can build on. Fix stale realization bindings on shape:17.
+  non_goals: >-
+    Does not redesign the homepage layout, does not touch the 2x2
+    primitives grid, does not change typography, does not touch color
+    tokens, does not add motion. Those changes belong to later amendments
+    driven by distill, bolder, typeset, colorize, and animate.
+  spec_section: N/A — implementation refactor, no spec change
+  affected_files: >-
+    apps/web/src/components/nav.tsx — unified container padding via the
+    shared Container primitive with size narrow on spec pages and size
+    default on home; removed one-off px-14 and px-[4.5rem] / px-[5.5rem]
+    / px-[7.5rem] values.
+    apps/web/src/routes/index.tsx — six inline container divs migrated
+    to Container. Inline SectionDivider function deleted in favor of the
+    shared primitive. Three inline eyebrow p tags migrated to
+    SectionLabel. Hero raw pre replaced with the existing CodeBlock.
+    Inline footer JSX replaced with the new Footer component.
+    apps/web/src/routes/specification.tsx — outer article replaced with
+    Container as article size wide, preserving existing pt-24 pb-12
+    lg:pt-28 lg:pb-16 spacing.
+    apps/web/src/components/footer.tsx — new app-level component
+    extracted from the inline footer in index.tsx, consuming Container.
+    Kept app-level (not packages/ui) because it carries site-specific
+    route links.
+  verification: >-
+    bun run format clean. bun run typecheck clean. Visual parity expected
+    — same borders, same content, same copy; only layout tokens were
+    unified. Manual check on home and specification pages across mobile,
+    tablet, and desktop viewports required before closing the amendment.
+initiated_by:
+  type: ai

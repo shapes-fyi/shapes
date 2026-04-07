@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { cn } from "@workspace/ui/lib/utils"
 import type { ReactNode } from "react"
-import type { SchemaDefinition, SchemaField } from "@/components/spec/schema-data"
-import {
-  TokenSpan,
-  highlightYaml,
-} from "@/components/spec/code-block"
+import type {
+  SchemaDefinition,
+  SchemaField,
+} from "@/components/spec/schema-data"
+import { TokenSpan, highlightYaml } from "@/components/spec/code-block"
 
 type FieldRegion = {
   key: string
@@ -23,9 +23,7 @@ function buildYaml(schema: SchemaDefinition): string {
   return schema.fields.map((f) => f.lines).join("\n")
 }
 
-function buildRegions(
-  schema: SchemaDefinition,
-): Array<FieldRegion> {
+function buildRegions(schema: SchemaDefinition): Array<FieldRegion> {
   const regions: Array<FieldRegion> = []
   const hasTopLevelIndent = schema.fields[0].lines.startsWith("  ")
 
@@ -54,10 +52,7 @@ function SchemaExplorer({
 }) {
   const yaml = useMemo(() => buildYaml(schema), [schema])
   const tokenizedLines = useMemo(() => highlightYaml(yaml), [yaml])
-  const regions = useMemo(
-    () => buildRegions(schema),
-    [schema]
-  )
+  const regions = useMemo(() => buildRegions(schema), [schema])
 
   const fieldMap = useMemo(() => {
     const map = new Map<string, SchemaField>()
@@ -77,21 +72,18 @@ function SchemaExplorer({
   // Track hovered region via DOM attribute instead of React state
   // to avoid re-rendering all lines on every hover change
   const preRef = useRef<HTMLPreElement>(null)
-  const handlePointerOver = useCallback(
-    (e: React.PointerEvent) => {
-      const line = (e.target as Element).closest<HTMLElement>("[data-region]")
-      const region = line?.dataset.region ?? null
-      const pre = preRef.current
-      if (pre) {
-        if (region) {
-          pre.dataset.hovered = region
-        } else {
-          delete pre.dataset.hovered
-        }
+  const handlePointerOver = useCallback((e: React.PointerEvent) => {
+    const line = (e.target as Element).closest<HTMLElement>("[data-region]")
+    const region = line?.dataset.region ?? null
+    const pre = preRef.current
+    if (pre) {
+      if (region) {
+        pre.dataset.hovered = region
+      } else {
+        delete pre.dataset.hovered
       }
-    },
-    []
-  )
+    }
+  }, [])
   const handlePointerLeave = useCallback(() => {
     const pre = preRef.current
     if (pre) delete pre.dataset.hovered
@@ -108,7 +100,6 @@ function SchemaExplorer({
     }, 150)
     return () => clearTimeout(timeout)
   }, [selectedKey, displayedKey])
-
 
   const displayedField = fieldMap.get(displayedKey) ?? schema.fields[0]
   const displayedLabel = displayedField.label
@@ -131,23 +122,17 @@ function SchemaExplorer({
     [schema.name]
   )
   const hoverCss = useMemo(() => {
-    const rules = regions
-      .map(
-        (r) =>
-          `#${schemaId}[data-hovered="${r.key}"] [data-region="${r.key}"][data-first] .su{text-decoration-color:color-mix(in srgb,var(--primary) 50%,transparent)}`
-      )
+    const rules = regions.map(
+      (r) =>
+        `#${schemaId}[data-hovered="${r.key}"] [data-region="${r.key}"][data-first] .su{text-decoration-color:color-mix(in srgb,var(--primary) 50%,transparent)}`
+    )
     return rules.join("\n")
   }, [regions, schemaId])
 
   return (
-    <figure
-      className={cn(
-        "group/code space-y-4",
-        className
-      )}
-    >
+    <figure className={cn("group/code space-y-4", className)}>
       {/* Schema description — static, above the interactive panel */}
-      <div className="text-[length:var(--spec-schema-desc)] leading-[1.65] text-muted-foreground">
+      <div className="text-lg leading-read text-muted-foreground">
         {schema.description}
       </div>
 
@@ -161,7 +146,7 @@ function SchemaExplorer({
               id={schemaId}
               onPointerOver={handlePointerOver}
               onPointerLeave={handlePointerLeave}
-              className="yaml-scroll h-full overflow-x-auto overflow-y-auto pt-5 pb-4 pl-5 pr-6 text-[0.8125rem] leading-[1.15]"
+              className="yaml-scroll h-full overflow-x-auto overflow-y-auto pt-5 pr-6 pb-4 pl-5 text-code leading-[1.15]"
             >
               <code className="font-mono">
                 {tokenizedLines.map((tokens, lineIdx) => {
@@ -204,16 +189,12 @@ function SchemaExplorer({
                               tokens[0].trim() === "" &&
                               tokens.length > 1
                             const indent = hasIndent ? tokens[0] : null
-                            const content = hasIndent
-                              ? tokens.slice(1)
-                              : tokens
+                            const content = hasIndent ? tokens.slice(1) : tokens
 
                             return (
                               <>
                                 {indent != null &&
-                                  (typeof indent === "string"
-                                    ? indent
-                                    : null)}
+                                  (typeof indent === "string" ? indent : null)}
                                 <span
                                   className={cn(
                                     "su underline decoration-dashed underline-offset-4 transition-[text-decoration-color] duration-200",
@@ -223,10 +204,7 @@ function SchemaExplorer({
                                   )}
                                 >
                                   {content.map((t, i) =>
-                                    renderToken(
-                                      t,
-                                      hasIndent ? i + 1 : i
-                                    )
+                                    renderToken(t, hasIndent ? i + 1 : i)
                                   )}
                                 </span>
                               </>
@@ -270,18 +248,17 @@ function SchemaExplorer({
                 {displayedLabel}
               </p>
               <div
-                className="text-[length:var(--spec-schema-desc)] leading-[1.65] text-muted-foreground"
+                className="text-lg leading-read text-muted-foreground"
                 aria-live="polite"
               >
                 {displayedDescription}
               </div>
             </div>
           </div>
-
         </div>
       </div>
       {caption && (
-        <figcaption className="text-[length:var(--spec-caption)] leading-[1.65] text-muted-foreground">
+        <figcaption className="text-sm leading-read text-muted-foreground">
           {caption}
         </figcaption>
       )}

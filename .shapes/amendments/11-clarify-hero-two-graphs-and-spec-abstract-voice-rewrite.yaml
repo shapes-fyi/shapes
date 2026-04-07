@@ -1,0 +1,81 @@
+id: 11
+name: 'Clarify: hero, Two Graphs, and spec abstract voice rewrite'
+description: Surgical voice pass on the three highest-traffic copy moments on the site. Each rewrite preserves every spec claim and only changes how the claim is phrased.
+targets:
+  shape_ids:
+  - 17
+status: proposed
+intent:
+  kind: amendment
+  summary: Rewrites the highest-traffic copy on the site for clarity and concrete language without changing any spec claims. Tightens the home hero paragraph (which currently strings three abstract nouns in a row), the Two Graphs paragraph (which uses a clever look-right/look-down metaphor that confuses first-time readers), and the spec abstract (slightly long and uses 'eliminates' vaguely). Defers the per-section prose sweep of sections.tsx to a follow-up amendment so each section can be verified individually against constraint 6 (Spec Conformance).
+  source: ai
+  rationale: >-
+    The /impeccable:critique persona walk surfaced one specific copy
+    failure on the home page — the hero paragraph reads "A structured
+    graph for capturing the intent, structure, and constraints of any
+    project — the shared contract between agents and humans." Three
+    abstract nouns in a row ("intent, structure, constraints") and
+    the opaque metaphor "shared contract" leave Jordan-the-mid-level
+    dev with no concrete idea of what Shapes actually does on first
+    read. The Two Graphs paragraph has a similar problem in a
+    different shape: it ends with "look right for what must hold,
+    look down for what gets built." That is a clever structural
+    metaphor for readers who already understand the layout, but it
+    is confusing for anyone who hits the section before the columns
+    have rendered or who skims past the visual cue. The spec
+    abstract on the specification page repeats the "shared contract"
+    phrasing and uses "Shapes eliminates this" without saying what
+    "this" gets replaced with. None of these is a spec violation —
+    the claims are correct — but each one leaves clarity on the
+    table. The right fix is the smallest one that preserves every
+    factual claim and replaces abstract nouns with concrete
+    language. The "shared map" metaphor is more concrete than
+    "shared contract" because a map suggests a thing you look at
+    together; a contract suggests a thing you agree to and put
+    away. The Two Graphs rewrite swaps the directional metaphor
+    for an explicit causal sentence about constraint inheritance.
+    The abstract rewrite trades "eliminates this by defining" for
+    "replaces that reconstruction with" — same claim, more direct
+    verb. None of the rewrites changes the spec content in
+    sections.tsx — that file remains untouched in this amendment.
+  goals: >-
+    Hero paragraph reads as a concrete one-sentence pitch that the
+    Jordan persona can understand without prior knowledge of the
+    spec. Two Graphs paragraph explains the constraint inheritance
+    mechanism in plain language without relying on the visual
+    layout to carry meaning. Spec abstract reads tighter without
+    losing any of its four claims (problem, solution, audience
+    contract, domain-agnostic scope). Every claim is preserved
+    word-for-meaning even when reworded.
+  non_goals: >-
+    Does not touch sections.tsx — the per-section prose voice pass
+    is deferred to a follow-up amendment so each section can be
+    verified against the spec individually. Does not change copy
+    on the In Practice or Install sections (already clear). Does
+    not touch SectionLabel text, button labels, the Profile frame
+    label, the Amendment annotation, the footer copy, the meta
+    descriptions, or the manifest. Does not change or add CTAs.
+    Does not touch nav copy. Does not introduce any new claims —
+    every fact must be derivable from the existing spec content.
+  spec_section: All — meta-level voice change, no semantic change
+  affected_files: >-
+    apps/web/src/routes/index.tsx — rewrite the hero paragraph and
+    the Two Graphs supporting paragraph. apps/web/src/routes/
+    specification.tsx — rewrite the abstract paragraph.
+  verification: >-
+    bun run format clean. bun run typecheck clean. shapes validate
+    clean. Manual claim-preservation check — the new hero
+    paragraph still says (a) Shapes is an open specification,
+    (b) it captures intent + invariants + change history,
+    (c) the audience is agents and humans together. The new Two
+    Graphs paragraph still says (a) Shapes and Constraints are
+    independent DAGs, (b) Shapes compose work, (c) Constraints
+    compose rules, (d) constraints inherit downward through the
+    shape graph. The new abstract still says (a) the problem is
+    context reconstruction from scattered artifacts, (b) the
+    solution is one structured graph capturing intent /
+    importance / invariants, (c) the graph is shared between
+    agents and humans, (d) the spec is domain-agnostic. No
+    claims added, no claims removed.
+initiated_by:
+  type: ai

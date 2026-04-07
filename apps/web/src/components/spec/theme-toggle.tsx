@@ -19,8 +19,8 @@ function ThemeToggle() {
   return (
     <Button
       variant="ghost"
-      size="icon"
-      className="rounded-full hover:rounded-full focus-visible:rounded-full"
+      size="icon-lg"
+      className="rounded-full"
       onClick={toggle}
       aria-label="Toggle theme"
     >

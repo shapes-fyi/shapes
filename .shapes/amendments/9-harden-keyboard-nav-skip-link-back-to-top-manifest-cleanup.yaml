@@ -1,0 +1,94 @@
+id: 9
+name: 'Harden: keyboard nav, skip link, back-to-top, manifest cleanup'
+description: Production-readiness sweep on the specification page and the root layout. Targets the power-user (Alex) red flags from /impeccable:critique and the leftover scaffolding the manifest still ships with.
+targets:
+  shape_ids:
+  - 17
+status: proposed
+intent:
+  kind: amendment
+  summary: Production-readiness pass on the spec page. Adds vim-style keyboard navigation (j/k/G/g g), a skip-to-content link, lowers the back-to-top threshold from 90% to 20%, fixes the leftover Create TanStack App Sample manifest, and replaces the generic root meta description. Edge-case sweep on text wrap and long content.
+  source: ai
+  rationale: >-
+    The /impeccable:critique persona walk-through called out three
+    Alex-the-staff-engineer red flags on the specification page —
+    no keyboard shortcuts on a 10,000-word reading surface, a
+    back-to-top button that only appears once you have already
+    scrolled past 90 percent of the document (which is when you need
+    it least), and no skip-to-content link for keyboard users
+    landing on the page. /impeccable:critique also called out two
+    minor production gaps that any honest deploy needs to fix —
+    the manifest.json still says "Create TanStack App Sample" with
+    theme_color #000000 and the root meta description is the literal
+    string "Shapes" with no longer-form context. None of these are
+    visual problems, but every one of them undermines the brand
+    promise of rigor. This amendment ships the smallest set of
+    changes that close all five gaps without inventing new features
+    that belong to a later /harden or a future cmd-k palette
+    amendment. Vim-style j/k/G/gg navigation is the right grammar
+    for a single long scrollable document — it matches what
+    technical readers already know from less, vim, man pages,
+    and similar reading tools, and it does not require any UI
+    chrome to discover. The hook reuses the existing allSectionIds
+    array that the spec page already computes for use-active-section
+    so the keyboard layer pulls from the same source of truth as
+    the minimap and TOC. Skip link is a single anchor at the top
+    of main that becomes visible only on focus — standard pattern,
+    invisible cost. Back-to-top threshold lowers from 90 percent
+    to 20 percent so the button is available throughout most of
+    the read, where readers actually need it. Manifest and meta
+    description are literal text-only updates with no behavioral
+    impact. A small edge-case sweep adds break-words to the home
+    section headings (which use manual line breaks and could clip
+    on narrow viewports) and overflow protection to the spec h1.
+  goals: >-
+    Keyboard-only readers can navigate the spec page without a
+    mouse via j/k for next/previous section, G for end, gg for
+    top, and the existing anchor links. Skip link lets keyboard
+    users bypass the nav. Back-to-top is reachable from the moment
+    a reader has scrolled meaningfully into the document. Manifest
+    and meta description reflect the actual product. No edge-case
+    text overflow on narrow viewports.
+  non_goals: >-
+    Does not add a cmd-k palette (that is a separate larger feature
+    amendment). Does not add full-text search (also separate). Does
+    not add ARIA descriptions to every interactive element on the
+    site (already covered by the existing components). Does not
+    rewrite copy (that is /clarify). Does not add localization
+    (no i18n target language is in scope). Does not add visible
+    keyboard help / cheat sheet UI — discoverability is acceptable
+    via convention for the target audience. Does not touch the
+    home page motion layer.
+  spec_section: N/A — production readiness
+  affected_files: >-
+    apps/web/src/components/spec/use-keyboard-nav.ts — new hook
+    that listens for j/k/G/gg keys at the document level, ignores
+    events when the focus target is an input or contenteditable,
+    and scrolls smoothly to the next, previous, last, or first
+    section id from a passed-in section list. Honors
+    prefers-reduced-motion via window.matchMedia and falls back
+    to instant scroll. apps/web/src/routes/specification.tsx —
+    add a sr-only skip link as the first focusable element, give
+    main content a target id, mount the new keyboard hook with
+    allSectionIds, lower the back-to-top scroll threshold from
+    > 90 to > 20. apps/web/src/routes/__root.tsx — replace the
+    generic Shapes meta description with a real one-line summary
+    of the project. apps/web/public/manifest.json — replace the
+    Create TanStack App Sample defaults with the real Shapes
+    name, short_name, description, and theme_color drawn from the
+    OKLCh palette. apps/web/src/routes/index.tsx — add break-words
+    to the In Practice and Install h2 elements that use manual br
+    line breaks so they degrade gracefully if the cell narrows.
+  verification: >-
+    bun run format clean. bun run typecheck clean. shapes validate
+    clean. Manual keyboard test on the spec page — j and k jump
+    sections, G jumps to bottom, g g jumps to top, focus is
+    visible at every step, skip link appears on first Tab.
+    Manifest test — open dev tools application panel, confirm
+    name and theme_color match the brand. Reduced-motion test —
+    keyboard nav uses instant scroll instead of smooth when
+    prefers-reduced-motion is set. Long-text edge case — narrow
+    the home page below the smallest cell and confirm In Practice
+    and Install headings break gracefully instead of clipping.
+initiated_by:
+  type: ai
