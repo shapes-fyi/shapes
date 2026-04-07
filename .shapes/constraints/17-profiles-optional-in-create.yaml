@@ -5,7 +5,7 @@ kind: invariant
 rule: Every `shapes create` subcommand succeeds end-to-end without --profile and without any pre-existing Profile in the store, producing a node that passes `shapes validate`.
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: '`shapes create` never requires a Profile; templates carry scaffolding hints, Profiles carry optional enforcement.'

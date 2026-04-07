@@ -5,7 +5,7 @@ kind: invariant
 rule: For every scaffold writer (scaffold_shape, scaffold_constraint, scaffold_profile), `serde_yml::from_str::<Node>(scaffold_output)` succeeds and `shapes validate` exits 0 against a store containing only that node.
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: Scaffold output must always deserialize via serde and pass shapes validate immediately after creation, before any TODO is filled in.

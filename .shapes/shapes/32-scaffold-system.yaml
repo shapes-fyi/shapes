@@ -2,7 +2,7 @@ id: 32
 name: Scaffold System
 description: 'CLI-side scaffolding that emits rich YAML files for shapes, constraints, and profiles. Composed of two pieces: a `templates` module declaring per-domain field and kind hints (software, research, editorial, minimal), and a `scaffold` module that hand-rolls YAML strings with TODO-block placeholders for required intent fields, commented stubs for optional fields, and commented stub sections for parents/children/constraints/realization/ evidence. Activated by `shapes create {shape,constraint,profile}` whenever `--from` is not used. Bypasses serde at write time so first-fill comments survive on disk; subsequent saves through the regular store path serialize cleanly via serde and produce comment-free files.'
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: module
   summary: Templated YAML scaffold writer for `shapes create` that emits rich TODO placeholders and stub sections so authored files are self-documenting.

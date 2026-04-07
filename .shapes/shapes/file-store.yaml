@@ -7,7 +7,7 @@ description: >-
   gets its own subdirectory (shapes/, constraints/, amendments/, profiles/) with
   files named as {id}-{slug}.yaml for uniqueness.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: module
   summary: >-

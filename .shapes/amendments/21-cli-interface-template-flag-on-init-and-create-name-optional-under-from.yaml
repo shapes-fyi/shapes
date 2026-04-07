@@ -11,7 +11,7 @@ description: >-
 targets:
   shape_ids:
     - 10
-status: proposed
+status: canonical
 intent:
   kind: amendment
   summary: >-

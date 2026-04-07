@@ -9,7 +9,7 @@ description: >-
   graph integrity. All commands support --format yaml|json for output. Exit
   codes: 0 success, 1 error, 2 validation failures found.
 profile: 1
-status: promoted
+status: canonical
 intent:
   kind: interface
   summary: >-

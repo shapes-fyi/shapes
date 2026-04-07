@@ -8,7 +8,7 @@ description: >-
   which fires for every create call regardless of whether a Profile is
   attached. --profile remains useful for opt-in kind validation; it
   conflicts with --from.
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: feature
