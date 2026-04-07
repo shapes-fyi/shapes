@@ -8,7 +8,7 @@ targets:
 status: proposed
 intent:
   kind: amendment
-  summary: Remove the 2x2 primitives grid and the "Four primitives, two graphs" header cell from the home page. Flatten SectionDivider to a hairline by removing its three decorative dots. Trim redundant content in the Get Started block — drop the skills-install duplicate and the trailing paragraph that repeats the CTA.
+  summary: Remove the 2x2 primitives grid and the "Four primitives, two graphs" header cell from the home page. Flatten SectionDivider to a hairline by removing its three decorative dots. Trim the trailing paragraph in the Get Started block that repeats the CTA.
   source: ai
   rationale: >-
     The /impeccable:critique of the home page flagged the 2x2 primitives
@@ -19,11 +19,10 @@ intent:
     SectionDivider dot ornaments are decoration without meaning — the
     brand principle "structure is the brand" rewards structure that
     carries information, not structure that merely looks structural.
-    The Get Started block has two near-duplicate install command boxes
-    plus a trailing paragraph that restates the CTA — classic AI
-    redundancy. Distill removes all three before /bolder rebuilds the
-    primitives explanation as structural demonstrations rather than
-    cells in a grid.
+    The Get Started block has a trailing paragraph that restates the
+    CTA — pure redundancy. Distill removes both before /bolder
+    rebuilds the primitives explanation as structural demonstrations
+    rather than cells in a grid.
   goals: >-
     Cut the homepage to the minimum that still makes the product
     intelligible on its own — hero, one concrete YAML demonstration,
@@ -38,14 +37,13 @@ intent:
   spec_section: N/A — homepage refactor, no spec change
   affected_files: >-
     apps/web/src/routes/index.tsx — delete the "Four primitives, two
-    graphs" section (header cell plus 2x2 primitives grid). Delete the
-    now-unused primitives const. Simplify the Get Started block: keep
-    only the CLI install command, delete the Agent Skills install
-    duplicate, delete the trailing paragraph that repeats the spec CTA.
-    Remove the SectionDivider preceding the deleted section. Remove
-    the CopyButton helper if the skills install deletion makes it
-    unused. packages/ui/src/components/section-divider.tsx — remove
-    the three decorative dot spans, leaving a clean hairline border.
+    graphs" section (header cell plus 2x2 primitives grid). Delete
+    the now-unused primitives const. Simplify the Get Started block:
+    delete the trailing paragraph that repeats the spec CTA. Remove
+    the SectionDivider preceding the deleted section. Remove the
+    CopyButton helper if it becomes unused.
+    packages/ui/src/components/section-divider.tsx — remove the
+    three decorative dot spans, leaving a clean hairline border.
   verification: >-
     bun run format clean. bun run typecheck clean. shapes validate
     clean. Visually the home should become shorter and less cluttered

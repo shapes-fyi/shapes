@@ -479,18 +479,34 @@ function HomePage() {
               <div className={`border-b ${BORDER} p-6 sm:p-10 lg:p-14`}>
                 <SectionLabel number={4}>Install</SectionLabel>
                 <h2 className="mt-5 max-w-3xl font-serif text-4xl leading-heading font-semibold tracking-heading sm:text-5xl lg:text-6xl">
-                  One command.
+                  Two commands.
                 </h2>
                 <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground">
-                  The CLI is a single Rust binary with zero runtime
-                  dependencies. Install it once, run <code>shapes init</code> in
-                  your project.
+                  Install the Rust CLI binary, then add the agent skills so
+                  Claude and other AI agents discover the graph automatically.
                 </p>
               </div>
-              <div className="p-6 sm:p-10 lg:p-14">
-                <CodeBlock className="w-full" wrap>
-                  {`cargo install --git https://github.com/shapes-fyi/shapes`}
-                </CodeBlock>
+              <div className="space-y-8 p-6 sm:p-10 lg:p-14">
+                <div>
+                  <span className="font-ui text-tiny font-medium tracking-label text-muted-foreground uppercase">
+                    CLI binary
+                  </span>
+                  <div className="mt-3">
+                    <CodeBlock className="w-full" wrap>
+                      {`cargo install --git https://github.com/shapes-fyi/shapes`}
+                    </CodeBlock>
+                  </div>
+                </div>
+                <div>
+                  <span className="font-ui text-tiny font-medium tracking-label text-muted-foreground uppercase">
+                    Agent skills
+                  </span>
+                  <div className="mt-3">
+                    <CodeBlock className="w-full" wrap>
+                      {`npx skills add shapes-fyi/shapes`}
+                    </CodeBlock>
+                  </div>
+                </div>
               </div>
             </div>
           </Container>
