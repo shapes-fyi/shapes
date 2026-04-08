@@ -66,6 +66,27 @@ impl Status {
     pub fn canonical() -> Self {
         Status::Canonical(StatusDetail::default())
     }
+
+    /// Returns `true` when a node in this status requires an Amendment
+    /// to record any subsequent semantic change.
+    ///
+    /// Direct edits remain allowed while a node is `proposed`. Once a
+    /// node is `promoted` or `canonical`, the spec requires changes to
+    /// be recorded as Amendments. Terminal states (`rejected`,
+    /// `superseded`, `abandoned`, `reverted`) are inert and never
+    /// receive further edits, so they return `false` here as well — the
+    /// caller's contract is "is this state subject to the
+    /// amendment-on-change rule?", and only progressive promoted /
+    /// canonical states are.
+    //
+    // `clippy::allow(dead_code)` because this predicate is wired into
+    // `shapes ci-check` in the next commit; landing it as a standalone
+    // step keeps the model and command commits independently bisectable.
+    #[allow(dead_code)]
+    #[must_use]
+    pub fn requires_amendment_on_change(&self) -> bool {
+        matches!(self, Status::Promoted(_) | Status::Canonical(_))
+    }
 }
 
 /// Optional metadata attached to a progressive status.
@@ -253,6 +274,20 @@ mod tests {
         assert!(yaml.contains("passed review"));
         let parsed: Status = serde_yml::from_str(&yaml).unwrap();
         assert_eq!(parsed, status);
+    }
+
+    #[test]
+    fn requires_amendment_on_change_only_promoted_and_canonical() {
+        // Direct edits allowed while proposed.
+        assert!(!Status::proposed().requires_amendment_on_change());
+        // Promoted and canonical require amendments.
+        assert!(Status::Promoted(StatusDetail::default()).requires_amendment_on_change());
+        assert!(Status::canonical().requires_amendment_on_change());
+        // Terminal states are inert — no further edits expected.
+        assert!(!Status::Rejected(TerminalDetail::default()).requires_amendment_on_change());
+        assert!(!Status::Superseded(TerminalDetail::default()).requires_amendment_on_change());
+        assert!(!Status::Abandoned(TerminalDetail::default()).requires_amendment_on_change());
+        assert!(!Status::Reverted(TerminalDetail::default()).requires_amendment_on_change());
     }
 
     #[test]
