@@ -65,16 +65,5 @@ evidence:
             field becomes a TODO block and every optional structure
             becomes a commented stub the agent can uncomment.
     trusted: false
-  - id: bench-snapshot-frozen
-    type: review
-    bindings:
-      - scheme: path
-        value: bench/runs/shapes-v4/skills-snapshot/shapes-init/SKILL.md
-        metadata:
-          summary: >-
-            Bench snapshot intentionally NOT updated — it is a frozen
-            historical record per the bench README's manual `cp -r` flow.
-            Listed here as evidence of the deliberate non-update.
-    trusted: false
 initiated_by:
   type: ai
