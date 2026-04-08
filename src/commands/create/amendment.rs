@@ -8,7 +8,7 @@ use crate::OutputFormat;
 use crate::commands::shared::{output, read_from};
 use crate::model::{
     Amendment, AmendmentId, AmendmentTargets, ConstraintId, InitiatedBy, InitiatedType, Intent,
-    NodeType, ShapeId, Status, VersionImpact,
+    NodeType, ProfileId, ShapeId, Status, VersionImpact,
 };
 use crate::store::{FileStore, NodeStore};
 
@@ -20,6 +20,8 @@ pub struct CreateAmendmentArgs {
     pub target_shapes: Vec<ShapeId>,
     /// `--target-constraint` IDs.
     pub target_constraints: Vec<ConstraintId>,
+    /// `--target-profile` IDs.
+    pub target_profiles: Vec<ProfileId>,
     /// Optional `--summary`.
     pub summary: Option<String>,
     /// `--source` value.
@@ -57,7 +59,7 @@ pub fn create_amendment(
             targets: AmendmentTargets {
                 shape_ids: args.target_shapes,
                 constraint_ids: args.target_constraints,
-                profile_ids: vec![],
+                profile_ids: args.target_profiles,
             },
             status: Status::proposed(),
             version_impact: args.version_impact,

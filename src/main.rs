@@ -22,7 +22,7 @@ use clap::{Parser, Subcommand, ValueEnum};
 
 use error::CliError;
 
-use model::{ConstraintId, Enforcement, NodeType, ShapeId, VersionImpact};
+use model::{ConstraintId, Enforcement, NodeType, ProfileId, ShapeId, VersionImpact};
 use templates::KitKind;
 
 #[derive(Parser)]
@@ -226,6 +226,9 @@ enum CreateCommand {
         /// Target constraint IDs (repeatable)
         #[arg(long = "target-constraint")]
         target_constraints: Vec<ConstraintId>,
+        /// Target profile IDs (repeatable)
+        #[arg(long = "target-profile")]
+        target_profiles: Vec<ProfileId>,
         /// Brief summary of what changed and why
         #[arg(long)]
         summary: Option<String>,
@@ -239,7 +242,7 @@ enum CreateCommand {
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "target_shapes", "target_constraints", "summary", "source", "version_impact", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "target_shapes", "target_constraints", "target_profiles", "summary", "source", "version_impact", "description"])]
         from: Option<String>,
     },
 

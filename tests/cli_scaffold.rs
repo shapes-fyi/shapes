@@ -412,6 +412,30 @@ fn amendment_create_via_flags_succeeds() {
 }
 
 #[test]
+fn amendment_create_with_target_profile_round_trips() {
+    let dir = fresh_store("software");
+    // The starter kit seeds profile id 1 already; target it.
+    shapes_in(&dir)
+        .args([
+            "create",
+            "amendment",
+            "--name",
+            "Profile Amendment",
+            "--target-profile",
+            "1",
+            "--summary",
+            "tweak governance",
+        ])
+        .assert()
+        .success();
+    let yaml = read_only_yaml_in(&dir, "amendments");
+    assert!(
+        yaml.contains("profile_ids:") && yaml.contains("- 1"),
+        "expected profile_ids: [1] on disk: {yaml}"
+    );
+}
+
+#[test]
 fn amendment_create_via_from_stdin_succeeds() {
     let dir = fresh_store("software");
     shapes_in(&dir)
