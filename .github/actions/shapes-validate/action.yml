@@ -40,9 +40,11 @@ inputs:
   install-shapes:
     description: >-
       When 'true' (the default), the action installs the `shapes`
-      binary via `cargo install --locked --git --tag <version>`. Set
+      binary via `cargo install --locked --git --branch <ref>`. Set
       to 'false' if a previous step has already placed `shapes` on
-      PATH (used by this repo's own dogfood job).
+      PATH — useful when you want to exercise a locally-built binary
+      (e.g. `cargo build --release` from the current checkout)
+      instead of fetching a released copy from shapes-fyi/shapes.
     required: false
     default: 'true'
 

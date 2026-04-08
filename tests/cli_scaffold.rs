@@ -894,7 +894,7 @@ mod profile_enforcement {
         );
     }
 
-    /// INV-013 (dogfood): the software starter kit declares
+    /// INV-013: the software starter kit declares
     /// `intent.sources = [human, ai]`. A shape created against the
     /// active profile with `source: martian` must be rejected without
     /// any custom profile setup.
