@@ -771,3 +771,258 @@ mod scaffold_snapshots {
         insta::assert_snapshot!(yaml);
     }
 }
+
+/// Profile-driven validation invariants (INV-012..INV-016).
+///
+/// Each test stages a deliberately broken fixture in a fresh store
+/// (using `--from -` to bypass create-time validation), then runs
+/// `shapes validate` and asserts it fails with exit code 2 and the
+/// expected `INV-*` tag in stderr.
+mod profile_enforcement {
+    use super::{fresh_store, shapes_in};
+
+    /// Helper: run `shapes validate`, expect failure with exit 2, and
+    /// return stderr as a String.
+    fn validate_fails(dir: &tempfile::TempDir) -> String {
+        let assert = shapes_in(dir).arg("validate").assert().failure().code(2);
+        String::from_utf8_lossy(&assert.get_output().stderr).to_string()
+    }
+
+    /// INV-012: a shape whose `intent.kind` is not in the active
+    /// profile's allow-list must be flagged.
+    #[test]
+    fn inv_012_kind_outside_allow_list_is_flagged() {
+        let dir = fresh_store("software");
+        let bad = "id: 0\n\
+            name: bad-kind\n\
+            description: d\n\
+            profile: 1\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: nonexistent_kind\n  \
+              summary: s\n  \
+              source: human\n  \
+              goals: g\n  \
+              rationale: r\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-012") && stderr.contains("nonexistent_kind"),
+            "expected INV-012 for nonexistent_kind: {stderr}"
+        );
+    }
+
+    /// INV-013: a shape whose `intent.source` is not in the active
+    /// profile's source allow-list must be flagged.
+    ///
+    /// The default software profile does not declare a source
+    /// allow-list, so we first install a custom profile via `--from`
+    /// that does, then create a shape pointing at that profile with a
+    /// disallowed source.
+    #[test]
+    fn inv_013_source_outside_allow_list_is_flagged() {
+        let dir = fresh_store("software");
+        // Custom profile with intent.sources allow-list = [human, ai].
+        let strict_profile = "id: 0\n\
+            name: source-strict\n\
+            description: source allow-list test\n\
+            status: canonical\n\
+            intent:\n  \
+              kind: governance\n  \
+              summary: s\n  \
+              source: system\n\
+            fields:\n  \
+              shape:\n    \
+                intent:\n      \
+                  sources:\n        \
+                    - name: human\n          \
+                      description: hand-authored\n        \
+                    - name: ai\n          \
+                      description: agent-authored\n";
+        shapes_in(&dir)
+            .args(["create", "profile", "--from", "-"])
+            .write_stdin(strict_profile)
+            .assert()
+            .success();
+        // Shape with source: martian — not in [human, ai].
+        let bad_shape = "id: 0\n\
+            name: bad-source\n\
+            description: d\n\
+            profile: 2\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: martian\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad_shape)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-013") && stderr.contains("martian"),
+            "expected INV-013 for martian source: {stderr}"
+        );
+    }
+
+    /// INV-014: a realization binding missing a required metadata
+    /// field declared by the profile must be flagged.
+    ///
+    /// The default software starter profile makes
+    /// `realization.fields.summary` required.
+    #[test]
+    fn inv_014_realization_missing_required_summary_is_flagged() {
+        let dir = fresh_store("software");
+        let bad = "id: 0\n\
+            name: missing-summary\n\
+            description: d\n\
+            profile: 1\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: human\n  \
+              goals: g\n  \
+              rationale: r\n\
+            realization:\n  \
+              - bindings:\n      \
+                  - scheme: path\n        \
+                    value: src/foo.rs\n        \
+                    metadata: {}\n    \
+                role: primary\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-014") && stderr.contains("summary"),
+            "expected INV-014 for missing realization summary: {stderr}"
+        );
+    }
+
+    /// INV-015: a metadata value whose type does not match the
+    /// profile's declared `field_type` must be flagged.
+    #[test]
+    fn inv_015_metadata_type_mismatch_is_flagged() {
+        let dir = fresh_store("software");
+        // Custom profile that requires shape.metadata.priority to be
+        // an integer.
+        let strict_profile = "id: 0\n\
+            name: type-strict\n\
+            description: type checking test\n\
+            status: canonical\n\
+            intent:\n  \
+              kind: governance\n  \
+              summary: s\n  \
+              source: system\n\
+            fields:\n  \
+              shape:\n    \
+                metadata:\n      \
+                  fields:\n        \
+                    - name: priority\n          \
+                      description: numeric priority\n          \
+                      type: integer\n          \
+                      required: true\n";
+        shapes_in(&dir)
+            .args(["create", "profile", "--from", "-"])
+            .write_stdin(strict_profile)
+            .assert()
+            .success();
+        // Shape whose metadata.priority is a string, not an integer.
+        let bad_shape = "id: 0\n\
+            name: wrong-type\n\
+            description: d\n\
+            profile: 2\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: human\n\
+            metadata:\n  \
+              priority: high\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad_shape)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-015") && stderr.contains("integer"),
+            "expected INV-015 for non-integer priority: {stderr}"
+        );
+    }
+
+    /// INV-016: a profile whose `default_kind` is not in its own
+    /// `intent.kinds` allow-list must be flagged.
+    #[test]
+    fn inv_016_default_kind_not_in_allow_list_is_flagged() {
+        let dir = fresh_store("software");
+        let inconsistent_profile = "id: 0\n\
+            name: inconsistent\n\
+            description: default_kind not in allow-list\n\
+            status: canonical\n\
+            intent:\n  \
+              kind: governance\n  \
+              summary: s\n  \
+              source: system\n\
+            fields:\n  \
+              shape:\n    \
+                default_kind: ghost\n    \
+                intent:\n      \
+                  kinds:\n        \
+                    - name: real\n          \
+                      description: a real kind\n";
+        shapes_in(&dir)
+            .args(["create", "profile", "--from", "-"])
+            .write_stdin(inconsistent_profile)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-016") && stderr.contains("ghost"),
+            "expected INV-016 for default_kind 'ghost' outside allow-list: {stderr}"
+        );
+    }
+
+    /// Self-consistency also flags duplicate names within a single
+    /// FieldDef list.
+    #[test]
+    fn inv_016_duplicate_field_names_is_flagged() {
+        let dir = fresh_store("software");
+        let dup_profile = "id: 0\n\
+            name: duplicates\n\
+            description: dup field names\n\
+            status: canonical\n\
+            intent:\n  \
+              kind: governance\n  \
+              summary: s\n  \
+              source: system\n\
+            fields:\n  \
+              shape:\n    \
+                intent:\n      \
+                  fields:\n        \
+                    - name: goals\n          \
+                      description: first\n          \
+                      required: true\n        \
+                    - name: goals\n          \
+                      description: duplicate\n          \
+                      required: false\n";
+        shapes_in(&dir)
+            .args(["create", "profile", "--from", "-"])
+            .write_stdin(dup_profile)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-016") && stderr.contains("duplicate"),
+            "expected INV-016 for duplicate field name 'goals': {stderr}"
+        );
+    }
+}

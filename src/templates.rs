@@ -164,7 +164,9 @@ impl StarterKit {
 }
 
 /// Constructs a [`FieldSection`] for one node type (shape or
-/// constraint) from the kit's field and kind hints.
+/// constraint) from the kit's field and kind hints. Every section
+/// also requires a `summary` metadata field on every realization and
+/// evidence binding so that bindings explain themselves to readers.
 fn node_section(
     default_kind: &'static str,
     fields: &'static [FieldHint],
@@ -179,10 +181,25 @@ fn node_section(
         }),
         status: None,
         constraints: None,
-        realization: None,
-        evidence: None,
+        realization: Some(binding_summary_group()),
+        evidence: Some(binding_summary_group()),
         provenance: None,
         metadata: None,
+    }
+}
+
+/// Returns a `FieldGroup` requiring a `summary` metadata field on
+/// every binding. Used for both realization and evidence sections.
+fn binding_summary_group() -> FieldGroup {
+    FieldGroup {
+        fields: vec![FieldDef {
+            name: "summary".to_owned(),
+            description: "Brief description of what this binding points to".to_owned(),
+            field_type: None,
+            required: true,
+        }],
+        kinds: vec![],
+        sources: vec![],
     }
 }
 

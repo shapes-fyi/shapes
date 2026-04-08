@@ -49,6 +49,16 @@ fields:
       - name: pattern
         description: A reusable design pattern
         required: false
+    realization:
+      fields:
+      - name: summary
+        description: Brief description of what this binding points to
+        required: true
+    evidence:
+      fields:
+      - name: summary
+        description: Brief description of what this binding points to
+        required: true
   constraint:
     default_kind: invariant
     intent:
@@ -84,5 +94,15 @@ fields:
       - name: policy
         description: Organizational or compliance rule
         required: false
+    realization:
+      fields:
+      - name: summary
+        description: Brief description of what this binding points to
+        required: true
+    evidence:
+      fields:
+      - name: summary
+        description: Brief description of what this binding points to
+        required: true
 amendment_rules:
   application: merge
