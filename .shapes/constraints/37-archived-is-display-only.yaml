@@ -1,0 +1,81 @@
+id: 37
+name: Archived Is Display-Only
+description: >-
+  The `archived` flag on Amendment nodes is strictly display-only
+  metadata. Validation (INV-019 reciprocity, INV-007 target existence)
+  and CI checks (CI-002 amendment-on-promoted-change) must see every
+  amendment regardless of archived state. Archiving MUST NOT be used
+  as a way to exempt an amendment from invariant enforcement or PR
+  gating — it only affects how listing output is rendered to humans
+  and agents. This keeps the audit trail intact while allowing
+  decayed entries to be suppressed from routine reads.
+kind: invariant
+rule: >-
+  `shapes validate` and `shapes ci-check` MUST load and apply their
+  checks to every amendment regardless of `archived` state. `shapes
+  list amendment` and `shapes get <parent>` MUST hide archived
+  amendments by default and surface them only when `--archived` is
+  passed. No invariant, CI rule, or agent workflow may short-circuit
+  on `amendment.archived == true`.
+enforcement: machine
+profile: 1
+status: proposed
+amendment_log:
+  - 29
+intent:
+  kind: invariant
+  summary: >-
+    Archiving is display-only; validation and CI always see the full
+    amendment set
+  source: ai
+  rationale: >-
+    Amendments are kept indefinitely for audit, so the log grows with
+    entries whose insight value has decayed. The `archived` flag
+    exists to suppress those entries from routine reads without
+    deleting them. It must never weaken enforcement: if archiving
+    could remove an amendment from INV-019 reciprocity or CI-002
+    satisfaction, the audit trail would become unreliable and agents
+    could use archival to sneak edits past the amendment-required
+    rule. Binding this behavior in a constraint makes the
+    display-only contract a first-class invariant instead of a
+    convention buried in command implementations.
+  impact_if_violated: >-
+    If validation ever treated archived amendments as absent, an
+    archived amendment's target could be left without a reciprocal
+    `amendment_log` entry and INV-019 would not catch it. Worse, an
+    agent could archive an amendment to dodge CI-002 on a subsequent
+    canonical edit, making the immutability and amendment-required
+    rules opt-out by design. Either failure mode corrupts the audit
+    trail the amendment system exists to provide.
+  verification_method: >-
+    Snapshot tests cover both directions: `shapes list amendment`
+    default output excludes archived entries, `--archived` includes
+    them; `shapes get shape <id>` default output drops archived IDs
+    from `amendment_log`, `--archived` annotates them. A dedicated
+    test asserts `shapes validate` and `shapes ci-check` behavior is
+    identical whether a reciprocally-linked amendment is archived or
+    not.
+  spec_section: Amendment archival semantics
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/list.rs
+        metadata:
+          summary: Amendment arm skips entries when `a.is_archived() && !include_archived` — archived filter applied only in the listing path, never during validation
+      - scheme: path
+        value: src/commands/get.rs
+        metadata:
+          summary: emit_with_amendment_log cross-loads amendments to discover archived state and rewrites the rendered `amendment_log` (drop or annotate) — node file on disk is never mutated
+      - scheme: path
+        value: src/commands/amendment.rs
+        metadata:
+          summary: archive/unarchive — the sole write path for the `archived` field, centralizing the CI-003 carve-out
+      - scheme: path
+        value: src/commands/ci_check.rs
+        metadata:
+          summary: is_archive_only_change — permits CI-003 diffs whose only field delta is `archived`; every other field delta still trips immutability
+      - scheme: path
+        value: src/commands/dag/validate.rs
+        metadata:
+          summary: INV-019 reciprocity walk does not branch on `archived`; archived amendments participate in validation identically to unarchived ones
+    role: primary

@@ -28,6 +28,8 @@ parents:
     role: component
 constraints:
   - 6
+amendment_log:
+  - 29
 children:
   - shape: 24
     role: component
