@@ -1,0 +1,95 @@
+id: 34
+name: Shape Graph CI Action
+description: >-
+  Reusable GitHub Action and `shapes ci-check` CLI subcommand that
+  police shape-graph PRs in any repository using a `.shapes/`
+  directory. The CLI subcommand contains the logic — base-vs-working-
+  tree diffing, monitored field projections per node type, and the
+  three CI-* checks. The composite action at
+  `.github/actions/shapes-validate/action.yml` is a thin wrapper that
+  installs the binary, runs `shapes validate`, and runs the
+  subcommand on pull-request events.
+profile: 1
+status: proposed
+parents:
+  - id: 33
+    role: feature
+constraints:
+  - 10
+intent:
+  kind: feature
+  summary: >-
+    Reusable GitHub Action and `shapes ci-check` CLI subcommand that
+    enforce graph integrity, amendment-required-on-promoted-or-
+    canonical-change, amendment immutability, and an opt-in PR-must-
+    touch-shapes rule on every PR
+  source: ai
+  goals: >-
+    Make shape-graph hygiene a machine-enforced PR gate any repo can
+    drop in. CI-001 (PR touches the shapes directory; opt-in via
+    `--require-shapes-changes`) supports the shapes-first workflow.
+    CI-002 catches semantic edits to promoted/canonical nodes that
+    aren't accompanied by an Amendment, paired by node id so renames
+    and slug churn don't false-positive. CI-003 gives constraint:10
+    (Amendment Immutability) its first machine enforcement —
+    previously enforced "by convention". The composite action stays
+    minimal so the brains live in tested Rust, runnable locally with
+    `shapes ci-check --base origin/main`.
+  rationale: >-
+    Pure shell would have to reinvent yaml-diffing across the four
+    node types and would not be testable. A CLI subcommand reuses
+    the existing typed model and the `ValidationIssue` reporting
+    machinery, gives developers a local pre-push gate, and lets the
+    same logic ship to non-GitHub CI providers (the composite action
+    is just convenience glue). CI-002 is strict — every field on a
+    promoted or canonical node counts, including `realization`,
+    `evidence`, and `provenance` bindings. There are no opt-out
+    flags. The whole point of the check is to force explicit
+    maintenance through the amendment workflow; the only way to edit
+    a node without an amendment is to leave it in `proposed` state.
+  non_goals: >-
+    Not a replacement for `shapes validate` — the action runs both
+    side by side. Not GitHub-specific at the CLI layer; the
+    subcommand only depends on `git`, so any CI provider can call
+    it directly.
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/ci_check.rs
+        metadata:
+          summary: ci_check() handler — discovers git on PATH, runs CI-001 / CI-002 / CI-003, reports via the existing ValidationIssue + CiCheckError plumbing
+      - scheme: path
+        value: src/main.rs
+        metadata:
+          summary: Command::CiCheck variant + dispatch in `run`
+      - scheme: path
+        value: src/error.rs
+        metadata:
+          summary: CiCheckError::IssuesFound variant and exit-code mapping (2, matching validate)
+      - scheme: path
+        value: src/model/status.rs
+        metadata:
+          summary: Status::requires_amendment_on_change predicate — true only for Promoted/Canonical, used by ci-check to gate CI-002 on the base ref's status
+    role: primary
+  - bindings:
+      - scheme: path
+        value: .github/actions/shapes-validate/action.yml
+        metadata:
+          summary: >-
+            Composite action consumed as `uses:
+            shapes-fyi/shapes/.github/actions/shapes-validate@v1` —
+            installs the CLI via `cargo install --locked --git --tag
+            <version>` and runs validate + ci-check
+      - scheme: path
+        value: .github/actions/shapes-validate/README.md
+        metadata:
+          summary: >-
+            Usage docs — the `fetch-depth` zero requirement, the four
+            CI-* / INV-* check families, four worked examples
+    role: primary
+  - bindings:
+      - scheme: path
+        value: tests/cli_ci_check.rs
+        metadata:
+          summary: 16 integration tests — git-init tempdir helpers, CI-001 positive/negative/control, CI-002 promoted-shape and canonical-constraint scenarios, realization-only strict (every binding edit requires an amendment), canonical-profile scenarios (--target-profile satisfying path), per-node deletion, full-shapes-dir deletion, new-node addition, CI-003 amendment-immutability (both modification and deletion)
+    role: test

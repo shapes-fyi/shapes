@@ -18,6 +18,9 @@ profile: 1
 parents:
   - id: 1
     role: parent
+children:
+  - shape: 34
+    role: feature
 intent:
   kind: feature
   summary: >-

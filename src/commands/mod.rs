@@ -11,11 +11,13 @@
 //! - [`mod@tree`] — `shapes tree`
 //! - [`mod@query`] — `shapes query`
 //! - [`mod@validate`] — `shapes validate`
+//! - [`mod@ci_check`] — `shapes ci-check`
 //!
 //! Plus the verb-internal helper modules [`scaffold`] (YAML scaffold
 //! writers), [`shared`] (output helpers, store opening), and [`dag`]
 //! (graph traversal primitives).
 
+mod ci_check;
 mod create;
 mod dag;
 mod get;
@@ -27,6 +29,7 @@ mod shared;
 mod tree;
 mod validate;
 
+pub use ci_check::ci_check;
 pub use create::create;
 pub use get::get;
 pub use init::init;

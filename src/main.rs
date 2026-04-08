@@ -16,13 +16,14 @@ mod model;
 mod store;
 mod templates;
 
+use std::path::PathBuf;
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand, ValueEnum};
 
 use error::CliError;
 
-use model::{ConstraintId, Enforcement, NodeType, ShapeId, VersionImpact};
+use model::{ConstraintId, Enforcement, NodeType, ProfileId, ShapeId, VersionImpact};
 use templates::KitKind;
 
 #[derive(Parser)]
@@ -136,6 +137,32 @@ enum Command {
     /// empty amendment targets, and profile field requirement violations.
     /// Exit code 0 if clean, 2 if issues found.
     Validate,
+
+    /// Run PR-level shape-graph checks against a base ref.
+    ///
+    /// Compares the working tree to `--base` and reports CI-* issues
+    /// for missing-amendment-on-promoted-or-canonical-change (CI-002),
+    /// modified-amendment-immutability (CI-003), and optionally
+    /// no-shapes-changes (CI-001 when `--require-shapes-changes` is
+    /// passed). Exit 0 if clean, 2 if issues found.
+    ///
+    /// CI-002 is strict: every field on a promoted or canonical node
+    /// counts, including `realization`, `evidence`, and `provenance`
+    /// bindings. There are no opt-out flags — the whole point of the
+    /// check is to force explicit maintenance through the amendment
+    /// workflow. To edit a node without an amendment, leave it in
+    /// `proposed` state.
+    CiCheck {
+        /// Base ref to diff against (e.g. origin/main, the PR base sha)
+        #[arg(long, default_value = "origin/main")]
+        base: String,
+        /// Path to the shapes directory, relative to cwd
+        #[arg(long, default_value = ".shapes")]
+        shapes_dir: PathBuf,
+        /// Fail when the PR does not touch the shapes directory
+        #[arg(long)]
+        require_shapes_changes: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -226,6 +253,9 @@ enum CreateCommand {
         /// Target constraint IDs (repeatable)
         #[arg(long = "target-constraint")]
         target_constraints: Vec<ConstraintId>,
+        /// Target profile IDs (repeatable)
+        #[arg(long = "target-profile")]
+        target_profiles: Vec<ProfileId>,
         /// Brief summary of what changed and why
         #[arg(long)]
         summary: Option<String>,
@@ -239,7 +269,7 @@ enum CreateCommand {
         #[arg(long)]
         description: Option<String>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "target_shapes", "target_constraints", "summary", "source", "version_impact", "description"])]
+        #[arg(long, conflicts_with_all = &["name", "target_shapes", "target_constraints", "target_profiles", "summary", "source", "version_impact", "description"])]
         from: Option<String>,
     },
 
@@ -340,6 +370,11 @@ fn run(cli: Cli) -> Result<(), CliError> {
         Command::Query { operation } => commands::query(operation, cli.format)?,
 
         Command::Validate => commands::validate(cli.format)?,
+        Command::CiCheck {
+            base,
+            shapes_dir,
+            require_shapes_changes,
+        } => commands::ci_check(&base, &shapes_dir, require_shapes_changes, cli.format)?,
     }
 
     Ok(())
