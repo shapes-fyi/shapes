@@ -1,0 +1,14 @@
+id: 28
+name: enforce bidirectional amendment_log and parent/child reciprocity
+description: enforce bidirectional amendment_log and parent/child reciprocity
+targets:
+  shape_ids:
+  - 12
+status: proposed
+version_impact: minor
+intent:
+  kind: amendment
+  summary: 'Extends validate: INV-009 now checks both parent→child and child→parent directions, and a new INV-019 enforces amendment_log reciprocity (amendment.targets ↔ node.amendment_log). Also backfills amendment_log on shapes 1, 6, 17, 21 for the now-enforced back-references.'
+  source: ai
+initiated_by:
+  type: ai

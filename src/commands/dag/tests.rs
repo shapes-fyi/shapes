@@ -92,3 +92,112 @@ fn validate_clean_graph() {
     let issues = validate(&store, None).unwrap();
     assert!(issues.is_empty());
 }
+
+fn make_amendment(id: u64, shape_targets: Vec<u64>) -> Amendment {
+    Amendment {
+        id: AmendmentId::new(id),
+        name: format!("amendment-{id}"),
+        description: format!("amendment-{id}"),
+        targets: AmendmentTargets {
+            shape_ids: shape_targets.into_iter().map(ShapeId::new).collect(),
+            constraint_ids: vec![],
+            profile_ids: vec![],
+        },
+        status: Status::proposed(),
+        version_impact: None,
+        intent: Intent {
+            kind: "amendment".into(),
+            summary: format!("amendment-{id}"),
+            source: serde_yml::Value::String("ai".into()),
+            uris: vec![],
+            extra: Default::default(),
+        },
+        constraints: vec![],
+        realization: vec![],
+        evidence: vec![],
+        provenance: vec![],
+        initiated_by: InitiatedBy {
+            initiated_type: InitiatedType::Ai,
+            identity: None,
+            provenance: None,
+        },
+        metadata: BTreeMap::new(),
+    }
+}
+
+#[test]
+fn validate_detects_missing_child_in_parent() {
+    // Parent A lists child B via parents-only (A says "my parent is B"),
+    // but B does not list A as a child. INV-009 reverse direction.
+    let mut store = MockStore::new();
+    let mut a = make_shape(1);
+    a.parents = vec![ParentRef {
+        id: ShapeId::new(2),
+        role: None,
+        reason: None,
+    }];
+    let b = make_shape(2);
+    store.insert(NodeType::Shape, 1, &a);
+    store.insert(NodeType::Shape, 2, &b);
+
+    let issues = validate(&store, None).unwrap();
+    assert!(
+        issues
+            .iter()
+            .any(|i| i.invariant == "INV-009" && i.node_id == "1" && i.message.contains("parent")),
+        "expected INV-009 parent-without-child violation, got {issues:?}"
+    );
+}
+
+#[test]
+fn validate_detects_missing_amendment_in_log() {
+    // Amendment A targets shape S, but S.amendment_log is empty.
+    let mut store = MockStore::new();
+    let shape = make_shape(1);
+    let amendment = make_amendment(10, vec![1]);
+    store.insert(NodeType::Shape, 1, &shape);
+    store.insert(NodeType::Amendment, 10, &amendment);
+
+    let issues = validate(&store, None).unwrap();
+    assert!(
+        issues
+            .iter()
+            .any(|i| i.invariant == "INV-019" && i.node_type == "amendment" && i.node_id == "10"),
+        "expected INV-019 missing-log violation, got {issues:?}"
+    );
+}
+
+#[test]
+fn validate_detects_orphan_entry_in_amendment_log() {
+    // Shape lists amendment A in amendment_log, but A does not target S.
+    let mut store = MockStore::new();
+    let mut shape = make_shape(1);
+    shape.amendment_log = vec![AmendmentId::new(10)];
+    let amendment = make_amendment(10, vec![]); // targets nothing (also fires INV-007)
+    store.insert(NodeType::Shape, 1, &shape);
+    store.insert(NodeType::Amendment, 10, &amendment);
+
+    let issues = validate(&store, None).unwrap();
+    assert!(
+        issues
+            .iter()
+            .any(|i| i.invariant == "INV-019" && i.node_type == "shape" && i.node_id == "1"),
+        "expected INV-019 orphan-log-entry violation, got {issues:?}"
+    );
+}
+
+#[test]
+fn validate_accepts_reciprocal_amendment_log() {
+    let mut store = MockStore::new();
+    let mut shape = make_shape(1);
+    shape.amendment_log = vec![AmendmentId::new(10)];
+    let amendment = make_amendment(10, vec![1]);
+    store.insert(NodeType::Shape, 1, &shape);
+    store.insert(NodeType::Amendment, 10, &amendment);
+
+    let issues = validate(&store, None).unwrap();
+    assert!(
+        !issues.iter().any(|i| i.invariant == "INV-019"),
+        "expected no INV-019 issues, got {issues:?}"
+    );
+}

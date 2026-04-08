@@ -71,3 +71,5 @@ realization:
         metadata:
           summary: Agent instructions — context-first workflow, maintain-before-commit, CLI reference
     role: supporting
+amendment_log:
+  - 27

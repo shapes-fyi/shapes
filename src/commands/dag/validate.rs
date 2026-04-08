@@ -297,7 +297,9 @@ pub fn validate(
         }
     }
 
-    // Reciprocal parent/child link checks
+    // Reciprocal parent/child link checks (INV-009 — both directions).
+    // Forward: if A lists B as child, B must list A as parent.
+    // Reverse: if A lists B as parent, B must list A as child.
     for (&id, shape) in &shapes {
         for child_id in shape.child_ids() {
             if let Some(child) = shapes.get(&child_id)
@@ -314,6 +316,21 @@ pub fn validate(
                 });
             }
         }
+        for parent_id in shape.parent_ids() {
+            if let Some(parent) = shapes.get(&parent_id)
+                && !parent.child_ids().contains(&id)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-009".into(),
+                    severity: Severity::Error,
+                    node_type: "shape".into(),
+                    node_id: id.to_string(),
+                    message: format!(
+                        "lists shape {parent_id} as parent, but parent does not list {id} as child"
+                    ),
+                });
+            }
+        }
     }
 
     for (&id, constraint) in &constraints {
@@ -321,7 +338,133 @@ pub fn validate(
             if let Some(child) = constraints.get(&child_id)
                 && !child.parents.iter().any(|p| p.id == id)
             {
-                issues.push(ValidationIssue { invariant: "INV-009".into(), severity: Severity::Error, node_type: "constraint".into(), node_id: id.to_string(), message: format!("lists constraint {child_id} as child, but child does not list {id} as parent") });
+                issues.push(ValidationIssue {
+                    invariant: "INV-009".into(),
+                    severity: Severity::Error,
+                    node_type: "constraint".into(),
+                    node_id: id.to_string(),
+                    message: format!(
+                        "lists constraint {child_id} as child, but child does not list {id} as parent"
+                    ),
+                });
+            }
+        }
+        for parent_id in constraint.parent_ids() {
+            if let Some(parent) = constraints.get(&parent_id)
+                && !parent.child_ids().contains(&id)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-009".into(),
+                    severity: Severity::Error,
+                    node_type: "constraint".into(),
+                    node_id: id.to_string(),
+                    message: format!(
+                        "lists constraint {parent_id} as parent, but parent does not list {id} as child"
+                    ),
+                });
+            }
+        }
+    }
+
+    // Amendment-log reciprocity (INV-019 — both directions).
+    // Forward: if amendment A targets node N, N.amendment_log must contain A.
+    // Reverse: if N.amendment_log contains A, A must target N.
+    for (&aid, amendment) in &amendments {
+        for &sid in &amendment.targets.shape_ids {
+            if let Some(shape) = shapes.get(&sid)
+                && !shape.amendment_log.contains(&aid)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-019".into(),
+                    severity: Severity::Error,
+                    node_type: "amendment".into(),
+                    node_id: aid.to_string(),
+                    message: format!(
+                        "targets shape {sid}, but shape {sid}.amendment_log does not contain {aid}"
+                    ),
+                });
+            }
+        }
+        for &cid in &amendment.targets.constraint_ids {
+            if let Some(constraint) = constraints.get(&cid)
+                && !constraint.amendment_log.contains(&aid)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-019".into(),
+                    severity: Severity::Error,
+                    node_type: "amendment".into(),
+                    node_id: aid.to_string(),
+                    message: format!(
+                        "targets constraint {cid}, but constraint {cid}.amendment_log does not contain {aid}"
+                    ),
+                });
+            }
+        }
+        for &pid in &amendment.targets.profile_ids {
+            if let Some(profile) = profiles.get(&pid)
+                && !profile.amendment_log.contains(&aid)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-019".into(),
+                    severity: Severity::Error,
+                    node_type: "amendment".into(),
+                    node_id: aid.to_string(),
+                    message: format!(
+                        "targets profile {pid}, but profile {pid}.amendment_log does not contain {aid}"
+                    ),
+                });
+            }
+        }
+    }
+
+    for (&sid, shape) in &shapes {
+        for &aid in &shape.amendment_log {
+            if let Some(amendment) = amendments.get(&aid)
+                && !amendment.targets.shape_ids.contains(&sid)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-019".into(),
+                    severity: Severity::Error,
+                    node_type: "shape".into(),
+                    node_id: sid.to_string(),
+                    message: format!(
+                        "amendment_log contains {aid}, but amendment {aid} does not target shape {sid}"
+                    ),
+                });
+            }
+        }
+    }
+    for (&cid, constraint) in &constraints {
+        for &aid in &constraint.amendment_log {
+            if let Some(amendment) = amendments.get(&aid)
+                && !amendment.targets.constraint_ids.contains(&cid)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-019".into(),
+                    severity: Severity::Error,
+                    node_type: "constraint".into(),
+                    node_id: cid.to_string(),
+                    message: format!(
+                        "amendment_log contains {aid}, but amendment {aid} does not target constraint {cid}"
+                    ),
+                });
+            }
+        }
+    }
+    for (&pid, profile) in &profiles {
+        for &aid in &profile.amendment_log {
+            if let Some(amendment) = amendments.get(&aid)
+                && !amendment.targets.profile_ids.contains(&pid)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-019".into(),
+                    severity: Severity::Error,
+                    node_type: "profile".into(),
+                    node_id: pid.to_string(),
+                    message: format!(
+                        "amendment_log contains {aid}, but amendment {aid} does not target profile {pid}"
+                    ),
+                });
             }
         }
     }

@@ -106,3 +106,5 @@ realization:
         metadata:
           summary: Project overview, installation instructions, plugin setup, usage examples
     role: supporting
+amendment_log:
+  - 24
