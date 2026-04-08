@@ -1,7 +1,7 @@
 name: CI
 
-# Enforces the Rust Idioms Refactor constraint suite (19–32) on every
-# push and pull request: formatting, clippy, tests, rustdoc, supply
+# Enforces the Rust Idioms Refactor constraint suite (19–33) on every
+# push and pull request: formatting, clippy, nextest, rustdoc, supply
 # chain, and dead-dep gates.
 
 on:
@@ -42,13 +42,14 @@ jobs:
       - run: cargo clippy --all-targets -- -D warnings
 
   test:
-    name: cargo test
+    name: cargo nextest
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - run: cargo test --all-targets
+      - uses: taiki-e/install-action@nextest
+      - run: cargo nextest run --all-targets
 
   doc:
     name: cargo doc (warnings as errors)

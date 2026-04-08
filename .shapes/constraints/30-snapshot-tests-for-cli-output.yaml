@@ -31,9 +31,9 @@ intent:
     ordering change that no test flagged, and reviewers have no way
     to see the change in a PR diff.
   verification_method: >-
-    Snapshot files live under tests/snapshots/; CI runs `cargo test`
-    and `cargo insta pending-snapshots --exit-code` (or equivalent) to
-    fail on unreviewed changes.
+    Snapshot files live under tests/snapshots/; CI runs
+    `cargo nextest run` and `cargo insta pending-snapshots
+    --exit-code` (or equivalent) to fail on unreviewed changes.
   exceptions: >-
     Non-deterministic output (timestamps, absolute paths, PIDs) may
     be redacted with insta filters rather than matched literally.

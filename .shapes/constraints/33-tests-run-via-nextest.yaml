@@ -1,0 +1,34 @@
+id: 33
+name: Tests Run via Nextest
+description: >-
+  The CI test gate runs `cargo nextest run`, not `cargo test`. Nextest
+  gives proper per-test isolation, cleaner failure output, and measurable
+  speedups. Local runs can still use `cargo test` if contributors
+  prefer.
+kind: guideline
+rule: >-
+  CI runs the test suite via `cargo nextest run --all-targets`, not
+  `cargo test`. Developers may use `cargo test` locally, but the CI gate
+  is nextest. Add `--doc` as a companion job only if doc tests are
+  introduced.
+enforcement: machine
+status: proposed
+profile: 1
+intent:
+  kind: guideline
+  summary: CI test gate runs cargo nextest, not cargo test
+  source: ai
+  rationale: >-
+    Nextest isolates each test in its own process, surfaces flaky tests
+    clearly, and is noticeably faster than the stock runner on
+    suites with more than a handful of tests. Standardizing on one
+    runner in CI also prevents the "works for me" class of bugs where a
+    local pass diverges from the CI result.
+  impact_if_violated: >-
+    CI falls back to a slower runner with weaker isolation; flaky tests
+    are harder to diagnose; future contributors re-litigate the runner
+    choice.
+  verification_method: >-
+    Inspect `.github/workflows/ci.yml`; the `test` job must install
+    nextest (via `taiki-e/install-action@nextest`) and run
+    `cargo nextest run`.
