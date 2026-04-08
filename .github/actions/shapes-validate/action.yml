@@ -43,6 +43,27 @@ inputs:
       PATH (used by this repo's own dogfood job).
     required: false
     default: 'true'
+  allow-realization-refresh:
+    description: >-
+      When 'true', changes to `realization` bindings on a promoted or
+      canonical node do not fire CI-002. Whether binding refreshes
+      count as "mechanical hygiene" or "semantic change" is a
+      per-project policy call — each repo chooses. Default 'false'
+      (strict).
+    required: false
+    default: 'false'
+  allow-evidence-refresh:
+    description: >-
+      When 'true', changes to `evidence` bindings on a promoted or
+      canonical node do not fire CI-002. Default 'false' (strict).
+    required: false
+    default: 'false'
+  allow-provenance-refresh:
+    description: >-
+      When 'true', changes to `provenance` bindings on a promoted or
+      canonical node do not fire CI-002. Default 'false' (strict).
+    required: false
+    default: 'false'
 
 runs:
   using: composite
@@ -80,13 +101,25 @@ runs:
         BASE_REF: ${{ inputs.base-ref }}
         SHAPES_DIR: ${{ inputs.shapes-dir }}
         REQUIRE_CHANGES: ${{ inputs.require-shapes-changes }}
+        ALLOW_REALIZATION: ${{ inputs.allow-realization-refresh }}
+        ALLOW_EVIDENCE: ${{ inputs.allow-evidence-refresh }}
+        ALLOW_PROVENANCE: ${{ inputs.allow-provenance-refresh }}
       run: |
         if [ ! -d "$SHAPES_DIR" ]; then
           echo "::warning::No shapes directory at '$SHAPES_DIR' — skipping shapes ci-check"
           exit 0
         fi
+        args=(ci-check --base "$BASE_REF" --shapes-dir "$SHAPES_DIR")
         if [ "$REQUIRE_CHANGES" = "true" ]; then
-          shapes ci-check --base "$BASE_REF" --shapes-dir "$SHAPES_DIR" --require-shapes-changes
-        else
-          shapes ci-check --base "$BASE_REF" --shapes-dir "$SHAPES_DIR"
+          args+=(--require-shapes-changes)
         fi
+        if [ "$ALLOW_REALIZATION" = "true" ]; then
+          args+=(--allow-realization-refresh)
+        fi
+        if [ "$ALLOW_EVIDENCE" = "true" ]; then
+          args+=(--allow-evidence-refresh)
+        fi
+        if [ "$ALLOW_PROVENANCE" = "true" ]; then
+          args+=(--allow-provenance-refresh)
+        fi
+        shapes "${args[@]}"
