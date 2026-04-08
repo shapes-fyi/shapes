@@ -149,7 +149,7 @@ enum CreateCommand {
         /// Shape name
         #[arg(long, required_unless_present = "from")]
         name: Option<String>,
-        /// Intent kind. Defaults to the active template's default shape kind.
+        /// Intent kind. Defaults to the active profile's default shape kind.
         /// Common kinds: system, service, feature, module, interface, data-flow, pattern
         #[arg(long)]
         kind: Option<String>,
@@ -181,7 +181,7 @@ enum CreateCommand {
         /// Constraint name
         #[arg(long, required_unless_present = "from")]
         name: Option<String>,
-        /// Constraint kind. Defaults to the active template's default constraint kind.
+        /// Constraint kind. Defaults to the active profile's default constraint kind.
         /// Common kinds: invariant, requirement, boundary, guideline, limit, policy
         #[arg(long)]
         kind: Option<String>,
