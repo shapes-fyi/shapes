@@ -434,6 +434,12 @@ fn detect_cycles_in<Id: Copy + Eq + Ord + std::hash::Hash + fmt::Display, T>(
 /// required intent / metadata / per-binding metadata fields (INV-010 +
 /// INV-014), kind allow-list (INV-012), source allow-list (INV-013),
 /// and field type checks (INV-015).
+//
+// `clippy::too_many_arguments` is allowed because this is the single
+// funnel for every profile-driven check against one node. Bundling
+// intent / metadata / realization / evidence / provenance / issues +
+// node identity into a wrapper struct would be more ceremony than
+// signal. Remove this allow if the function ever needs to be split.
 #[allow(clippy::too_many_arguments)]
 fn validate_profile_fields(
     profile: &Profile,

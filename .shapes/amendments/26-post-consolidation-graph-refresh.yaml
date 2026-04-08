@@ -1,0 +1,18 @@
+id: 26
+name: Post-consolidation graph refresh
+description: Post-consolidation graph refresh
+targets:
+  shape_ids:
+  - 4
+  - 27
+  - 28
+  - 32
+  constraint_ids:
+  - 14
+status: proposed
+intent:
+  kind: amendment
+  summary: Refresh five canonical graph nodes whose realization summaries and descriptions still reference functions and types renamed or deleted by the back-compat strip and the Template→Profile consolidation. No behavior change — strictly documentation alignment between the graph and the source code.
+  source: ai
+initiated_by:
+  type: ai
