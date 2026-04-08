@@ -2,14 +2,17 @@ id: 33
 name: Rust Idioms Refactor
 description: >-
   Whole-crate refactor that brings src/ into strict alignment with idiomatic
-  Rust by enforcing the new architectural constraints (19–32): lean mod.rs
-  files, module-level //! docs, /// docs on every public symbol, removal of
-  ASCII section dividers, &str-over-String discipline, a fixed crate-root
-  lint baseline, justified #[allow] attributes, no silent unwrap/expect,
-  #[must_use] on pure getters, a pinned rustfmt.toml, a cargo-deny supply
-  chain gate, cargo-machete dead-dep enforcement, insta snapshot coverage
-  of CLI output, rustdoc warnings promoted to errors, and a GitHub Actions
-  workflow that wires the whole lot into CI.
+  Rust and consolidates the domain-schema layer onto Profiles. Enforces
+  architectural constraints 19–34: lean mod.rs files, module-level //! docs,
+  /// docs on every public symbol, removal of ASCII section dividers,
+  &str-over-String discipline, a fixed crate-root lint baseline, justified
+  #[allow] attributes, no silent unwrap/expect, #[must_use] on pure getters,
+  a pinned rustfmt.toml, a cargo-deny supply chain gate, cargo-machete
+  dead-dep enforcement, insta snapshot coverage of CLI output, rustdoc
+  warnings promoted to errors, a GitHub Actions workflow wiring the whole
+  lot into CI, and the Template→Profile consolidation that makes Profile
+  the sole source of truth for intent field hints, kind allow-lists,
+  default kinds, and required-field enforcement.
 status: proposed
 profile: 1
 parents:
@@ -61,6 +64,7 @@ constraints:
   - 31
   - 32
   - 33
+  - 34
 realization:
   - bindings:
       - scheme: path
@@ -128,3 +132,15 @@ realization:
         metadata:
           summary: insta snapshot directory — captures verbatim CLI scaffold output per constraint 30
     role: test
+  - bindings:
+      - scheme: path
+        value: src/templates.rs
+        metadata:
+          summary: Template→StarterKit consolidation per constraint 34 — pub(crate) starter kit factory used only by shapes init and shapes create profile to generate Profile YAML
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: src/model/profile.rs
+        metadata:
+          summary: FieldSection gains default_kind field — Profile is the sole source of default --kind values per constraint 34
+    role: supporting

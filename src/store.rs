@@ -13,7 +13,8 @@ use std::path::{Path, PathBuf};
 use anyhow::{Context, Result, bail};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
-use crate::model::NodeType;
+use crate::model::{NodeType, ProfileId};
+use crate::templates::StarterKit;
 
 const SHAPES_DIR: &str = ".shapes";
 const META_FILE: &str = "meta.yaml";
@@ -45,21 +46,23 @@ pub trait NodeStore {
 /// On-disk metadata document for a `.shapes/` store.
 ///
 /// Records the spec version the store was written against and the
-/// active scaffolding template (`software`, `research`, ...) so
-/// future scaffolds default to the same flavour.
+/// identifier of the **active profile** — the single profile that
+/// governs every `shapes create` in this store by default. The
+/// active profile is seeded at `shapes init` time from a built-in
+/// starter kit and may be edited or replaced freely afterwards.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Meta {
     /// Spec version this store conforms to.
     pub version: String,
-    /// Active scaffolding template (e.g. `software`, `research`).
-    pub template: String,
+    /// ID of the active [`crate::model::Profile`] node.
+    pub active_profile: ProfileId,
 }
 
 impl Meta {
-    fn new(template: &str) -> Self {
+    fn new(active_profile: ProfileId) -> Self {
         Meta {
             version: "0.1.0".into(),
-            template: template.to_owned(),
+            active_profile,
         }
     }
 }
@@ -92,9 +95,17 @@ impl FileStore {
         Ok(FileStore { root })
     }
 
-    /// Initializes a new `.shapes/` store under `dir`. `template` is
-    /// the scaffolding template to record in `meta.yaml`.
-    pub fn init(dir: &Path, template: &str) -> Result<Self> {
+    /// Initializes a new `.shapes/` store under `dir`, seeding the
+    /// active profile from the given starter kit.
+    ///
+    /// Writes:
+    ///
+    /// 1. `.shapes/` directory + one subdirectory per node type.
+    /// 2. A starter profile (id 1) under `.shapes/profiles/`, built
+    ///    from `kit.build_profile`.
+    /// 3. `.shapes/meta.yaml` pointing `active_profile` at that
+    ///    profile.
+    pub fn init(dir: &Path, kit: &StarterKit) -> Result<Self> {
         let root = dir.join(SHAPES_DIR);
         if root.is_dir() {
             bail!(".shapes/ directory already exists.");
@@ -111,7 +122,19 @@ impl FileStore {
                 .with_context(|| format!("failed to create .shapes/{}/", node_type.dir_name()))?;
         }
 
-        let meta = Meta::new(template);
+        // Seed the starter profile as profile id 1.
+        let profile_id = ProfileId::new(1);
+        let profile_name = format!("{} starter profile", kit.name);
+        let profile_yaml = kit.to_profile_yaml(profile_id, &profile_name);
+        let slug = slugify(&profile_name);
+        let profile_path = root
+            .join(NodeType::Profile.dir_name())
+            .join(format!("{}-{slug}.yaml", profile_id.get()));
+        fs::write(&profile_path, profile_yaml)
+            .with_context(|| format!("failed to write {}", profile_path.display()))?;
+
+        // Point meta.yaml at the seeded profile.
+        let meta = Meta::new(profile_id);
         let meta_path = root.join(META_FILE);
         let yaml = serde_yml::to_string(&meta)?;
         fs::write(&meta_path, yaml).context("failed to write meta.yaml")?;

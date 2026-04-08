@@ -117,7 +117,7 @@ specific structs, functions, or sections relevant to this shape:
 realization:
   - bindings:
       - scheme: path
-        value: src/model/common.rs
+        value: src/model/intent.rs
         metadata:
           summary: Intent struct — open map with kind/summary/source + flattened extra fields
     role: primary

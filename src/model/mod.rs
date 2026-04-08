@@ -31,7 +31,7 @@ pub use constraint::{Constraint, Enforcement};
 pub use ids::{AmendmentId, ConstraintId, ProfileId, ShapeId};
 pub use intent::Intent;
 pub use node_type::NodeType;
-pub use profile::{AmendmentModel, FieldGroup, Profile};
+pub use profile::{FieldGroup, Profile};
 pub use refs::ParentRef;
 pub use shape::Shape;
 pub use status::Status;

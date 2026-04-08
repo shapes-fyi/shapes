@@ -1,15 +1,17 @@
 //! `shapes create constraint` — scaffolds a new Constraint node.
 
-use anyhow::Result;
+use anyhow::{Result, anyhow};
 
 use crate::OutputFormat;
 use crate::commands::scaffold;
 use crate::commands::shared::{read_from, report_created};
 use crate::model::{Constraint, ConstraintId, Enforcement, NodeType};
 use crate::store::{FileStore, NodeStore};
-use crate::templates::TemplateKind;
+use crate::templates::KitKind;
 
-use super::profile_helpers::{load_profile, resolve_template, validate_kind_against_profile};
+use super::profile_helpers::{
+    constraint_default_kind, resolve_active_profile, validate_kind_against_profile,
+};
 
 /// Field bag for `shapes create constraint`.
 pub struct CreateConstraintArgs {
@@ -27,12 +29,14 @@ pub struct CreateConstraintArgs {
     pub source: String,
     /// Optional `--intent-kind` override.
     pub intent_kind: Option<String>,
-    /// Optional `--profile` ID.
+    /// Optional `--profile` ID — overrides the store's active profile
+    /// for this single create.
     pub profile: Option<u64>,
     /// Optional `--description`.
     pub description: Option<String>,
-    /// Optional per-call `--template`.
-    pub template: Option<TemplateKind>,
+    /// Optional per-call `--kit`. Reserved for future use; currently
+    /// ignored because the Profile owns scaffold content.
+    pub kit: Option<KitKind>,
     /// Optional `--from` path or `-` for stdin.
     pub from: Option<String>,
 }
@@ -60,15 +64,23 @@ pub fn create_constraint(
     let name = args
         .name
         .expect("clap requires --name when --from is absent");
-    let template = resolve_template(store, args.template)?;
-    let kind_str = args
-        .kind
-        .unwrap_or_else(|| template.default_constraint_kind.to_owned());
 
-    if let Some(pid) = args.profile {
-        let p = load_profile(store, pid)?;
-        validate_kind_against_profile(&p, "constraint", &kind_str)?;
-    }
+    let profile = resolve_active_profile(store, args.profile)?;
+    let _ = args.kit;
+
+    let kind_str = match args.kind {
+        Some(k) => k,
+        None => constraint_default_kind(&profile)
+            .ok_or_else(|| {
+                anyhow!(
+                    "active profile {} declares no default constraint kind — pass --kind or edit the profile",
+                    profile.id
+                )
+            })?
+            .to_owned(),
+    };
+
+    validate_kind_against_profile(&profile, "constraint", &kind_str)?;
 
     let yaml = scaffold::scaffold_constraint(&scaffold::ConstraintScaffold {
         id: id.get(),
@@ -80,8 +92,7 @@ pub fn create_constraint(
         source: &args.source,
         description: args.description.as_deref(),
         intent_kind: args.intent_kind.as_deref(),
-        profile: args.profile,
-        template,
+        profile: &profile,
     });
     let saved_path = store.save_raw(NodeType::Constraint, id.get(), &name, &yaml)?;
     if id_only {

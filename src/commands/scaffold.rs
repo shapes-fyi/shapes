@@ -1,4 +1,5 @@
-//! Hand-rolled YAML scaffold writers for `shapes create`.
+//! Hand-rolled YAML scaffold writers for `shapes create shape` and
+//! `shapes create constraint`.
 //!
 //! These emit YAML strings that:
 //!   1. Parse cleanly via `serde_yml` (so subsequent `shapes get`,
@@ -8,31 +9,53 @@
 //!      or commented out as a `# TODO:` stub block.
 //!
 //! Comments do not survive serde round-trips. That's intentional: the
-//! comments are first-fill hints. Once the agent fills in the TODOs and
-//! deletes irrelevant stub blocks, any subsequent `save()` through serde
-//! produces a clean structured file with no leftover scaffolding noise.
+//! comments are first-fill hints. Once the agent fills in the TODOs
+//! and deletes irrelevant stub blocks, any subsequent `save()` through
+//! serde produces a clean structured file with no leftover scaffolding
+//! noise.
+//!
+//! **Source of hints.** Both scaffold writers read field hints and
+//! kind suggestions from a [`Profile`] — the active profile or a
+//! per-call override. There is no parallel hardcoded template layer;
+//! see constraint 34 (Profile is Sole Domain Schema).
+//!
+//! Profile scaffolding (used by `shapes create profile`) does **not**
+//! live here — it is handled by
+//! [`StarterKit::to_profile_yaml`](crate::templates::StarterKit::to_profile_yaml),
+//! which builds a [`Profile`] struct directly and serializes it via
+//! serde.
 
-use crate::model::{Enforcement, ShapeId};
-use crate::templates::{FieldHint, KindHint, Template};
+use crate::model::profile::FieldDef;
+use crate::model::{Enforcement, Profile, ShapeId};
 
 const TODO_DESCRIPTION: &str =
     "TODO: full paragraph — what this is, who uses it, what it does, why it exists";
 
 /// Field bag passed to [`scaffold_shape`].
 pub struct ShapeScaffold<'a> {
+    /// The ID allocated by the store for this new shape.
     pub id: ShapeId,
+    /// `--name`.
     pub name: &'a str,
+    /// Resolved `--kind` (already defaulted from the profile if the
+    /// caller omitted it).
     pub kind: &'a str,
+    /// Optional `--summary`.
     pub summary: Option<&'a str>,
+    /// `--source`.
     pub source: &'a str,
+    /// Optional `--description`.
     pub description: Option<&'a str>,
-    pub profile: Option<u64>,
-    pub template: &'static Template,
+    /// The profile governing this shape. Provides field hints, kind
+    /// suggestions, and the `profile:` reference stamped onto the
+    /// created node.
+    pub profile: &'a Profile,
 }
 
+/// Scaffolds a new shape YAML from the profile's shape-section hints.
 pub fn scaffold_shape(s: &ShapeScaffold<'_>) -> String {
     let mut out = String::new();
-    out.push_str(&header_comment("shape", s.template));
+    out.push_str(&header_comment("shape", s.profile));
 
     out.push_str(&format!("id: {}\n", s.id.get()));
     out.push_str(&format!("name: {}\n", yaml_string(s.name)));
@@ -40,9 +63,7 @@ pub fn scaffold_shape(s: &ShapeScaffold<'_>) -> String {
         "description: {}\n",
         yaml_block(s.description.unwrap_or(TODO_DESCRIPTION)),
     ));
-    if let Some(pid) = s.profile {
-        out.push_str(&format!("profile: {pid}\n"));
-    }
+    out.push_str(&format!("profile: {}\n", s.profile.id.get()));
     out.push_str("status: proposed\n");
 
     out.push_str("intent:\n");
@@ -52,9 +73,9 @@ pub fn scaffold_shape(s: &ShapeScaffold<'_>) -> String {
         yaml_string(s.summary.unwrap_or("TODO: one-line summary of this shape")),
     ));
     out.push_str(&format!("  source: {}\n", yaml_string(s.source)));
-    write_intent_fields(&mut out, s.template.shape_intent_fields, "  ");
+    write_intent_fields(&mut out, shape_intent_field_hints(s.profile), "  ");
 
-    write_optional_kinds_comment(&mut out, "shape", s.template.shape_kinds);
+    write_optional_kinds_comment(&mut out, "shape", shape_kind_hints(s.profile));
     write_parents_stub(&mut out, "shape");
     write_children_stub(&mut out, "shape");
     write_constraints_stub(&mut out);
@@ -65,22 +86,33 @@ pub fn scaffold_shape(s: &ShapeScaffold<'_>) -> String {
 
 /// Field bag passed to [`scaffold_constraint`].
 pub struct ConstraintScaffold<'a> {
+    /// The raw ID allocated by the store.
     pub id: u64,
+    /// `--name`.
     pub name: &'a str,
+    /// Resolved `--kind` (already defaulted from the profile).
     pub kind: &'a str,
+    /// Optional `--rule` body.
     pub rule: Option<&'a str>,
+    /// `--enforcement`.
     pub enforcement: Enforcement,
+    /// Optional `--summary`.
     pub summary: Option<&'a str>,
+    /// `--source`.
     pub source: &'a str,
+    /// Optional `--description`.
     pub description: Option<&'a str>,
+    /// Optional `--intent-kind` override (distinct from `--kind`).
     pub intent_kind: Option<&'a str>,
-    pub profile: Option<u64>,
-    pub template: &'static Template,
+    /// The profile governing this constraint.
+    pub profile: &'a Profile,
 }
 
+/// Scaffolds a new constraint YAML from the profile's constraint-section
+/// hints.
 pub fn scaffold_constraint(c: &ConstraintScaffold<'_>) -> String {
     let mut out = String::new();
-    out.push_str(&header_comment("constraint", c.template));
+    out.push_str(&header_comment("constraint", c.profile));
 
     out.push_str(&format!("id: {}\n", c.id));
     out.push_str(&format!("name: {}\n", yaml_string(c.name)));
@@ -102,9 +134,7 @@ pub fn scaffold_constraint(c: &ConstraintScaffold<'_>) -> String {
             Enforcement::Machine => "machine",
         }
     ));
-    if let Some(pid) = c.profile {
-        out.push_str(&format!("profile: {pid}\n"));
-    }
+    out.push_str(&format!("profile: {}\n", c.profile.id.get()));
     out.push_str("status: proposed\n");
 
     out.push_str("intent:\n");
@@ -120,9 +150,9 @@ pub fn scaffold_constraint(c: &ConstraintScaffold<'_>) -> String {
         ),
     ));
     out.push_str(&format!("  source: {}\n", yaml_string(c.source)));
-    write_intent_fields(&mut out, c.template.constraint_intent_fields, "  ");
+    write_intent_fields(&mut out, constraint_intent_field_hints(c.profile), "  ");
 
-    write_optional_kinds_comment(&mut out, "constraint", c.template.constraint_kinds);
+    write_optional_kinds_comment(&mut out, "constraint", constraint_kind_hints(c.profile));
     write_parents_stub(&mut out, "constraint");
     write_children_stub(&mut out, "constraint");
     write_realization_stub(&mut out);
@@ -131,116 +161,63 @@ pub fn scaffold_constraint(c: &ConstraintScaffold<'_>) -> String {
     out
 }
 
-/// Field bag passed to [`scaffold_profile`].
-pub struct ProfileScaffold<'a> {
-    pub id: u64,
-    pub name: &'a str,
-    pub summary: Option<&'a str>,
-    pub source: &'a str,
-    pub description: Option<&'a str>,
-    pub amendment_model: &'a str,
-    pub template: &'static Template,
-}
-
-pub fn scaffold_profile(p: &ProfileScaffold<'_>) -> String {
-    let mut out = String::new();
-    out.push_str(
-        "# Generated by `shapes create profile`. A Profile declares which intent fields\n\
-         # and kinds are required for shapes and constraints in this project. Profiles are\n\
-         # OPTIONAL — shapes and constraints work without one. Attach a profile by passing\n\
-         # `--profile <id>` to `shapes create`, which will pre-populate required fields and\n\
-         # validate kinds. The fields below are seeded from the active template; edit them\n\
-         # to match this project's needs and run `shapes validate` when ready.\n\n",
-    );
-
-    out.push_str(&format!("id: {}\n", p.id));
-    out.push_str(&format!("name: {}\n", yaml_string(p.name)));
-    out.push_str(&format!(
-        "description: {}\n",
-        yaml_block(
-            p.description
-                .unwrap_or("TODO: paragraph describing what this Profile governs and why",)
-        ),
-    ));
-    out.push_str("status: proposed\n");
-
-    out.push_str("intent:\n");
-    out.push_str("  kind: governance\n");
-    out.push_str(&format!(
-        "  summary: {}\n",
-        yaml_string(
-            p.summary
-                .unwrap_or("TODO: one-line summary of what this profile governs")
-        ),
-    ));
-    out.push_str(&format!("  source: {}\n", yaml_string(p.source)));
-
-    out.push_str("\nfields:\n");
-    out.push_str("  shape:\n");
-    out.push_str("    intent:\n");
-    out.push_str("      fields:\n");
-    for f in p.template.shape_intent_fields {
-        write_field_def(&mut out, f, "        ");
-    }
-    out.push_str("      kinds:\n");
-    if p.template.shape_kinds.is_empty() {
-        out.push_str("        # No kind constraints — any kind is allowed.\n");
-    } else {
-        for k in p.template.shape_kinds {
-            out.push_str(&format!(
-                "        - name: {}\n          description: {}\n",
-                yaml_string(k.name),
-                yaml_string(k.description),
-            ));
-        }
-    }
-    out.push_str("  constraint:\n");
-    out.push_str("    intent:\n");
-    out.push_str("      fields:\n");
-    for f in p.template.constraint_intent_fields {
-        write_field_def(&mut out, f, "        ");
-    }
-    out.push_str("      kinds:\n");
-    if p.template.constraint_kinds.is_empty() {
-        out.push_str("        # No kind constraints — any kind is allowed.\n");
-    } else {
-        for k in p.template.constraint_kinds {
-            out.push_str(&format!(
-                "        - name: {}\n          description: {}\n",
-                yaml_string(k.name),
-                yaml_string(k.description),
-            ));
-        }
-    }
-
-    out.push_str("\nlifecycle:\n");
-    out.push_str("  gates:\n");
-    out.push_str("    - from: proposed\n");
-    out.push_str("      to: promoted\n");
-    out.push_str("      preconditions:\n");
-    out.push_str("        - All required intent fields populated\n");
-    out.push_str("    - from: promoted\n");
-    out.push_str("      to: canonical\n");
-    out.push_str("      preconditions:\n");
-    out.push_str("        - Realization bindings present\n");
-
-    out.push_str("\namendment_rules:\n");
-    out.push_str(&format!("  application: {}\n", p.amendment_model));
-
-    out
-}
-
-fn header_comment(node_kind: &str, template: &Template) -> String {
+fn header_comment(node_kind: &str, profile: &Profile) -> String {
     format!(
-        "# Generated by `shapes create {node_kind}` (template: {tname}).\n\
+        "# Generated by `shapes create {node_kind}` (profile: {pid} — {pname}).\n\
          # Replace each `TODO:` with real content. Uncomment and fill in the stub\n\
          # sections (parents/children/constraints/realization) you need; delete the\n\
          # ones you don't. Run `shapes validate` when ready.\n\n",
-        tname = template.name,
+        pid = profile.id.get(),
+        pname = profile.name,
     )
 }
 
-fn write_intent_fields(out: &mut String, fields: &[FieldHint], indent: &str) {
+/// Returns the profile's shape intent-field hints, or an empty slice
+/// if the profile does not declare any.
+fn shape_intent_field_hints(profile: &Profile) -> &[FieldDef] {
+    profile
+        .fields
+        .as_ref()
+        .and_then(|f| f.shape.as_ref())
+        .and_then(|s| s.intent.as_ref())
+        .map(|g| g.fields.as_slice())
+        .unwrap_or(&[])
+}
+
+/// Returns the profile's shape kind allow-list, or an empty slice.
+fn shape_kind_hints(profile: &Profile) -> &[FieldDef] {
+    profile
+        .fields
+        .as_ref()
+        .and_then(|f| f.shape.as_ref())
+        .and_then(|s| s.intent.as_ref())
+        .map(|g| g.kinds.as_slice())
+        .unwrap_or(&[])
+}
+
+/// Returns the profile's constraint intent-field hints.
+fn constraint_intent_field_hints(profile: &Profile) -> &[FieldDef] {
+    profile
+        .fields
+        .as_ref()
+        .and_then(|f| f.constraint.as_ref())
+        .and_then(|s| s.intent.as_ref())
+        .map(|g| g.fields.as_slice())
+        .unwrap_or(&[])
+}
+
+/// Returns the profile's constraint kind allow-list.
+fn constraint_kind_hints(profile: &Profile) -> &[FieldDef] {
+    profile
+        .fields
+        .as_ref()
+        .and_then(|f| f.constraint.as_ref())
+        .and_then(|s| s.intent.as_ref())
+        .map(|g| g.kinds.as_slice())
+        .unwrap_or(&[])
+}
+
+fn write_intent_fields(out: &mut String, fields: &[FieldDef], indent: &str) {
     for f in fields {
         if f.required {
             out.push_str(&format!(
@@ -258,24 +235,11 @@ fn write_intent_fields(out: &mut String, fields: &[FieldHint], indent: &str) {
     }
 }
 
-fn write_field_def(out: &mut String, f: &FieldHint, indent: &str) {
-    out.push_str(&format!(
-        "{indent}- name: {name}\n\
-         {indent}  description: {desc}\n\
-         {indent}  required: {req}\n",
-        name = yaml_string(f.name),
-        desc = yaml_string(f.description),
-        req = f.required,
-    ));
-}
-
-fn write_optional_kinds_comment(out: &mut String, node_kind: &str, kinds: &[KindHint]) {
+fn write_optional_kinds_comment(out: &mut String, node_kind: &str, kinds: &[FieldDef]) {
     if kinds.is_empty() {
         return;
     }
-    out.push_str(&format!(
-        "\n# Suggested {node_kind} kinds for this template:\n"
-    ));
+    out.push_str(&format!("\n# Suggested {node_kind} kinds from profile:\n"));
     for k in kinds {
         out.push_str(&format!("#   {} — {}\n", k.name, k.description));
     }
@@ -354,8 +318,8 @@ fn yaml_string(s: &str) -> String {
 }
 
 /// Format a longer value as a YAML literal block (`|`). Used for
-/// description and intent body fields where the content may eventually be
-/// multi-paragraph.
+/// description and intent body fields where the content may eventually
+/// be multi-paragraph.
 fn yaml_block(s: &str) -> String {
     let mut out = String::from("|\n");
     for line in s.lines() {
@@ -363,10 +327,7 @@ fn yaml_block(s: &str) -> String {
         out.push_str(line);
         out.push('\n');
     }
-    if s.is_empty() {
-        out.push_str("    \n");
-    }
-    // Trim the trailing newline so the parent writer's `\n` lands cleanly.
+    // Trim the trailing newline that literal blocks add.
     if out.ends_with('\n') {
         out.pop();
     }

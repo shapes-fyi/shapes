@@ -60,6 +60,12 @@ impl Status {
     pub fn proposed() -> Self {
         Status::Proposed(StatusDetail::default())
     }
+
+    /// Constructs a fresh `canonical` status with default detail.
+    #[must_use]
+    pub fn canonical() -> Self {
+        Status::Canonical(StatusDetail::default())
+    }
 }
 
 /// Optional metadata attached to a progressive status.

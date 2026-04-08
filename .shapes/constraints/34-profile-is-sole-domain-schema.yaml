@@ -1,0 +1,74 @@
+id: 34
+name: Profile is Sole Domain Schema
+description: >-
+  The active Profile owns every piece of domain schema (intent field hints,
+  kind allow-lists, default kinds, required-field enforcement). No parallel
+  hardcoded schema layer is consulted at create or validate time.
+kind: invariant
+rule: >-
+  The active Profile is the one source of truth for shape and constraint
+  intent field hints, kind allow-lists, default kinds, and required-field
+  enforcement at validate time. No parallel hardcoded schema (Template,
+  hint table, etc.) may be consulted by `shapes create shape/constraint`
+  or `shapes validate`. The `src/templates.rs` StarterKit module is used
+  only by `shapes init` and `shapes create profile` to generate Profile
+  YAML; it must not be imported from `src/commands/create/shape.rs`,
+  `src/commands/create/constraint.rs`, or `src/commands/scaffold.rs`.
+enforcement: machine
+profile: 1
+status: proposed
+intent:
+  kind: invariant
+  summary: Profile is the one source of truth for domain schema
+  source: ai
+  rationale: >-
+    The original CLI carried a parallel `Template` abstraction that
+    duplicated 4 of the 8 responsibilities Profiles already covered (field
+    listing, required marking, kind descriptions, domain naming). The
+    duplication caused the `shapes-cli` profile to silently desync from
+    its enforcement code: kinds were authored under `evidence.kinds`
+    where the validator never reads them, while the Template hardcoded
+    a separate (correct) list. Consolidating onto Profile means the
+    scaffolder and the validator read from the same location, which
+    structurally prevents that class of bug.
+  impact_if_violated: >-
+    Reintroducing a parallel schema layer recreates the silent
+    divergence: changes to "what fields matter in this domain" must be
+    made in two places, miss either one and the scaffolder and the
+    validator disagree, and the enforcement gap returns.
+  verification_method: >-
+    Grep `src/commands/create/shape.rs`, `src/commands/create/constraint.rs`,
+    and `src/commands/scaffold.rs` for `crate::templates`. Only the
+    `KitKind` enum import for the `--kit` flag pass-through is allowed;
+    no `StarterKit`, `kit()`, `SOFTWARE`/`RESEARCH`/etc. references.
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/scaffold.rs
+        metadata:
+          summary: Scaffold writers take &Profile and read field hints + kind suggestions exclusively from profile.fields.{shape,constraint}.intent
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/commands/create/profile_helpers.rs
+        metadata:
+          summary: resolve_active_profile loads the governing profile; shape_default_kind / constraint_default_kind read default_kind from the profile, not from any Template
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/commands/create/shape.rs
+        metadata:
+          summary: create_shape pulls every hint from the resolved Profile, never from the templates module
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/commands/create/constraint.rs
+        metadata:
+          summary: create_constraint mirrors create_shape — Profile is the only schema source
+    role: primary
+  - bindings:
+      - scheme: path
+        value: src/templates.rs
+        metadata:
+          summary: StarterKit data is now pub(crate) and consumed only by shapes init (FileStore::init) and shapes create profile to generate Profile YAML; never read from create shape/constraint paths
+    role: supporting

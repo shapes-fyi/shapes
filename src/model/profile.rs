@@ -110,6 +110,11 @@ pub struct ProfileFields {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FieldSection {
+    /// Default `intent.kind` used when `shapes create` is invoked
+    /// without `--kind`. The active profile owns this default; no
+    /// parallel hardcoded template supplies it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub intent: Option<FieldGroup>,
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -1,30 +1,27 @@
-//! `shapes create profile` — scaffolds a new Profile node.
+//! `shapes create profile` — scaffolds a new Profile node from a
+//! starter kit.
+//!
+//! Unlike `shapes create shape/constraint`, this command does **not**
+//! read from the active profile. A new profile needs seed data that
+//! only a [`StarterKit`](crate::templates::StarterKit) can supply,
+//! because profiles are the governance source and there is nothing
+//! "more fundamental" to read from.
 
 use anyhow::Result;
 
 use crate::OutputFormat;
-use crate::commands::scaffold;
 use crate::commands::shared::{read_from, report_created};
-use crate::model::{AmendmentModel, NodeType, Profile, ProfileId};
+use crate::model::{NodeType, Profile, ProfileId};
 use crate::store::{FileStore, NodeStore};
-use crate::templates::TemplateKind;
-
-use super::profile_helpers::resolve_template;
+use crate::templates::KitKind;
 
 /// Field bag for `shapes create profile`.
 pub struct CreateProfileArgs {
     /// `--name` value.
     pub name: Option<String>,
-    /// Optional `--summary`.
-    pub summary: Option<String>,
-    /// `--source` value.
-    pub source: String,
-    /// `--amendment-model` value.
-    pub amendment_model: AmendmentModel,
-    /// Optional `--description`.
-    pub description: Option<String>,
-    /// Optional per-call `--template`.
-    pub template: Option<TemplateKind>,
+    /// Optional per-call `--kit`. Defaults to [`KitKind::Software`]
+    /// when the user does not specify one.
+    pub kit: Option<KitKind>,
     /// Optional `--from` path or `-` for stdin.
     pub from: Option<String>,
 }
@@ -51,28 +48,17 @@ pub fn create_profile(
     let name = args
         .name
         .expect("clap requires --name when --from is absent");
-    let template = resolve_template(store, args.template)?;
-    let amendment_model_str = match args.amendment_model {
-        AmendmentModel::Merge => "merge",
-        AmendmentModel::Overlay => "overlay",
-        AmendmentModel::Edition => "edition",
-        AmendmentModel::AppendOnly => "append-only",
-    };
-    let yaml = scaffold::scaffold_profile(&scaffold::ProfileScaffold {
-        id: id.get(),
-        name: &name,
-        summary: args.summary.as_deref(),
-        source: &args.source,
-        description: args.description.as_deref(),
-        amendment_model: amendment_model_str,
-        template,
-    });
-    let saved_path = store.save_raw(NodeType::Profile, id.get(), &name, &yaml)?;
+    let kind = args.kit.unwrap_or(KitKind::Software);
+    let kit = kind.kit();
+    let profile = kit.build_profile(id, &name);
+    let saved_path = store.save(NodeType::Profile, id.get(), &profile)?;
     if id_only {
         println!("{id}");
     } else {
         eprintln!("Created {}", saved_path.display());
-        print!("{yaml}");
+        // Re-serialize for display so the caller sees exactly what
+        // landed on disk.
+        print!("{}", serde_yml::to_string(&profile)?);
     }
     Ok(())
 }

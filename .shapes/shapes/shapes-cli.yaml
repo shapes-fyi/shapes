@@ -54,6 +54,7 @@ constraints:
   - 31
   - 32
   - 33
+  - 34
 children:
   - shape: 2
     role: component

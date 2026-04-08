@@ -14,15 +14,8 @@ use thiserror::Error;
 /// Errors raised when creating a new node.
 #[derive(Debug, Error)]
 pub enum CreateError {
-    /// `--profile <id>` referenced a profile that does not exist.
-    #[error("profile {id} not found — cannot apply --profile")]
-    ProfileNotFound {
-        /// Raw profile identifier supplied by the caller.
-        id: u64,
-    },
-
-    /// The requested `kind` is not declared by the profile's allowed
-    /// kinds list.
+    /// The requested `kind` is not declared by the governing profile's
+    /// allow-list.
     #[error("kind '{kind}' not allowed by profile {profile_id} — allowed: {allowed}")]
     InvalidKind {
         /// The disallowed kind value.

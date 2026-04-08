@@ -22,8 +22,8 @@ use clap::{Parser, Subcommand, ValueEnum};
 
 use error::CliError;
 
-use model::{AmendmentModel, ConstraintId, Enforcement, NodeType, ShapeId, VersionImpact};
-use templates::TemplateKind;
+use model::{ConstraintId, Enforcement, NodeType, ShapeId, VersionImpact};
+use templates::KitKind;
 
 #[derive(Parser)]
 #[command(
@@ -55,13 +55,13 @@ enum OutputFormat {
 #[derive(Subcommand)]
 enum Command {
     /// Initialize a new .shapes/ directory in the current working directory.
-    /// Creates meta.yaml and subdirectories for shapes, constraints, amendments, and profiles.
-    /// The chosen template controls scaffolding hints for `shapes create`; it is OPTIONAL
-    /// guidance, not enforcement. Profiles are how you opt into enforcement.
+    /// Creates meta.yaml, subdirectories for shapes / constraints / amendments / profiles,
+    /// and a starter Profile (id 1) seeded from the chosen kit. The seeded Profile becomes
+    /// the store's active profile — every subsequent `shapes create` reads from it.
     Init {
-        /// Scaffolding template — software (default), research, editorial, or minimal
+        /// Starter kit for the seeded Profile — software (default), research, editorial, or minimal
         #[arg(long, value_enum, default_value = "software")]
-        template: TemplateKind,
+        kit: KitKind,
     },
 
     /// Create a new node from flags or a YAML file.
@@ -165,11 +165,11 @@ enum CreateCommand {
         /// Full description (defaults to a TODO placeholder if omitted)
         #[arg(long)]
         description: Option<String>,
-        /// Override the active template just for this scaffold (does not modify meta.yaml)
+        /// Override the active profile's seeding kit for this scaffold only (does not modify meta.yaml)
         #[arg(long, value_enum, conflicts_with = "from")]
-        template: Option<TemplateKind>,
+        kit: Option<KitKind>,
         /// Read full YAML definition from file (use - for stdin). Mutually exclusive with other flags.
-        #[arg(long, conflicts_with_all = &["name", "kind", "summary", "source", "description", "template"])]
+        #[arg(long, conflicts_with_all = &["name", "kind", "summary", "source", "description", "kit"])]
         from: Option<String>,
     },
 
@@ -206,11 +206,11 @@ enum CreateCommand {
         /// Full description (defaults to a TODO placeholder if omitted)
         #[arg(long)]
         description: Option<String>,
-        /// Override the active template just for this scaffold (does not modify meta.yaml)
+        /// Override the active profile's seeding kit for this scaffold only (does not modify meta.yaml)
         #[arg(long, value_enum, conflicts_with = "from")]
-        template: Option<TemplateKind>,
+        kit: Option<KitKind>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent_kind", "description", "template"])]
+        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent_kind", "description", "kit"])]
         from: Option<String>,
     },
 
@@ -243,31 +243,21 @@ enum CreateCommand {
         from: Option<String>,
     },
 
-    /// Create a Profile — governance configuration defining lifecycle gates, field requirements, and amendment rules.
-    /// Profiles are OPTIONAL — shapes and constraints work fine without one. Attach a Profile
-    /// only when you want to enforce field requirements and kind restrictions.
-    /// Without `--from`, emits a Profile pre-populated from the active template.
+    /// Create a new Profile — governance configuration defining field
+    /// requirements, kind allow-lists, and amendment rules.
+    /// Without `--from`, seeds the new Profile from a starter kit (defaults
+    /// to `software`). The seeded Profile is a complete, canonical node;
+    /// edit its YAML after creation to customize further.
     Profile {
         /// Profile name
         #[arg(long, required_unless_present = "from")]
         name: Option<String>,
-        /// Brief summary
-        #[arg(long)]
-        summary: Option<String>,
-        /// Origin: human, ai, or system
-        #[arg(long, default_value = "human")]
-        source: String,
-        /// How amendments are applied: merge, overlay, edition, or append-only
-        #[arg(long, default_value = "merge")]
-        amendment_model: AmendmentModel,
-        /// Full description (defaults to a TODO placeholder if omitted)
-        #[arg(long)]
-        description: Option<String>,
-        /// Override the active template just for this scaffold (does not modify meta.yaml)
+        /// Starter kit used to seed this Profile — software (default),
+        /// research, editorial, or minimal
         #[arg(long, value_enum, conflicts_with = "from")]
-        template: Option<TemplateKind>,
+        kit: Option<KitKind>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "summary", "source", "amendment_model", "description", "template"])]
+        #[arg(long, conflicts_with_all = &["name", "kit"])]
         from: Option<String>,
     },
 }
@@ -329,7 +319,7 @@ fn main() -> ExitCode {
 
 fn run(cli: Cli) -> Result<(), CliError> {
     match cli.command {
-        Command::Init { template } => commands::init(template)?,
+        Command::Init { kit } => commands::init(kit)?,
 
         Command::Create { node, id_only } => commands::create(node, id_only, cli.format)?,
 

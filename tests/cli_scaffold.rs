@@ -12,12 +12,12 @@ use tempfile::TempDir;
 
 /// Build a `shapes` command rooted in a fresh tempdir with `shapes init`
 /// already run for the given template.
-fn fresh_store(template: &str) -> TempDir {
+fn fresh_store(kit: &str) -> TempDir {
     let dir = tempfile::tempdir().expect("tempdir");
     Command::cargo_bin("shapes")
         .unwrap()
         .current_dir(dir.path())
-        .args(["init", "--template", template])
+        .args(["init", "--kit", kit])
         .assert()
         .success();
     dir
@@ -64,10 +64,16 @@ fn software_shape_scaffold_has_required_fields_and_stubs() {
 
     let yaml = read_only_yaml_in(&dir, "shapes");
 
-    // Header comment with template name
+    // Header comment references the active profile seeded from the
+    // software kit.
     assert!(
-        yaml.contains("template: software"),
-        "missing template header: {yaml}"
+        yaml.contains("software starter profile"),
+        "missing profile header: {yaml}"
+    );
+    // The shape records its governing profile explicitly.
+    assert!(
+        yaml.contains("profile: 1"),
+        "missing profile id field: {yaml}"
     );
 
     // Description and required intent fields are TODO blocks
@@ -122,7 +128,8 @@ fn software_constraint_scaffold_has_rule_and_evidence_stub() {
 
     let yaml = read_only_yaml_in(&dir, "constraints");
 
-    assert!(yaml.contains("template: software"));
+    assert!(yaml.contains("software starter profile"));
+    assert!(yaml.contains("profile: 1"));
     assert!(
         yaml.contains("rule: |\n    TODO:"),
         "rule should be a TODO block"
@@ -149,40 +156,61 @@ fn software_constraint_scaffold_has_rule_and_evidence_stub() {
 }
 
 #[test]
-fn software_profile_scaffold_seeds_template_fields() {
+fn init_seeds_software_starter_profile_as_id_1() {
     let dir = fresh_store("software");
-    shapes_in(&dir)
-        .args(["create", "profile", "--name", "Strict"])
-        .assert()
-        .success();
 
-    let yaml = read_only_yaml_in(&dir, "profiles");
-
-    // Profile preamble explains optionality
-    assert!(
-        yaml.contains("Profiles are\n# OPTIONAL"),
-        "profile preamble missing"
-    );
-
-    // Software template's required fields are seeded
-    assert!(yaml.contains("name: \"goals\""));
-    assert!(yaml.contains("name: \"rationale\""));
-    // Software shape kinds are seeded
-    assert!(yaml.contains("name: \"system\""));
-    assert!(yaml.contains("name: \"feature\""));
-    // Lifecycle gates seeded
-    assert!(yaml.contains("from: proposed"));
-    assert!(yaml.contains("to: promoted"));
-
-    shapes_in(&dir)
+    // `shapes init --kit software` must have written profile id 1.
+    let get = shapes_in(&dir)
         .args(["get", "profile", "1"])
         .assert()
         .success();
+    let yaml = String::from_utf8_lossy(&get.get_output().stdout).to_string();
+
+    // Seeded profile carries the software kit's field + kind hints.
+    assert!(yaml.contains("default_kind: feature"));
+    assert!(yaml.contains("default_kind: invariant"));
+    assert!(yaml.contains("name: goals"));
+    assert!(yaml.contains("name: rationale"));
+    assert!(yaml.contains("name: system"));
+    assert!(yaml.contains("name: feature"));
+
+    // meta.yaml references profile 1 as active.
+    let meta = fs::read_to_string(dir.path().join(".shapes/meta.yaml")).unwrap();
+    assert!(
+        meta.contains("active_profile: 1"),
+        "meta should record seeded profile: {meta}"
+    );
+
     shapes_in(&dir).arg("validate").assert().success();
 }
 
 #[test]
-fn research_template_uses_research_field_hints() {
+fn create_profile_seeds_from_requested_kit() {
+    let dir = fresh_store("software");
+    shapes_in(&dir)
+        .args([
+            "create", "profile", "--name", "Research", "--kit", "research",
+        ])
+        .assert()
+        .success();
+
+    // Fetch the newly-created profile (id 2; id 1 is the starter).
+    let get = shapes_in(&dir)
+        .args(["get", "profile", "2"])
+        .assert()
+        .success();
+    let yaml = String::from_utf8_lossy(&get.get_output().stdout).to_string();
+
+    assert!(yaml.contains("default_kind: experiment"));
+    assert!(yaml.contains("name: hypotheses"));
+    assert!(yaml.contains("name: success_criteria"));
+    assert!(yaml.contains("name: methodology"));
+
+    shapes_in(&dir).arg("validate").assert().success();
+}
+
+#[test]
+fn research_kit_uses_research_field_hints() {
     let dir = fresh_store("research");
     shapes_in(&dir)
         .args(["create", "shape", "--name", "DecayExperiment"])
@@ -190,7 +218,7 @@ fn research_template_uses_research_field_hints() {
         .success();
 
     let yaml = read_only_yaml_in(&dir, "shapes");
-    assert!(yaml.contains("template: research"));
+    assert!(yaml.contains("research starter profile"));
     assert!(yaml.contains("hypotheses: |\n    TODO:"));
     assert!(yaml.contains("success_criteria: |\n    TODO:"));
     assert!(yaml.contains("methodology: |\n    TODO:"));
@@ -200,7 +228,7 @@ fn research_template_uses_research_field_hints() {
 }
 
 #[test]
-fn editorial_template_uses_editorial_field_hints() {
+fn editorial_kit_uses_editorial_field_hints() {
     let dir = fresh_store("editorial");
     shapes_in(&dir)
         .args(["create", "shape", "--name", "Chapter1"])
@@ -208,7 +236,7 @@ fn editorial_template_uses_editorial_field_hints() {
         .success();
 
     let yaml = read_only_yaml_in(&dir, "shapes");
-    assert!(yaml.contains("template: editorial"));
+    assert!(yaml.contains("editorial starter profile"));
     assert!(yaml.contains("themes: |\n    TODO:"));
     assert!(yaml.contains("target_audience: |\n    TODO:"));
     assert!(yaml.contains("tone: |\n    TODO:"));
@@ -217,7 +245,7 @@ fn editorial_template_uses_editorial_field_hints() {
 }
 
 #[test]
-fn minimal_template_only_requires_rationale() {
+fn minimal_kit_only_requires_rationale() {
     let dir = fresh_store("minimal");
     shapes_in(&dir)
         .args(["create", "shape", "--name", "Bare", "--kind", "anything"])
@@ -225,7 +253,7 @@ fn minimal_template_only_requires_rationale() {
         .success();
 
     let yaml = read_only_yaml_in(&dir, "shapes");
-    assert!(yaml.contains("template: minimal"));
+    assert!(yaml.contains("minimal starter profile"));
     assert!(yaml.contains("rationale: |\n    TODO:"));
     // Minimal has no kind hints, so the suggested-kinds comment should be absent
     assert!(!yaml.contains("# Suggested shape kinds"));
@@ -255,32 +283,46 @@ fn from_stdin_path_still_works_without_name_flag() {
 }
 
 #[test]
-fn per_call_template_override_does_not_modify_meta() {
+fn per_call_profile_override_on_shape_create() {
+    // Init with software, then create a second profile from the research
+    // kit, then create a shape pointing at that second profile. The shape
+    // should be scaffolded against profile 2, not profile 1.
     let dir = fresh_store("software");
-    // Override to research for one call
+    shapes_in(&dir)
+        .args([
+            "create", "profile", "--name", "Research", "--kit", "research",
+        ])
+        .assert()
+        .success();
     shapes_in(&dir)
         .args([
             "create",
             "shape",
             "--name",
             "OneOff",
-            "--template",
-            "research",
+            "--profile",
+            "2",
+            "--kind",
+            "experiment",
         ])
         .assert()
         .success();
 
-    let yaml = read_only_yaml_in(&dir, "shapes");
+    let get = shapes_in(&dir)
+        .args(["get", "shape", "1"])
+        .assert()
+        .success();
+    let yaml = String::from_utf8_lossy(&get.get_output().stdout).to_string();
     assert!(
-        yaml.contains("template: research"),
-        "override should produce research scaffold"
+        yaml.contains("profile: 2"),
+        "shape should record the override profile id: {yaml}"
     );
 
-    // meta.yaml should still say software
+    // meta.yaml still points at profile 1 as the active profile.
     let meta = fs::read_to_string(dir.path().join(".shapes/meta.yaml")).unwrap();
     assert!(
-        meta.contains("template: software"),
-        "meta should be unchanged"
+        meta.contains("active_profile: 1"),
+        "meta should be unchanged: {meta}"
     );
 }
 
@@ -296,17 +338,17 @@ fn init_refuses_to_overwrite_existing_store() {
 }
 
 #[test]
-fn init_rejects_unknown_template() {
+fn init_rejects_unknown_kit() {
     let dir = tempfile::tempdir().unwrap();
     Command::cargo_bin("shapes")
         .unwrap()
         .current_dir(dir.path())
-        .args(["init", "--template", "bogus"])
+        .args(["init", "--kit", "bogus"])
         .assert()
         .failure();
     assert!(
         !dir.path().join(".shapes").exists(),
-        "store should not be created when template is invalid",
+        "store should not be created when kit is invalid",
     );
 }
 
@@ -682,12 +724,17 @@ mod scaffold_snapshots {
 
     #[test]
     fn software_profile_scaffold_snapshot() {
+        // fresh_store already seeds profile id 1 from the software kit.
+        // Create profile id 2 from the same kit and snapshot its on-disk
+        // YAML by reading it directly (can't use `read_only_yaml_in` —
+        // the dir now holds two files).
         let dir = fresh_store("software");
         shapes_in(&dir)
             .args(["create", "profile", "--name", "Strict"])
             .assert()
             .success();
-        let yaml = read_only_yaml_in(&dir, "profiles");
+        let path = dir.path().join(".shapes/profiles/2-strict.yaml");
+        let yaml = std::fs::read_to_string(&path).expect("read created profile");
         insta::assert_snapshot!(yaml);
     }
 

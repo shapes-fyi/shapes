@@ -2,8 +2,8 @@ id: 1
 name: Shapes CLI Profile
 description: >-
   Governance configuration for the shapes-cli project. Defines required and
-  optional intent fields, allowed kinds, and validation rules for all shapes
-  and constraints in this repository.
+  optional intent fields, allowed kinds, and default kinds for every shape
+  and constraint in this repository.
 status: canonical
 intent:
   kind: governance
@@ -11,6 +11,7 @@ intent:
   source: human
 fields:
   shape:
+    default_kind: feature
     intent:
       fields:
         - name: goals
@@ -27,6 +28,19 @@ fields:
             Which section of the shapes.fyi specification this shape
             implements or relates to. Use when directly tied to the spec.
           required: false
+      kinds:
+        - name: system
+          description: Top-level system boundary
+        - name: module
+          description: Code module or logical grouping
+        - name: feature
+          description: User-facing or agent-facing capability
+        - name: interface
+          description: CLI commands, data contracts, or API surfaces
+        - name: data-flow
+          description: How data moves through the system
+        - name: pattern
+          description: Recurring design pattern or structural convention
     realization:
       fields:
         - name: summary
@@ -41,20 +55,8 @@ fields:
             Brief description of what this evidence binding demonstrates —
             specific tests, metrics, or reviews
           required: true
-      kinds:
-        - name: system
-          description: Top-level system boundary
-        - name: module
-          description: Code module or logical grouping
-        - name: feature
-          description: User-facing or agent-facing capability
-        - name: interface
-          description: CLI commands, data contracts, or API surfaces
-        - name: data-flow
-          description: How data moves through the system
-        - name: pattern
-          description: Recurring design pattern or structural convention
   constraint:
+    default_kind: invariant
     intent:
       fields:
         - name: rationale
@@ -74,19 +76,6 @@ fields:
             Which section of the shapes.fyi specification this constraint
             enforces. Use when directly tied to the spec.
           required: false
-    realization:
-      fields:
-        - name: summary
-          description: >-
-            Brief description of what this binding points to — specific
-            enforcement code or validation logic
-          required: true
-    evidence:
-      fields:
-        - name: summary
-          description: >-
-            Brief description of what this evidence binding demonstrates
-          required: true
       kinds:
         - name: invariant
           description: Must always hold — violation is a bug
@@ -100,5 +89,18 @@ fields:
           description: Numeric or resource threshold
         - name: policy
           description: Organizational or process rule
+    realization:
+      fields:
+        - name: summary
+          description: >-
+            Brief description of what this binding points to — specific
+            enforcement code or validation logic
+          required: true
+    evidence:
+      fields:
+        - name: summary
+          description: >-
+            Brief description of what this evidence binding demonstrates
+          required: true
 amendment_rules:
   application: merge

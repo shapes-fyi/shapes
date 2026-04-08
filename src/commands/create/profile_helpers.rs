@@ -1,22 +1,39 @@
 //! Profile-related helpers for the `create` subcommands: loading the
-//! active profile, choosing the active scaffolding template, and
-//! validating user-provided `kind` values against the profile's allow
-//! list.
+//! active profile, resolving a per-call override, and validating
+//! user-provided `kind` values against the profile's allow list.
 
-use anyhow::{Context, Result, anyhow};
+use anyhow::{Context, Result};
 
 use crate::error::CreateError;
 use crate::model::profile::FieldSection;
-use crate::model::{NodeType, Profile};
+use crate::model::{NodeType, Profile, ProfileId};
 use crate::store::{FileStore, NodeStore};
-use crate::templates::{self, Template, TemplateKind};
 
-/// Loads the profile with the given `id`, mapping a missing profile
-/// to [`CreateError::ProfileNotFound`].
-pub fn load_profile(store: &impl NodeStore, profile_id: u64) -> Result<Profile, CreateError> {
+/// Resolves the profile governing a `shapes create` call.
+///
+/// If the caller passed `--profile <id>`, that wins. Otherwise the
+/// active profile is read from `meta.yaml::active_profile`. Returns a
+/// hard error if the referenced profile does not exist on disk or
+/// `meta.yaml` cannot be read — the store is expected to carry a
+/// valid active profile at all times.
+pub fn resolve_active_profile(store: &FileStore, override_id: Option<u64>) -> Result<Profile> {
+    let profile_id = match override_id {
+        Some(id) => ProfileId::new(id),
+        None => {
+            let meta = store
+                .read_meta()
+                .context("failed to read .shapes/meta.yaml")?;
+            meta.active_profile
+        }
+    };
     store
-        .load::<Profile>(NodeType::Profile, profile_id)
-        .map_err(|_| CreateError::ProfileNotFound { id: profile_id })
+        .load::<Profile>(NodeType::Profile, profile_id.get())
+        .with_context(|| {
+            format!(
+                "failed to load active profile {} referenced by .shapes/meta.yaml",
+                profile_id
+            )
+        })
 }
 
 /// Validates that `kind` is in the profile's allowed-kinds list for
@@ -56,22 +73,28 @@ pub fn validate_kind_against_profile(
     Ok(())
 }
 
-/// Resolves which template to use for a scaffold call.
-///
-/// A per-call `--template` always wins; otherwise the active template
-/// is read from the store's `meta.yaml`. Both a missing `meta.yaml`
-/// and an unknown template name surface as hard errors — the store
-/// is expected to carry a valid `template:` field at all times.
-pub fn resolve_template(
-    store: &FileStore,
-    override_kind: Option<TemplateKind>,
-) -> Result<&'static Template> {
-    if let Some(k) = override_kind {
-        return Ok(k.template());
-    }
-    let meta = store
-        .read_meta()
-        .context("failed to read .shapes/meta.yaml")?;
-    templates::resolve(&meta.template)
-        .ok_or_else(|| anyhow!("unknown template '{}' in .shapes/meta.yaml", meta.template))
+/// Returns the shape's default `--kind` from its governing profile,
+/// falling back to `None` if the profile declares no default.
+#[must_use]
+pub fn shape_default_kind(profile: &Profile) -> Option<&str> {
+    profile
+        .fields
+        .as_ref()?
+        .shape
+        .as_ref()?
+        .default_kind
+        .as_deref()
+}
+
+/// Returns the constraint's default `--kind` from its governing
+/// profile, falling back to `None` if the profile declares no default.
+#[must_use]
+pub fn constraint_default_kind(profile: &Profile) -> Option<&str> {
+    profile
+        .fields
+        .as_ref()?
+        .constraint
+        .as_ref()?
+        .default_kind
+        .as_deref()
 }
