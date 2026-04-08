@@ -30,6 +30,7 @@ interpreted as described in [RFC 2119](https://www.ietf.org/rfc/rfc2119.txt).
 | INV-009 | MUST  | error    | Parent-child links MUST be reciprocal                           |
 | INV-010 | MUST  | error    | Nodes governed by a Profile MUST satisfy required field declarations |
 | INV-011 | MUST  | error    | IDs MUST be unique within their node type namespace             |
+| INV-019 | MUST  | error    | Amendment targets and node `amendment_log` entries MUST be reciprocal |
 
 ## Invariant Definitions
 
@@ -355,3 +356,37 @@ For each node type, collect all node IDs and check for duplicates. In
 file-based storage, this is equivalent to checking for duplicate filenames
 within a subdirectory. For other storage backends, query all IDs per type and
 verify uniqueness.
+
+---
+
+### INV-019: Amendment-Log Reciprocity
+
+**Level:** MUST
+**Severity:** error
+**Applies to:** Amendment nodes, Shape nodes, Constraint nodes, Profile nodes
+
+**Formal statement:**
+For every Amendment node A and every node N in the union of
+`A.targets.shape_ids`, `A.targets.constraint_ids`, and
+`A.targets.profile_ids`, `N.amendment_log` MUST contain `A.id`.
+
+Conversely, for every Shape, Constraint, or Profile node N and every
+amendment ID in `N.amendment_log`, the referenced Amendment A MUST list
+N in the corresponding target array (`shape_ids`, `constraint_ids`, or
+`profile_ids`).
+
+**Rationale:**
+The amendment graph is navigable in both directions: forward from an
+Amendment through `targets` to the nodes it modifies, and reverse from a
+node through `amendment_log` to the amendments that have modified it.
+If these two traversal directions disagree, the question "which
+amendments have modified this node?" cannot be answered consistently,
+and agents relying on the amendment history will see partial or
+inconsistent results depending on which direction they walk.
+
+**Detection method:**
+For each amendment A, for each target node N: verify that
+`N.amendment_log` contains `A.id`. For each node N, for each amendment
+ID in `N.amendment_log`: verify that the corresponding Amendment's
+`targets` array for N's node type contains N's ID. Report each missing
+back-link with the offending node and the missing ID.

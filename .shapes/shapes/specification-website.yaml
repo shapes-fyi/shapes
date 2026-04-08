@@ -205,6 +205,24 @@ realization:
         metadata:
           summary: Web app dependencies and build scripts. Includes motion (for hero entrance choreography and scroll-triggered Reveal added in amendment:7) and beautiful-mermaid (lazy-loaded into its own client chunk by ExampleToggle per amendment:14).
     role: supporting
+amendment_log:
+  - 1
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
 metadata:
   team: core
   url: shapes.fyi
