@@ -1,0 +1,21 @@
+id: 2
+name: Archive legacy API rollout note
+description: >-
+  Historical rollout note for the initial API service shape. Superseded
+  by the current shape intent and retained here only as an archived
+  fixture to exercise the display-only `archived` flag. Downstream
+  conformance implementations should hide this entry from default
+  `list amendment` / `get shape` output, and surface it only when
+  `--archived` is passed.
+targets:
+  shape_ids:
+    - 2
+status: canonical
+archived: true
+intent:
+  kind: feature
+  summary: Historical rollout note — archived
+  source: human
+initiated_by:
+  type: human
+  identity: engineer@example.com

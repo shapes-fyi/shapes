@@ -92,7 +92,7 @@ The plugin provides three skills:
 | ---- | ------- | ------- |
 | **Shape** | What to build and why | "Auth Service — JWT-based authentication with refresh token rotation" |
 | **Constraint** | Rules that must hold | "No database queries in the auth module" |
-| **Amendment** | Immutable change record | "Switched from session tokens to JWTs for compliance" |
+| **Amendment** | Immutable change record (display-only `archived` flag hides decayed entries) | "Switched from session tokens to JWTs for compliance" |
 | **Profile** | Governance configuration | Defines required fields, valid kinds, lifecycle gates |
 
 ### Two DAGs
@@ -268,8 +268,10 @@ Run `/shapes:shapes-maintain` to audit for drift — stale realizations pointing
 | `shapes create profile` | Create a Profile for governance configuration |
 | `shapes get shape <id>` | Read a shape's full definition (intent, constraints, realizations) |
 | `shapes get constraint <id>` | Read a constraint's full definition |
-| `shapes list` | List all nodes (optional filters: `--kind`, `--status`) |
+| `shapes list` | List all nodes (optional filters: `--kind`, `--status`, `--archived`) |
 | `shapes list shape` | List shapes only |
+| `shapes amendment archive <id>` | Hide a stale amendment from default listings (CI-003-safe) |
+| `shapes amendment unarchive <id>` | Bring an archived amendment back into default listings |
 | `shapes tree shape` | Display Shape DAG as ASCII tree with inline constraints |
 | `shapes tree constraint` | Display Constraint DAG as ASCII tree |
 | `shapes query ancestors <id>` | Walk up the parent chain (BFS order) |

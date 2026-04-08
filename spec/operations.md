@@ -164,6 +164,7 @@ parents, children, metadata, and any type-specific fields.
 |-----------|----------|----------|---------------------------------|
 | node_type | NodeType | yes      | The type of node to retrieve.   |
 | id        | NodeId   | yes      | The ID of the node to retrieve. |
+| archived  | boolean  | no       | When `true`, include archived amendments in the returned `amendment_log` (annotated so readers can distinguish them). When `false` (the default), archived amendments are omitted from `amendment_log` on Shape/Constraint/Profile nodes. Has no effect when `node_type` is `"amendment"` — a direct amendment fetch always returns the full record including its `archived` field. |
 
 **Return type:**
 The full node object. The structure depends on `node_type`:
@@ -171,6 +172,14 @@ The full node object. The structure depends on `node_type`:
 - `"constraint"`: Constraint object per the Constraint JSON Schema
 - `"amendment"`: Amendment object per the Amendment JSON Schema
 - `"profile"`: Profile object per the Profile JSON Schema
+
+When `archived == false` (the default), the `amendment_log` field on
+Shape, Constraint, and Profile results MUST have archived amendment IDs
+removed. When `archived == true`, implementations MUST include every
+amendment ID in `amendment_log` and MUST annotate archived entries so
+the caller can distinguish them (e.g. rendering each entry as an
+`{id, archived?}` object instead of a bare ID). Validation and CI
+operations are unaffected and always see the full, unfiltered set.
 
 **Preconditions:**
 A shapes graph MUST exist (i.e., `discover` would succeed).
@@ -204,6 +213,7 @@ node. Without any filters, returns all nodes across all types.
 | node_type | NodeType | no       | Filter to a specific node type. Omit to list all types.     |
 | status    | string   | no       | Filter by status name (e.g., `"proposed"`, `"canonical"`).  |
 | kind      | string   | no       | Filter by kind. For shapes: `intent.kind`. For constraints: `kind`. For amendments: `intent.kind`. For profiles: `intent.kind`. |
+| archived  | boolean  | no       | Include archived amendments in the result. When `false` (the default), amendments whose `archived` field is `true` are omitted. Non-amendment node types are unaffected. |
 
 **Return type:**
 

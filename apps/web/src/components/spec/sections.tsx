@@ -606,6 +606,27 @@ export const sections: Array<SpecSection> = [
         </p>
 
         <p>
+          Because amendments are kept indefinitely for audit, the log
+          grows with entries whose insight value decays over time.
+          Each Amendment carries an optional display-only{" "}
+          <code className="text-foreground">archived</code> boolean.
+          When set, the amendment is hidden from default listing output
+          &mdash; it is dropped from{" "}
+          <code className="text-foreground">shapes list amendment</code>{" "}
+          and from the rendered{" "}
+          <code className="text-foreground">amendment_log</code> in{" "}
+          <code className="text-foreground">shapes get &lt;parent&gt;</code>{" "}
+          unless the caller passes{" "}
+          <code className="text-foreground">--archived</code>, which
+          resurfaces archived entries annotated so readers can
+          distinguish them. Archiving is not deletion: the record stays
+          on disk, reciprocity (INV-019) still applies, and validation
+          and CI checks always see the full, unfiltered set. Toggling{" "}
+          <code className="text-foreground">archived</code> is the sole
+          permitted mutation of a canonical amendment under CI-003.
+        </p>
+
+        <p>
           Every Shape, Constraint, and Profile moves through a seven-state
           lifecycle: three progressive states and four terminal states.
           Amendments use a five-state subset — proposed, promoted, canonical,

@@ -390,3 +390,11 @@ For each amendment A, for each target node N: verify that
 ID in `N.amendment_log`: verify that the corresponding Amendment's
 `targets` array for N's node type contains N's ID. Report each missing
 back-link with the offending node and the missing ID.
+
+**Note on archived amendments:**
+The `archived` field on Amendment is display-only metadata. Archived
+amendments MUST still satisfy reciprocity — they remain fully loaded
+by validation and are treated identically to unarchived amendments
+when walking the amendment/target graph. Archiving only affects how
+`list` and `get <parent>` render their output, never whether an
+amendment participates in INV-019 or any other invariant.

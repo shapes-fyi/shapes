@@ -102,7 +102,7 @@ confirms the graph exists and returns all nodes. See
 **Command:**
 
 ```
-shapes get <node_type> <id>
+shapes get <node_type> <id> [--archived]
 ```
 
 **Arguments:**
@@ -112,8 +112,15 @@ shapes get <node_type> <id>
 | `node_type` | positional | yes | One of: `shape`, `constraint`, `amendment`, `profile`. |
 | `id` | positional | yes | The node ID (integer or string). |
 
+**Flags:**
+
+| Flag | Type | Description |
+|------|------|-------------|
+| `--archived` | boolean | Include archived amendments in the rendered `amendment_log`. By default they are filtered out. When set, each archived entry is annotated (rendered as `{id, archived: true}` instead of a bare ID) so readers can distinguish archived from unarchived entries. Has no effect when `node_type` is `amendment` — direct amendment fetch always returns the full record. |
+
 **Output (stdout):** The full node object serialized in the selected format.
-All fields defined in the node's JSON Schema are included.
+All fields defined in the node's JSON Schema are included, with
+`amendment_log` filtered or annotated per the `--archived` flag.
 
 **Exit codes:** 0 on success, 1 if the node does not exist.
 
@@ -142,7 +149,7 @@ intent:
 **Command:**
 
 ```
-shapes list [node_type] [--status <status>] [--kind <kind>]
+shapes list [node_type] [--status <status>] [--kind <kind>] [--archived]
 ```
 
 **Arguments:**
@@ -157,6 +164,7 @@ shapes list [node_type] [--status <status>] [--kind <kind>]
 |------|------|-------------|
 | `--status` | string | Filter by status name (e.g., `proposed`, `canonical`). |
 | `--kind` | string | Filter by kind (matched against `intent.kind` for shapes, amendments, and profiles; `kind` for constraints). |
+| `--archived` | boolean | Include archived amendments in the listing. By default, amendments with `archived: true` are hidden so decayed audit entries do not clutter agent context. Non-amendment node types are unaffected. |
 
 **Output (stdout):** A list of summary entries. Each entry contains:
 
@@ -451,13 +459,56 @@ $ shapes create shape --name "New Feature" --id-only
 
 ---
 
+### amendment archive / amendment unarchive
+
+**Abstract operation:** none (CLI-specific amendment maintenance)
+
+**Command:**
+
+```
+shapes amendment archive <id>
+shapes amendment unarchive <id>
+```
+
+**Arguments:**
+
+| Argument | Type | Required | Description |
+|----------|------|----------|-------------|
+| `id` | positional | yes | The numeric amendment ID to archive or unarchive. |
+
+**Description:**
+Toggles the display-only `archived` flag on an amendment. Archiving
+hides an amendment from default `shapes list` output and from the
+rendered `amendment_log` in `shapes get <parent>` unless `--archived`
+is passed. It is not a delete — the amendment YAML stays on disk,
+reciprocity still applies, and CI-002 continues to count the
+amendment.
+
+This is the sole permitted mutation of a canonical amendment. CI-003
+(modified-amendment-immutability) explicitly allows diffs whose only
+field delta is `archived`; every other field remains immutable.
+
+**Output (stdout):** The full amendment object after the toggle, so
+the caller can confirm the new state.
+
+**Exit codes:** 0 on success, 1 if the amendment does not exist.
+
+**Examples:**
+
+```
+$ shapes amendment archive 17
+$ shapes amendment unarchive 17
+```
+
+---
+
 ## Operation Summary
 
 | Abstract Operation | CLI Command | Notes |
 |---|---|---|
 | discover | `shapes list` | Implicit. Presence of `.shapes/` is the discovery signal. |
-| get | `shapes get <node_type> <id>` | node_type: shape, constraint, amendment, profile |
-| list | `shapes list [node_type] [--status X] [--kind Y]` | No args = all types |
+| get | `shapes get <node_type> <id> [--archived]` | node_type: shape, constraint, amendment, profile. `--archived` surfaces archived amendments in `amendment_log`. |
+| list | `shapes list [node_type] [--status X] [--kind Y] [--archived]` | No args = all types. `--archived` includes archived amendments. |
 | tree | `shapes tree [node_type] [--root X] [--depth N]` | Defaults to shape. Constraints shown inline. |
 | query.ancestors | `shapes query ancestors <node_type> <id>` | node_type: shape or constraint |
 | query.descendants | `shapes query descendants <node_type> <id>` | node_type: shape or constraint |
@@ -465,3 +516,4 @@ $ shapes create shape --name "New Feature" --id-only
 | validate | `shapes validate` | Exit 0 if clean, exit 2 if issues |
 | init | `shapes init` | Creates `.shapes/` directory |
 | create | `shapes create <node_type> [flags]` | `--from`, `--id-only`, per-type field flags |
+| (cli-only) | `shapes amendment archive \| unarchive <id>` | Toggles display-only archived flag. Sole permitted mutation under CI-003. |
