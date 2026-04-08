@@ -41,10 +41,12 @@ intent:
     the existing typed model and the `ValidationIssue` reporting
     machinery, gives developers a local pre-push gate, and lets the
     same logic ship to non-GitHub CI providers (the composite action
-    is just convenience glue). The monitored field set is gated to
-    semantic fields only — `realization` / `evidence` / `provenance`
-    are exempt to match the project's existing realization-refresh
-    practice.
+    is just convenience glue). CI-002 is strict — every field on a
+    promoted or canonical node counts, including `realization`,
+    `evidence`, and `provenance` bindings. There are no opt-out
+    flags. The whole point of the check is to force explicit
+    maintenance through the amendment workflow; the only way to edit
+    a node without an amendment is to leave it in `proposed` state.
   non_goals: >-
     Not a replacement for `shapes validate` — the action runs both
     side by side. Not GitHub-specific at the CLI layer; the
@@ -89,5 +91,5 @@ realization:
       - scheme: path
         value: tests/cli_ci_check.rs
         metadata:
-          summary: 11 integration tests — git-init tempdir helpers, CI-001 positive/negative/control, CI-002 promoted-shape and canonical-constraint scenarios, realization-only exemption, deletion, new-node addition, CI-003 amendment-immutability
+          summary: 16 integration tests — git-init tempdir helpers, CI-001 positive/negative/control, CI-002 promoted-shape and canonical-constraint scenarios, realization-only strict (every binding edit requires an amendment), canonical-profile scenarios (--target-profile satisfying path), per-node deletion, full-shapes-dir deletion, new-node addition, CI-003 amendment-immutability (both modification and deletion)
     role: test

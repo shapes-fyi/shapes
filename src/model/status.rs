@@ -78,11 +78,6 @@ impl Status {
     /// caller's contract is "is this state subject to the
     /// amendment-on-change rule?", and only progressive promoted /
     /// canonical states are.
-    //
-    // `clippy::allow(dead_code)` because this predicate is wired into
-    // `shapes ci-check` in the next commit; landing it as a standalone
-    // step keeps the model and command commits independently bisectable.
-    #[allow(dead_code)]
     #[must_use]
     pub fn requires_amendment_on_change(&self) -> bool {
         matches!(self, Status::Promoted(_) | Status::Canonical(_))

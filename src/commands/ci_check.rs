@@ -91,40 +91,40 @@ pub fn ci_check(
     }
 
     // CI-002 + CI-003 — amendment-required-on-promoted/canonical-change
-    // and amendment-immutability. Only meaningful when a shapes
-    // directory is actually present at HEAD; if not, skip with a quiet
-    // pass instead of erroring out.
-    if shapes_dir.is_dir() {
-        let satisfied =
-            collect_satisfied_targets(base, shapes_dir, &mut issues).map_err(CliError::Other)?;
-        check_required_amendments::<Shape>(
-            base,
-            shapes_dir,
-            NodeType::Shape,
-            &satisfied.shape_ids,
-            shape_monitored_changed,
-            &mut issues,
-        )
-        .map_err(CliError::Other)?;
-        check_required_amendments::<Constraint>(
-            base,
-            shapes_dir,
-            NodeType::Constraint,
-            &satisfied.constraint_ids,
-            constraint_monitored_changed,
-            &mut issues,
-        )
-        .map_err(CliError::Other)?;
-        check_required_amendments::<Profile>(
-            base,
-            shapes_dir,
-            NodeType::Profile,
-            &satisfied.profile_ids,
-            profile_monitored_changed,
-            &mut issues,
-        )
-        .map_err(CliError::Other)?;
-    }
+    // and amendment-immutability. Run unconditionally: both helpers
+    // below handle missing directories internally, so deleting the
+    // entire shapes directory still fires CI-002 for every promoted
+    // or canonical node that was on base (via the generic deletion
+    // path in `check_required_amendments`).
+    let satisfied =
+        collect_satisfied_targets(base, shapes_dir, &mut issues).map_err(CliError::Other)?;
+    check_required_amendments::<Shape>(
+        base,
+        shapes_dir,
+        NodeType::Shape,
+        &satisfied.shape_ids,
+        shape_monitored_changed,
+        &mut issues,
+    )
+    .map_err(CliError::Other)?;
+    check_required_amendments::<Constraint>(
+        base,
+        shapes_dir,
+        NodeType::Constraint,
+        &satisfied.constraint_ids,
+        constraint_monitored_changed,
+        &mut issues,
+    )
+    .map_err(CliError::Other)?;
+    check_required_amendments::<Profile>(
+        base,
+        shapes_dir,
+        NodeType::Profile,
+        &satisfied.profile_ids,
+        profile_monitored_changed,
+        &mut issues,
+    )
+    .map_err(CliError::Other)?;
 
     report(&issues, format)
 }
@@ -139,12 +139,15 @@ struct SatisfiedTargets {
     profile_ids: BTreeSet<u64>,
 }
 
-/// Walks every amendment file under `shapes_dir/amendments/` on disk,
-/// classifies each as "new in PR" (file did not exist on `base`) or
-/// "modified in PR" (file existed on base, content differs), and
+/// Pairs base and HEAD amendments by node id, classifies each as
+/// "new in PR", "deleted in PR", "modified", or "unchanged", and
 /// returns the union of `targets.{shape_ids, constraint_ids,
-/// profile_ids}` from the new amendments. Modified amendments push a
-/// CI-003 issue and do NOT contribute to the satisfied set.
+/// profile_ids}` from the new amendments.
+///
+/// Pairing by id (not by file path) means pure renames — same id,
+/// different filename, identical content — are correctly treated as
+/// unchanged. Modified and deleted amendments both push a CI-003
+/// issue and do NOT contribute to the satisfied set.
 fn collect_satisfied_targets(
     base: &str,
     shapes_dir: &Path,
@@ -153,44 +156,62 @@ fn collect_satisfied_targets(
     let mut satisfied = SatisfiedTargets::default();
 
     let amendment_dir = shapes_dir.join(NodeType::Amendment.dir_name());
-    if !amendment_dir.is_dir() {
-        return Ok(satisfied);
+
+    // Load head amendments by id. Preserve each amendment's
+    // repo-relative path so the CI-003 error message can point at
+    // the file that actually moved or changed.
+    let mut head_map: BTreeMap<u64, (PathBuf, Amendment)> = BTreeMap::new();
+    if amendment_dir.is_dir() {
+        for path in disk_yaml_files(&amendment_dir)? {
+            let text = std::fs::read_to_string(&path)
+                .with_context(|| format!("failed to read {}", path.display()))?;
+            let head_amend: Amendment = serde_yml::from_str(&text)
+                .with_context(|| format!("failed to parse {}", path.display()))?;
+            let rel = repo_relative_path(&path)?;
+            head_map.insert(head_amend.id.get(), (rel, head_amend));
+        }
     }
 
-    let head_files = disk_yaml_files(&amendment_dir)?;
-    for path in head_files {
-        let head_text = std::fs::read_to_string(&path)
-            .with_context(|| format!("failed to read {}", path.display()))?;
-        let head_amend: Amendment = serde_yml::from_str(&head_text)
-            .with_context(|| format!("failed to parse {}", path.display()))?;
+    // Load base amendments by id via git ls-tree + git show.
+    let base_map: BTreeMap<u64, Amendment> =
+        load_base_map::<Amendment>(base, shapes_dir, NodeType::Amendment)?;
 
-        // Resolve the path relative to repo root for git lookups.
-        let rel = repo_relative_path(&path)?;
-        let base_text = git_show(base, &rel)?;
-
-        match base_text {
-            None => {
+    let all_ids: BTreeSet<u64> = head_map.keys().chain(base_map.keys()).copied().collect();
+    for id in all_ids {
+        match (base_map.get(&id), head_map.get(&id)) {
+            (None, Some((_rel, head_amend))) => {
                 // Newly added amendment — its targets satisfy CI-002.
                 satisfied
                     .shape_ids
-                    .extend(head_amend.targets.shape_ids.iter().map(|id| id.get()));
+                    .extend(head_amend.targets.shape_ids.iter().map(|i| i.get()));
                 satisfied
                     .constraint_ids
-                    .extend(head_amend.targets.constraint_ids.iter().map(|id| id.get()));
+                    .extend(head_amend.targets.constraint_ids.iter().map(|i| i.get()));
                 satisfied
                     .profile_ids
-                    .extend(head_amend.targets.profile_ids.iter().map(|id| id.get()));
+                    .extend(head_amend.targets.profile_ids.iter().map(|i| i.get()));
             }
-            Some(base_text) => {
-                let base_amend: Amendment = serde_yml::from_str(&base_text).with_context(|| {
-                    format!("failed to parse base version of {}", rel.display())
-                })?;
+            (Some(_base_amend), None) => {
+                // Amendment existed on base but not on HEAD — deleted.
+                // Fires CI-003: amendments are immutable, deletion
+                // included.
+                issues.push(ValidationIssue {
+                    invariant: "CI-003".into(),
+                    severity: Severity::Error,
+                    node_type: "amendment".into(),
+                    node_id: id.to_string(),
+                    message: format!(
+                        "amendment {id} was deleted in this PR — amendments are immutable per constraint:10",
+                    ),
+                });
+            }
+            (Some(base_amend), Some((rel, head_amend))) => {
                 if base_amend != head_amend {
                     issues.push(ValidationIssue {
                         invariant: "CI-003".into(),
                         severity: Severity::Error,
                         node_type: "amendment".into(),
-                        node_id: head_amend.id.to_string(),
+                        node_id: id.to_string(),
                         message: format!(
                             "amendment {} was modified in this PR — amendments are immutable per constraint:10",
                             rel.display()
@@ -198,7 +219,11 @@ fn collect_satisfied_targets(
                     });
                     // Modified amendments do NOT satisfy CI-002.
                 }
+                // Unchanged amendments also do not re-satisfy
+                // CI-002 — they already landed on a prior PR, and
+                // the target node already accounted for them.
             }
+            (None, None) => unreachable!("id came from union of both maps"),
         }
     }
 

@@ -158,6 +158,33 @@ fn set_status(path: &std::path::Path, new_status: &str) {
     fs::write(path, updated).unwrap();
 }
 
+/// Replaces the top-level `name:` line of a node yaml with
+/// `name: <new>`. Line-based replace that matches the first line
+/// starting with `name:` (no indent), leaving nested `name:` fields
+/// inside `fields` / `lifecycle` blocks alone. Panics if no top-
+/// level `name:` line is found so a fixture-shape change never
+/// silently no-ops.
+fn set_top_level_name(path: &std::path::Path, new_name: &str) {
+    let text = fs::read_to_string(path).unwrap();
+    let mut updated = String::new();
+    let mut replaced = false;
+    for line in text.lines() {
+        if !replaced && line.starts_with("name:") {
+            updated.push_str(&format!("name: {new_name}\n"));
+            replaced = true;
+        } else {
+            updated.push_str(line);
+            updated.push('\n');
+        }
+    }
+    assert!(
+        replaced,
+        "expected a top-level `name:` line in {}",
+        path.display()
+    );
+    fs::write(path, updated).unwrap();
+}
+
 /// Replaces the `summary: ...` line under `intent:` with `summary:
 /// <new>`. Naive but sufficient for these test fixtures because
 /// scaffolds put intent.summary on its own line and metadata.summary
@@ -483,5 +510,116 @@ fn ci_003_modified_amendment_fires_and_does_not_satisfy_ci_002() {
     assert!(
         stderr.contains("CI-002"),
         "expected CI-002 to still fire because the modified amendment does not satisfy: {stderr}"
+    );
+}
+
+/// CI-002: modifying the canonical profile seeded by `shapes init`
+/// without an amendment fires CI-002. The software starter kit
+/// seeds profile id 1 with `canonical` status already, so it is in
+/// the amendment-required state on the base commit with no extra
+/// setup. Exercises the `Profile` arm of
+/// `check_required_amendments` that the shape and constraint
+/// fixtures do not touch.
+#[test]
+fn ci_002_canonical_profile_name_change_without_amendment_fires() {
+    let (dir, base) = init_git_store("software");
+    set_top_level_name(&yaml_path(&dir, "profiles", 1), "renamed");
+    let stderr = ci_check_fails(&dir, &base);
+    assert!(
+        stderr.contains("CI-002") && stderr.contains("profile 1"),
+        "expected CI-002 for canonical profile: {stderr}"
+    );
+}
+
+/// CI-002 satisfied: a canonical profile modification plus a new
+/// amendment created via `--target-profile` passes. Exercises the
+/// `--target-profile` amendment-create plumbing end-to-end — the
+/// scaffold round-trip test in cli_scaffold.rs only verifies that
+/// the flag serializes to disk, not that the ci-check layer honors
+/// the resulting profile_ids target.
+#[test]
+fn ci_002_canonical_profile_change_with_satisfying_amendment_passes() {
+    let (dir, base) = init_git_store("software");
+    set_top_level_name(&yaml_path(&dir, "profiles", 1), "renamed");
+    shapes_in(&dir)
+        .args([
+            "create",
+            "amendment",
+            "--name",
+            "fix",
+            "--target-profile",
+            "1",
+            "--summary",
+            "fixes the canonical profile",
+        ])
+        .assert()
+        .success();
+    shapes_in(&dir)
+        .args(["ci-check", "--base", &base])
+        .assert()
+        .success();
+}
+
+/// CI-003: deleting an existing amendment file fires the
+/// amendment-immutability check, just like a modification. An
+/// amendment that shipped once cannot be removed without a new
+/// amendment documenting the reversal. Pairs by amendment id so
+/// renames-with-identical-content are still treated as unchanged.
+#[test]
+fn ci_003_deleted_amendment_fires() {
+    let (dir, _base0) = init_git_store("software");
+    let (id, _) = promoted_shape_on_base(&dir, "Promoted");
+    // Create and commit an amendment targeting the promoted shape
+    // so it exists on the base commit.
+    Command::cargo_bin("shapes")
+        .unwrap()
+        .current_dir(dir.path())
+        .args([
+            "create",
+            "amendment",
+            "--name",
+            "PriorFix",
+            "--target-shape",
+            &id.to_string(),
+            "--summary",
+            "fixed yesterday",
+        ])
+        .assert()
+        .success();
+    git(dir.path(), &["add", "."]);
+    git(
+        dir.path(),
+        &["commit", "--quiet", "-m", "ship prior amendment"],
+    );
+    let base = git_capture(dir.path(), &["rev-parse", "HEAD"]);
+    // Delete the amendment from the working tree without touching
+    // the promoted shape. CI-003 should fire for the amendment
+    // itself. CI-002 is silent because the shape is unchanged —
+    // the satisfying-amendment logic only matters when the shape
+    // was also modified, and here it was not.
+    fs::remove_file(yaml_path(&dir, "amendments", 1)).unwrap();
+    let stderr = ci_check_fails(&dir, &base);
+    assert!(
+        stderr.contains("CI-003") && stderr.contains("deleted") && stderr.contains("amendment 1"),
+        "expected CI-003 for deleted amendment: {stderr}"
+    );
+}
+
+/// CI-002: deleting the entire `.shapes/` directory fires CI-002
+/// for every promoted/canonical node that was on base. The check
+/// does not silently skip when the shapes directory is missing on
+/// HEAD — that would be an escape hatch for full-graph removal,
+/// exactly the kind of edit that should require an amendment.
+#[test]
+fn ci_002_full_shapes_dir_deletion_fires() {
+    let (dir, _base0) = init_git_store("software");
+    let (id, base) = promoted_shape_on_base(&dir, "Promoted");
+    fs::remove_dir_all(dir.path().join(".shapes")).unwrap();
+    let stderr = ci_check_fails(&dir, &base);
+    assert!(
+        stderr.contains("CI-002")
+            && stderr.contains(&format!("shape {id}"))
+            && stderr.contains("deleted"),
+        "expected CI-002 deletion for full .shapes/ removal: {stderr}"
     );
 }
