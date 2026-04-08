@@ -77,3 +77,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: bnjbvr/cargo-machete@v0.9.1
+
+  shapes-ci:
+    name: shapes ci-check (dogfood)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Build shapes-cli from PR sources
+        run: cargo build --release --locked
+      - name: shapes validate
+        run: ./target/release/shapes validate
+      - name: shapes ci-check
+        run: |
+          ./target/release/shapes ci-check \
+            --base "${{ github.event.pull_request.base.sha }}" \
+            --require-shapes-changes
