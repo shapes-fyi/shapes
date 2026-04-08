@@ -1,0 +1,92 @@
+name: Shapes Validate
+description: >-
+  Run `shapes validate` and `shapes ci-check` against a repository's
+  `.shapes/` directory. Enforces graph integrity, amendment-required-
+  on-promoted-or-canonical-change (CI-002), amendment immutability
+  (CI-003), and optionally that every PR touches the shapes directory
+  at all (CI-001).
+author: shapes-fyi
+branding:
+  icon: check-circle
+  color: purple
+
+inputs:
+  shapes-dir:
+    description: Path to the shapes directory, relative to the repo root.
+    required: false
+    default: .shapes
+  base-ref:
+    description: >-
+      Base ref to diff against for ci-check. In a pull_request workflow
+      this should be the PR base sha (the default). Set explicitly when
+      reusing the action outside the pull_request event.
+    required: false
+    default: ${{ github.event.pull_request.base.sha }}
+  require-shapes-changes:
+    description: >-
+      Fail when the PR does not touch the shapes directory. On by
+      default — set to 'false' for repos that allow code-only or
+      docs-only PRs.
+    required: false
+    default: 'true'
+  shapes-version:
+    description: >-
+      Git ref of shapes-fyi/shapes to install. Pin to a release tag
+      (e.g. v1) for stability.
+    required: false
+    default: v1
+  install-shapes:
+    description: >-
+      When 'true' (the default), the action installs the `shapes`
+      binary via `cargo install --locked --git --tag <version>`. Set
+      to 'false' if a previous step has already placed `shapes` on
+      PATH (used by this repo's own dogfood job).
+    required: false
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Install Rust toolchain
+      if: inputs.install-shapes == 'true'
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Cargo cache
+      if: inputs.install-shapes == 'true'
+      uses: Swatinem/rust-cache@v2
+
+    - name: Install shapes-cli
+      if: inputs.install-shapes == 'true'
+      shell: bash
+      run: |
+        cargo install --locked \
+          --git https://github.com/shapes-fyi/shapes \
+          --tag "${{ inputs.shapes-version }}" \
+          shapes-cli
+
+    - name: shapes validate
+      shell: bash
+      run: |
+        if [ ! -d "${{ inputs.shapes-dir }}" ]; then
+          echo "::warning::No shapes directory at '${{ inputs.shapes-dir }}' — skipping shapes validate"
+          exit 0
+        fi
+        shapes validate
+
+    - name: shapes ci-check
+      if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
+      shell: bash
+      env:
+        BASE_REF: ${{ inputs.base-ref }}
+        SHAPES_DIR: ${{ inputs.shapes-dir }}
+        REQUIRE_CHANGES: ${{ inputs.require-shapes-changes }}
+      run: |
+        if [ ! -d "$SHAPES_DIR" ]; then
+          echo "::warning::No shapes directory at '$SHAPES_DIR' — skipping shapes ci-check"
+          exit 0
+        fi
+        if [ "$REQUIRE_CHANGES" = "true" ]; then
+          shapes ci-check --base "$BASE_REF" --shapes-dir "$SHAPES_DIR" --require-shapes-changes
+        else
+          shapes ci-check --base "$BASE_REF" --shapes-dir "$SHAPES_DIR"
+        fi
