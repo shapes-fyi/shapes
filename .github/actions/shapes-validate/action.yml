@@ -31,10 +31,12 @@ inputs:
     default: 'true'
   shapes-version:
     description: >-
-      Git ref of shapes-fyi/shapes to install. Pin to a release tag
-      (e.g. v1) for stability.
+      Branch of `shapes-fyi/shapes` to install. Defaults to `main`
+      because shapes-cli has not cut a stable release yet; once v1
+      ships the default will move to `v1` and `--branch` will become
+      `--tag`.
     required: false
-    default: v1
+    default: main
   install-shapes:
     description: >-
       When 'true' (the default), the action installs the `shapes`
@@ -61,7 +63,7 @@ runs:
       run: |
         cargo install --locked \
           --git https://github.com/shapes-fyi/shapes \
-          --tag "${{ inputs.shapes-version }}" \
+          --branch "${{ inputs.shapes-version }}" \
           shapes-cli
 
     - name: shapes validate
