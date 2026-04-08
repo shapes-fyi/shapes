@@ -153,7 +153,18 @@ amendments are append-only -- they MUST NOT be modified or deleted.
 `intent`, `initiated_by`.
 
 **Optional fields:** `version_impact`, `constraints`, `realization`,
-`evidence`, `provenance`, `metadata`.
+`evidence`, `provenance`, `archived`, `metadata`.
+
+The `archived` field is a display-only boolean. When `true`, the amendment
+is hidden from default listing output — `shapes list amendment` drops it,
+and `shapes get <parent>` omits it from the rendered `amendment_log`
+unless `--archived` is passed. Archiving is not deletion: the record
+stays on disk, reciprocity (INV-019) still applies, and CI-002 still
+counts the amendment toward satisfying changes to promoted or canonical
+targets. Archiving exists so stale audit entries whose insight value has
+decayed can be suppressed from routine reads without losing the audit
+trail. Toggling `archived` is the sole permitted mutation of a canonical
+amendment under CI-003; every other field remains strictly immutable.
 
 The `targets` field specifies which nodes are affected. It is an object with
 three optional arrays: `shape_ids`, `constraint_ids`, `profile_ids`. At

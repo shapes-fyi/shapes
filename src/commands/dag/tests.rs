@@ -121,6 +121,7 @@ fn make_amendment(id: u64, shape_targets: Vec<u64>) -> Amendment {
             identity: None,
             provenance: None,
         },
+        archived: false,
         metadata: BTreeMap::new(),
     }
 }

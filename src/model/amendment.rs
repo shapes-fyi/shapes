@@ -77,12 +77,27 @@ pub struct Amendment {
     )]
     pub provenance: Vec<Provenance>,
     pub initiated_by: InitiatedBy,
+    /// When `true`, this amendment has decayed in value and should be
+    /// hidden from listing output by default. Display-only: validation,
+    /// reciprocity (INV-019), and CI-002 enforcement always see the
+    /// full set regardless of this flag.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub archived: bool,
     #[serde(
         default,
         deserialize_with = "crate::model::serde_helpers::null_to_default",
         skip_serializing_if = "BTreeMap::is_empty"
     )]
     pub metadata: BTreeMap<String, serde_yml::Value>,
+}
+
+impl Amendment {
+    /// Returns `true` when this amendment has been archived and should
+    /// be hidden from default listing output.
+    #[must_use]
+    pub fn is_archived(&self) -> bool {
+        self.archived
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
