@@ -1,3 +1,8 @@
+//! DAG traversal and validation primitives shared by the
+//! [`tree`](mod@crate::commands::tree),
+//! [`query`](mod@crate::commands::query), and
+//! [`validate`](mod@crate::commands::validate) commands.
+
 mod tree;
 mod validate;
 mod walk;

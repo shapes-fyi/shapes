@@ -1,100 +1,253 @@
-//! Domain templates for `shapes init` / `shapes create`.
+//! Starter kits for `shapes init` / `shapes create profile`.
 //!
-//! A template defines the field hints and kind hints used to scaffold new
-//! shapes and constraints. The template is stored in `meta.yaml` at init
-//! time and read on every `shapes create` (unless overridden via
-//! `--template`).
+//! A [`StarterKit`] is an internal, compile-time data structure that
+//! exists **only** to generate the first [`Profile`] for a new store
+//! (via `shapes init`) or to scaffold a new profile on demand (via
+//! `shapes create profile --kit <name>`).
 //!
-//! Templates only affect the *scaffold* — the YAML emitted by `shapes
-//! create` when `--from` is not used. They do **not** enforce anything;
-//! enforcement is opt-in via Profiles. The template's job is to seed the
-//! YAML with `TODO:` placeholders so an editor (human or agent) can see
-//! every field that matters in this domain on first read.
+//! Kits are **not** a parallel governance layer. The runtime
+//! governance source of truth is the active Profile recorded in
+//! `meta.yaml`. Nothing in the `shapes create shape` or
+//! `shapes create constraint` paths, and nothing in `shapes validate`,
+//! consults a kit. This keeps intent-field hints, kind allow-lists,
+//! default kinds, and required-field enforcement in exactly one place:
+//! the Profile node.
+//!
+//! See constraint 34 (Profile is Sole Domain Schema) in `.shapes/`.
+
+use std::collections::BTreeMap;
 
 use clap::ValueEnum;
 
-/// A template ships a name and the field/kind hints for shapes and
-/// constraints in a particular domain.
+use crate::model::profile::{
+    AmendmentModel, AmendmentRules, FieldDef, FieldGroup, FieldSection, ProfileFields,
+};
+use crate::model::{Intent, Profile, ProfileId, Status};
+
+/// Internal starter-kit definition. Carries enough data to seed a
+/// complete [`Profile`] for a new domain.
 #[derive(Debug, Clone, Copy)]
-pub struct Template {
+pub(crate) struct StarterKit {
+    /// Kit identifier, matches the `--kit` flag value.
     pub name: &'static str,
+    /// One-line human-readable description of the domain.
     pub description: &'static str,
+    /// Shape intent field hints (seeded into
+    /// `profile.fields.shape.intent.fields`).
     pub shape_intent_fields: &'static [FieldHint],
+    /// Allowed shape kinds (seeded into
+    /// `profile.fields.shape.intent.kinds`).
     pub shape_kinds: &'static [KindHint],
+    /// Allowed shape `intent.source` values (seeded into
+    /// `profile.fields.shape.intent.sources`). Empty = unrestricted.
+    pub shape_sources: &'static [FieldHint],
+    /// Constraint intent field hints.
     pub constraint_intent_fields: &'static [FieldHint],
+    /// Allowed constraint kinds.
     pub constraint_kinds: &'static [KindHint],
+    /// Allowed constraint `intent.source` values. Empty = unrestricted.
+    pub constraint_sources: &'static [FieldHint],
+    /// Default value for `shape.intent.kind` when `--kind` is omitted.
     pub default_shape_kind: &'static str,
+    /// Default value for `constraint.intent.kind` when `--kind` is
+    /// omitted.
     pub default_constraint_kind: &'static str,
 }
 
+/// A single intent-field hint embedded in a [`StarterKit`].
 #[derive(Debug, Clone, Copy)]
-pub struct FieldHint {
+pub(crate) struct FieldHint {
+    /// Field name as it appears in the intent map.
     pub name: &'static str,
+    /// Description shown to the author as a comment or doc.
     pub description: &'static str,
+    /// `true` if the author must supply this field.
     pub required: bool,
 }
 
+/// A single kind hint embedded in a [`StarterKit`].
 #[derive(Debug, Clone, Copy)]
-pub struct KindHint {
+pub(crate) struct KindHint {
+    /// Kind identifier.
     pub name: &'static str,
+    /// Description shown to the author.
     pub description: &'static str,
 }
 
-// ---------------------------------------------------------------------------
-// Clap enum surface
-// ---------------------------------------------------------------------------
-
+/// Clap surface for `shapes init --kit <kind>` and
+/// `shapes create profile --kit <kind>`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 #[clap(rename_all = "kebab-case")]
-pub enum TemplateKind {
-    /// Software engineering project — goals/rationale/non_goals, system/module/feature kinds.
+pub enum KitKind {
+    /// Software engineering project — goals/rationale/non_goals,
+    /// system/module/feature kinds.
     Software,
-    /// Research project — hypotheses/methodology/success criteria, experiment/dataset kinds.
+    /// Research project — hypotheses/methodology/success criteria,
+    /// experiment/dataset kinds.
     Research,
-    /// Editorial / writing project — themes/audience/tone, chapter/section/character kinds.
+    /// Editorial / writing project — themes/audience/tone,
+    /// chapter/section/character kinds.
     Editorial,
     /// Bare minimum — just rationale, no kind enforcement.
     Minimal,
 }
 
-impl TemplateKind {
-    pub fn as_str(&self) -> &'static str {
+impl KitKind {
+    /// Returns the static [`StarterKit`] backing this enum variant.
+    #[must_use]
+    pub(crate) fn kit(&self) -> &'static StarterKit {
         match self {
-            TemplateKind::Software => "software",
-            TemplateKind::Research => "research",
-            TemplateKind::Editorial => "editorial",
-            TemplateKind::Minimal => "minimal",
-        }
-    }
-
-    pub fn template(&self) -> &'static Template {
-        match self {
-            TemplateKind::Software => &SOFTWARE,
-            TemplateKind::Research => &RESEARCH,
-            TemplateKind::Editorial => &EDITORIAL,
-            TemplateKind::Minimal => &MINIMAL,
+            KitKind::Software => &SOFTWARE,
+            KitKind::Research => &RESEARCH,
+            KitKind::Editorial => &EDITORIAL,
+            KitKind::Minimal => &MINIMAL,
         }
     }
 }
 
-/// Look up a template by its stored string name. Returns the `software`
-/// template as a fallback for unknown or missing names so existing stores
-/// without a `template:` field in `meta.yaml` keep working.
-pub fn resolve(name: Option<&str>) -> &'static Template {
-    match name {
-        Some("software") => &SOFTWARE,
-        Some("research") => &RESEARCH,
-        Some("editorial") => &EDITORIAL,
-        Some("minimal") => &MINIMAL,
-        _ => &SOFTWARE,
+impl StarterKit {
+    /// Builds a [`Profile`] struct seeded from this kit's hints.
+    ///
+    /// The resulting profile carries the kit's field hints, kind
+    /// allow-lists, and default kinds in the canonical locations
+    /// (`fields.{shape,constraint}.intent.{fields,kinds}` and
+    /// `fields.{shape,constraint}.default_kind`). It is marked
+    /// `canonical` and uses the `merge` amendment model.
+    pub(crate) fn build_profile(self, id: ProfileId, name: &str) -> Profile {
+        Profile {
+            id,
+            name: name.to_owned(),
+            description: format!(
+                "Starter profile seeded from the {} kit ({}). Edit freely.",
+                self.name, self.description,
+            ),
+            version: None,
+            status: Status::canonical(),
+            intent: Intent {
+                kind: "governance".to_owned(),
+                summary: format!(
+                    "Domain governance seeded from the {} starter kit",
+                    self.name
+                ),
+                source: serde_yml::Value::String("system".to_owned()),
+                uris: vec![],
+                extra: BTreeMap::new(),
+            },
+            provenance: vec![],
+            lifecycle: None,
+            fields: Some(ProfileFields {
+                shape: Some(node_section(
+                    self.default_shape_kind,
+                    self.shape_intent_fields,
+                    self.shape_kinds,
+                    self.shape_sources,
+                )),
+                constraint: Some(node_section(
+                    self.default_constraint_kind,
+                    self.constraint_intent_fields,
+                    self.constraint_kinds,
+                    self.constraint_sources,
+                )),
+            }),
+            versioning: None,
+            amendment_rules: Some(AmendmentRules {
+                application: AmendmentModel::Merge,
+            }),
+            amendment_log: vec![],
+            metadata: BTreeMap::new(),
+        }
+    }
+
+    /// Serializes [`Self::build_profile`] as YAML. Used by
+    /// `FileStore::init` to write the seeded profile to disk, and by
+    /// `shapes create profile --kit <name>` to scaffold a new profile.
+    pub(crate) fn to_profile_yaml(self, id: ProfileId, name: &str) -> String {
+        serde_yml::to_string(&self.build_profile(id, name))
+            // Serializing a hand-built Profile struct cannot fail:
+            // every field is an owned, serde-ready value with no
+            // dynamic key collisions.
+            .expect("serializing a hand-built Profile struct never fails")
     }
 }
 
-// ---------------------------------------------------------------------------
-// Software template
-// ---------------------------------------------------------------------------
+/// Constructs a [`FieldSection`] for one node type (shape or
+/// constraint) from the kit's field, kind, and source hints. Every
+/// section also requires a `summary` metadata field on every
+/// realization and evidence binding so that bindings explain
+/// themselves to readers.
+fn node_section(
+    default_kind: &'static str,
+    fields: &'static [FieldHint],
+    kinds: &'static [KindHint],
+    sources: &'static [FieldHint],
+) -> FieldSection {
+    FieldSection {
+        default_kind: Some(default_kind.to_owned()),
+        intent: Some(FieldGroup {
+            fields: fields.iter().map(field_hint_to_def).collect(),
+            kinds: kinds.iter().map(kind_hint_to_def).collect(),
+            sources: sources.iter().map(field_hint_to_def).collect(),
+        }),
+        status: None,
+        constraints: None,
+        realization: Some(binding_summary_group()),
+        evidence: Some(binding_summary_group()),
+        provenance: None,
+        metadata: None,
+    }
+}
 
-pub static SOFTWARE: Template = Template {
+/// Returns a `FieldGroup` requiring a `summary` metadata field on
+/// every binding. Used for both realization and evidence sections.
+fn binding_summary_group() -> FieldGroup {
+    FieldGroup {
+        fields: vec![FieldDef {
+            name: "summary".to_owned(),
+            description: "Brief description of what this binding points to".to_owned(),
+            field_type: None,
+            required: true,
+        }],
+        kinds: vec![],
+        sources: vec![],
+    }
+}
+
+fn field_hint_to_def(hint: &FieldHint) -> FieldDef {
+    FieldDef {
+        name: hint.name.to_owned(),
+        description: hint.description.to_owned(),
+        field_type: None,
+        required: hint.required,
+    }
+}
+
+fn kind_hint_to_def(hint: &KindHint) -> FieldDef {
+    FieldDef {
+        name: hint.name.to_owned(),
+        description: hint.description.to_owned(),
+        field_type: None,
+        required: false,
+    }
+}
+
+/// Source allow-list shared by every node section in the software
+/// kit. Constrains who may have authored a shape or constraint to
+/// `human` or `ai`, matching the project's actual authorship pattern
+/// and giving INV-013 something to enforce on this repo's own profile.
+static SOFTWARE_SOURCES: [FieldHint; 2] = [
+    FieldHint {
+        name: "human",
+        description: "Hand-authored by an engineer",
+        required: false,
+    },
+    FieldHint {
+        name: "ai",
+        description: "Authored by an AI agent",
+        required: false,
+    },
+];
+
+pub(crate) static SOFTWARE: StarterKit = StarterKit {
     name: "software",
     description: "Software engineering project",
     shape_intent_fields: &[
@@ -119,6 +272,8 @@ pub static SOFTWARE: Template = Template {
             required: false,
         },
     ],
+    shape_sources: &SOFTWARE_SOURCES,
+    constraint_sources: &SOFTWARE_SOURCES,
     shape_kinds: &[
         KindHint {
             name: "system",
@@ -201,13 +356,11 @@ pub static SOFTWARE: Template = Template {
     default_constraint_kind: "invariant",
 };
 
-// ---------------------------------------------------------------------------
-// Research template
-// ---------------------------------------------------------------------------
-
-pub static RESEARCH: Template = Template {
+pub(crate) static RESEARCH: StarterKit = StarterKit {
     name: "research",
     description: "Research project — experiments, datasets, findings",
+    shape_sources: &[],
+    constraint_sources: &[],
     shape_intent_fields: &[
         FieldHint {
             name: "hypotheses",
@@ -291,13 +444,11 @@ pub static RESEARCH: Template = Template {
     default_constraint_kind: "methodology",
 };
 
-// ---------------------------------------------------------------------------
-// Editorial template
-// ---------------------------------------------------------------------------
-
-pub static EDITORIAL: Template = Template {
+pub(crate) static EDITORIAL: StarterKit = StarterKit {
     name: "editorial",
     description: "Editorial / writing project — books, articles, narratives",
+    shape_sources: &[],
+    constraint_sources: &[],
     shape_intent_fields: &[
         FieldHint {
             name: "themes",
@@ -380,13 +531,11 @@ pub static EDITORIAL: Template = Template {
     default_constraint_kind: "voice",
 };
 
-// ---------------------------------------------------------------------------
-// Minimal template
-// ---------------------------------------------------------------------------
-
-pub static MINIMAL: Template = Template {
+pub(crate) static MINIMAL: StarterKit = StarterKit {
     name: "minimal",
     description: "Minimal — only `rationale` is required, no kind hints",
+    shape_sources: &[],
+    constraint_sources: &[],
     shape_intent_fields: &[FieldHint {
         name: "rationale",
         description: "Why this shape exists",

@@ -38,8 +38,8 @@ evidence:
         metadata:
           summary: Store is ~170 lines with direct filesystem operations — no ORM, no caching layer, no connection pooling
       - scheme: path
-        value: src/commands/dag.rs
+        value: src/commands/dag
         metadata:
-          summary: DAG algorithms use standard BFS/DFS with BTreeMap — no external graph library, no generic trait abstractions beyond DagType
+          summary: DAG algorithms (walk.rs/validate.rs/tree.rs) use standard BFS/DFS with BTreeMap — no external graph library, no generic trait abstractions beyond DagType
     metadata:
       note: Guideline — not mechanically enforced; verified through code review culture

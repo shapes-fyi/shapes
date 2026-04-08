@@ -1,92 +1,69 @@
+//! Domain error types and the top-level [`CliError`] wrapper that maps
+//! them onto process exit codes.
+//!
+//! The CLI uses a layered error strategy: each subsystem owns a typed
+//! error ([`CreateError`], [`ValidationError`]) and the binary entry
+//! point converts whatever bubbles up into a single [`CliError`] whose
+//! [`CliError::exit_code`] decides how the process terminates. See
+//! constraint 14 (Domain Error Types) in `.shapes/`.
+
 use std::process::ExitCode;
 
 use thiserror::Error;
 
-use crate::model::NodeType;
-
-// ---------------------------------------------------------------------------
-// StoreError — file-system and persistence operations
-// ---------------------------------------------------------------------------
-
+/// Errors raised when creating a new node.
 #[derive(Debug, Error)]
-#[allow(dead_code)] // Variants used incrementally as store.rs migrates from anyhow
-pub enum StoreError {
-    #[error("{node_type} {id} not found")]
-    NotFound { node_type: NodeType, id: u64 },
-
-    #[error("{node_type} already exists in {path}")]
-    AlreadyExists { node_type: String, path: String },
-
-    #[error("failed to read {path}: {source}")]
-    Io {
-        path: String,
-        source: std::io::Error,
-    },
-
-    #[error("failed to parse {path}: {source}")]
-    Parse {
-        path: String,
-        source: serde_yml::Error,
-    },
-
-    #[error(".shapes/ directory not found — run `shapes init` first")]
-    NotInitialized,
-
-    #[error(".shapes/ directory already exists")]
-    AlreadyInitialized,
-}
-
-// ---------------------------------------------------------------------------
-// CreateError — node creation failures
-// ---------------------------------------------------------------------------
-
-#[derive(Debug, Error)]
-#[allow(dead_code)] // Variants used when --profile flag is added in PR 6
 pub enum CreateError {
-    #[error("profile {id} not found — cannot apply --profile")]
-    ProfileNotFound { id: u64 },
-
+    /// The requested `kind` is not declared by the governing profile's
+    /// allow-list.
     #[error("kind '{kind}' not allowed by profile {profile_id} — allowed: {allowed}")]
     InvalidKind {
+        /// The disallowed kind value.
         kind: String,
+        /// Profile that rejected the kind.
         profile_id: u64,
+        /// Comma-separated list of accepted kinds for context.
         allowed: String,
     },
-
-    #[error("{0}")]
-    Store(#[from] StoreError),
 }
 
-// ---------------------------------------------------------------------------
-// ValidationError — validation-as-operation control flow
-// ---------------------------------------------------------------------------
-
+/// Errors raised by the `validate` subcommand.
+///
+/// Modeled as a typed error so the CLI can return the dedicated exit
+/// code 2 instead of conflating "validation issues found" with "the
+/// program crashed".
 #[derive(Debug, Error)]
 pub enum ValidationError {
+    /// One or more validation issues were reported during a run.
     #[error("{count} validation issue(s) found")]
-    IssuesFound { count: usize },
+    IssuesFound {
+        /// Number of issues that were emitted.
+        count: usize,
+    },
 }
 
-// ---------------------------------------------------------------------------
-// CliError — top-level wrapper controlling exit codes
-// ---------------------------------------------------------------------------
-
+/// Top-level error wrapper used by `main` to compute exit codes and
+/// format messages.
 #[derive(Debug, Error)]
 pub enum CliError {
-    #[error("{0}")]
-    Store(#[from] StoreError),
-
+    /// Create-flow failure.
     #[error("{0}")]
     Create(#[from] CreateError),
 
+    /// Validation-flow failure.
     #[error("{0}")]
     Validation(#[from] ValidationError),
 
+    /// Anything else the store or command layer raised through
+    /// `anyhow`.
     #[error("{0:#}")]
     Other(#[from] anyhow::Error),
 }
 
 impl CliError {
+    /// Returns the process exit code that should be reported for this
+    /// error: `2` for validation failures, `1` for everything else.
+    #[must_use]
     pub fn exit_code(&self) -> ExitCode {
         match self {
             CliError::Validation(ValidationError::IssuesFound { .. }) => ExitCode::from(2),

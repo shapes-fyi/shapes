@@ -37,7 +37,7 @@ evidence:
         metadata:
           summary: NodeType enum matches spec's four node types; field names match spec YAML format
       - scheme: path
-        value: src/model/common.rs
+        value: src/model/status.rs
         metadata:
           summary: Status enum implements spec's 7-state lifecycle; serde serialization matches spec YAML examples
     metadata:

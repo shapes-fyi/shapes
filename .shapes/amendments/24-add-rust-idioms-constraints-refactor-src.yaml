@@ -1,0 +1,13 @@
+id: 24
+name: Add Rust idioms constraints + refactor src/
+description: Add Rust idioms constraints + refactor src/
+targets:
+  shape_ids:
+  - 1
+status: proposed
+intent:
+  kind: amendment
+  summary: Add 10 new constraints (19–28) governing Rust architecture and idioms across the CLI crate, link them to shape:1, add shape:33 (Rust Idioms Refactor) as a tracking child, and refactor all of src/ to satisfy the new rules
+  source: ai
+initiated_by:
+  type: ai

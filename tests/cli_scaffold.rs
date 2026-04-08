@@ -12,12 +12,12 @@ use tempfile::TempDir;
 
 /// Build a `shapes` command rooted in a fresh tempdir with `shapes init`
 /// already run for the given template.
-fn fresh_store(template: &str) -> TempDir {
+fn fresh_store(kit: &str) -> TempDir {
     let dir = tempfile::tempdir().expect("tempdir");
     Command::cargo_bin("shapes")
         .unwrap()
         .current_dir(dir.path())
-        .args(["init", "--template", template])
+        .args(["init", "--kit", kit])
         .assert()
         .success();
     dir
@@ -47,31 +47,55 @@ fn read_only_yaml_in(dir: &TempDir, subdir: &str) -> String {
     fs::read_to_string(&entries[0]).expect("read yaml")
 }
 
-// ---------------------------------------------------------------------------
-// Software template
-// ---------------------------------------------------------------------------
-
 #[test]
 fn software_shape_scaffold_has_required_fields_and_stubs() {
     let dir = fresh_store("software");
     shapes_in(&dir)
-        .args(["create", "shape", "--name", "AuthService", "--kind", "service"])
+        .args([
+            "create",
+            "shape",
+            "--name",
+            "AuthService",
+            "--kind",
+            "service",
+        ])
         .assert()
         .success();
 
     let yaml = read_only_yaml_in(&dir, "shapes");
 
-    // Header comment with template name
-    assert!(yaml.contains("template: software"), "missing template header: {yaml}");
+    // Header comment references the active profile seeded from the
+    // software kit.
+    assert!(
+        yaml.contains("software starter profile"),
+        "missing profile header: {yaml}"
+    );
+    // The shape records its governing profile explicitly.
+    assert!(
+        yaml.contains("profile: 1"),
+        "missing profile id field: {yaml}"
+    );
 
     // Description and required intent fields are TODO blocks
-    assert!(yaml.contains("description: |\n    TODO:"), "missing description TODO");
+    assert!(
+        yaml.contains("description: |\n    TODO:"),
+        "missing description TODO"
+    );
     assert!(yaml.contains("goals: |\n    TODO:"), "missing goals TODO");
-    assert!(yaml.contains("rationale: |\n    TODO:"), "missing rationale TODO");
+    assert!(
+        yaml.contains("rationale: |\n    TODO:"),
+        "missing rationale TODO"
+    );
 
     // Optional fields are commented out (not enforced)
-    assert!(yaml.contains("# non_goals:"), "non_goals should be commented");
-    assert!(yaml.contains("# requirements:"), "requirements should be commented");
+    assert!(
+        yaml.contains("# non_goals:"),
+        "non_goals should be commented"
+    );
+    assert!(
+        yaml.contains("# requirements:"),
+        "requirements should be commented"
+    );
 
     // Stub sections present as comments
     assert!(yaml.contains("# parents:"), "parents stub missing");
@@ -80,7 +104,10 @@ fn software_shape_scaffold_has_required_fields_and_stubs() {
     assert!(yaml.contains("# realization:"), "realization stub missing");
 
     // Validate parses & passes
-    shapes_in(&dir).args(["get", "shape", "1"]).assert().success();
+    shapes_in(&dir)
+        .args(["get", "shape", "1"])
+        .assert()
+        .success();
     shapes_in(&dir).arg("validate").assert().success();
 }
 
@@ -88,56 +115,102 @@ fn software_shape_scaffold_has_required_fields_and_stubs() {
 fn software_constraint_scaffold_has_rule_and_evidence_stub() {
     let dir = fresh_store("software");
     shapes_in(&dir)
-        .args(["create", "constraint", "--name", "NoUnsafeBlocks", "--kind", "invariant"])
+        .args([
+            "create",
+            "constraint",
+            "--name",
+            "NoUnsafeBlocks",
+            "--kind",
+            "invariant",
+        ])
         .assert()
         .success();
 
     let yaml = read_only_yaml_in(&dir, "constraints");
 
-    assert!(yaml.contains("template: software"));
-    assert!(yaml.contains("rule: |\n    TODO:"), "rule should be a TODO block");
-    assert!(yaml.contains("rationale: |\n    TODO:"), "rationale required for software constraints");
-    assert!(yaml.contains("# impact_if_violated:"), "impact stub missing");
+    assert!(yaml.contains("software starter profile"));
+    assert!(yaml.contains("profile: 1"));
+    assert!(
+        yaml.contains("rule: |\n    TODO:"),
+        "rule should be a TODO block"
+    );
+    assert!(
+        yaml.contains("rationale: |\n    TODO:"),
+        "rationale required for software constraints"
+    );
+    assert!(
+        yaml.contains("# impact_if_violated:"),
+        "impact stub missing"
+    );
     assert!(yaml.contains("# evidence:"), "evidence stub missing");
-    assert!(yaml.contains("enforcement: manual"), "default enforcement should be manual");
+    assert!(
+        yaml.contains("enforcement: manual"),
+        "default enforcement should be manual"
+    );
 
-    shapes_in(&dir).args(["get", "constraint", "1"]).assert().success();
+    shapes_in(&dir)
+        .args(["get", "constraint", "1"])
+        .assert()
+        .success();
     shapes_in(&dir).arg("validate").assert().success();
 }
 
 #[test]
-fn software_profile_scaffold_seeds_template_fields() {
+fn init_seeds_software_starter_profile_as_id_1() {
+    let dir = fresh_store("software");
+
+    // `shapes init --kit software` must have written profile id 1.
+    let get = shapes_in(&dir)
+        .args(["get", "profile", "1"])
+        .assert()
+        .success();
+    let yaml = String::from_utf8_lossy(&get.get_output().stdout).to_string();
+
+    // Seeded profile carries the software kit's field + kind hints.
+    assert!(yaml.contains("default_kind: feature"));
+    assert!(yaml.contains("default_kind: invariant"));
+    assert!(yaml.contains("name: goals"));
+    assert!(yaml.contains("name: rationale"));
+    assert!(yaml.contains("name: system"));
+    assert!(yaml.contains("name: feature"));
+
+    // meta.yaml references profile 1 as active.
+    let meta = fs::read_to_string(dir.path().join(".shapes/meta.yaml")).unwrap();
+    assert!(
+        meta.contains("active_profile: 1"),
+        "meta should record seeded profile: {meta}"
+    );
+
+    shapes_in(&dir).arg("validate").assert().success();
+}
+
+#[test]
+fn create_profile_seeds_from_requested_kit() {
     let dir = fresh_store("software");
     shapes_in(&dir)
-        .args(["create", "profile", "--name", "Strict"])
+        .args([
+            "create", "profile", "--name", "Research", "--kit", "research",
+        ])
         .assert()
         .success();
 
-    let yaml = read_only_yaml_in(&dir, "profiles");
+    // Fetch the newly-created profile (id 2; id 1 is the starter).
+    let get = shapes_in(&dir)
+        .args(["get", "profile", "2"])
+        .assert()
+        .success();
+    let yaml = String::from_utf8_lossy(&get.get_output().stdout).to_string();
 
-    // Profile preamble explains optionality
-    assert!(yaml.contains("Profiles are\n# OPTIONAL"), "profile preamble missing");
+    assert!(yaml.contains("default_kind: experiment"));
+    assert!(yaml.contains("name: hypotheses"));
+    assert!(yaml.contains("name: success_criteria"));
+    assert!(yaml.contains("name: methodology"));
 
-    // Software template's required fields are seeded
-    assert!(yaml.contains("name: \"goals\""));
-    assert!(yaml.contains("name: \"rationale\""));
-    // Software shape kinds are seeded
-    assert!(yaml.contains("name: \"system\""));
-    assert!(yaml.contains("name: \"feature\""));
-    // Lifecycle gates seeded
-    assert!(yaml.contains("from: proposed"));
-    assert!(yaml.contains("to: promoted"));
-
-    shapes_in(&dir).args(["get", "profile", "1"]).assert().success();
     shapes_in(&dir).arg("validate").assert().success();
 }
 
-// ---------------------------------------------------------------------------
-// Other templates
-// ---------------------------------------------------------------------------
-
 #[test]
-fn research_template_uses_research_field_hints() {
+fn research_kit_uses_research_field_hints() {
     let dir = fresh_store("research");
     shapes_in(&dir)
         .args(["create", "shape", "--name", "DecayExperiment"])
@@ -145,7 +218,7 @@ fn research_template_uses_research_field_hints() {
         .success();
 
     let yaml = read_only_yaml_in(&dir, "shapes");
-    assert!(yaml.contains("template: research"));
+    assert!(yaml.contains("research starter profile"));
     assert!(yaml.contains("hypotheses: |\n    TODO:"));
     assert!(yaml.contains("success_criteria: |\n    TODO:"));
     assert!(yaml.contains("methodology: |\n    TODO:"));
@@ -155,7 +228,7 @@ fn research_template_uses_research_field_hints() {
 }
 
 #[test]
-fn editorial_template_uses_editorial_field_hints() {
+fn editorial_kit_uses_editorial_field_hints() {
     let dir = fresh_store("editorial");
     shapes_in(&dir)
         .args(["create", "shape", "--name", "Chapter1"])
@@ -163,7 +236,7 @@ fn editorial_template_uses_editorial_field_hints() {
         .success();
 
     let yaml = read_only_yaml_in(&dir, "shapes");
-    assert!(yaml.contains("template: editorial"));
+    assert!(yaml.contains("editorial starter profile"));
     assert!(yaml.contains("themes: |\n    TODO:"));
     assert!(yaml.contains("target_audience: |\n    TODO:"));
     assert!(yaml.contains("tone: |\n    TODO:"));
@@ -172,7 +245,7 @@ fn editorial_template_uses_editorial_field_hints() {
 }
 
 #[test]
-fn minimal_template_only_requires_rationale() {
+fn minimal_kit_only_requires_rationale() {
     let dir = fresh_store("minimal");
     shapes_in(&dir)
         .args(["create", "shape", "--name", "Bare", "--kind", "anything"])
@@ -180,16 +253,12 @@ fn minimal_template_only_requires_rationale() {
         .success();
 
     let yaml = read_only_yaml_in(&dir, "shapes");
-    assert!(yaml.contains("template: minimal"));
+    assert!(yaml.contains("minimal starter profile"));
     assert!(yaml.contains("rationale: |\n    TODO:"));
     // Minimal has no kind hints, so the suggested-kinds comment should be absent
     assert!(!yaml.contains("# Suggested shape kinds"));
     shapes_in(&dir).arg("validate").assert().success();
 }
-
-// ---------------------------------------------------------------------------
-// --from path still works (regression check)
-// ---------------------------------------------------------------------------
 
 #[test]
 fn from_stdin_path_still_works_without_name_flag() {
@@ -207,33 +276,55 @@ fn from_stdin_path_still_works_without_name_flag() {
         .write_stdin(yaml_input)
         .assert()
         .success();
-    shapes_in(&dir).args(["get", "shape", "1"]).assert().success();
+    shapes_in(&dir)
+        .args(["get", "shape", "1"])
+        .assert()
+        .success();
 }
 
-// ---------------------------------------------------------------------------
-// Template override
-// ---------------------------------------------------------------------------
-
 #[test]
-fn per_call_template_override_does_not_modify_meta() {
+fn per_call_profile_override_on_shape_create() {
+    // Init with software, then create a second profile from the research
+    // kit, then create a shape pointing at that second profile. The shape
+    // should be scaffolded against profile 2, not profile 1.
     let dir = fresh_store("software");
-    // Override to research for one call
     shapes_in(&dir)
-        .args(["create", "shape", "--name", "OneOff", "--template", "research"])
+        .args([
+            "create", "profile", "--name", "Research", "--kit", "research",
+        ])
+        .assert()
+        .success();
+    shapes_in(&dir)
+        .args([
+            "create",
+            "shape",
+            "--name",
+            "OneOff",
+            "--profile",
+            "2",
+            "--kind",
+            "experiment",
+        ])
         .assert()
         .success();
 
-    let yaml = read_only_yaml_in(&dir, "shapes");
-    assert!(yaml.contains("template: research"), "override should produce research scaffold");
+    let get = shapes_in(&dir)
+        .args(["get", "shape", "1"])
+        .assert()
+        .success();
+    let yaml = String::from_utf8_lossy(&get.get_output().stdout).to_string();
+    assert!(
+        yaml.contains("profile: 2"),
+        "shape should record the override profile id: {yaml}"
+    );
 
-    // meta.yaml should still say software
+    // meta.yaml still points at profile 1 as the active profile.
     let meta = fs::read_to_string(dir.path().join(".shapes/meta.yaml")).unwrap();
-    assert!(meta.contains("template: software"), "meta should be unchanged");
+    assert!(
+        meta.contains("active_profile: 1"),
+        "meta should be unchanged: {meta}"
+    );
 }
-
-// ---------------------------------------------------------------------------
-// init guards
-// ---------------------------------------------------------------------------
 
 #[test]
 fn init_refuses_to_overwrite_existing_store() {
@@ -247,23 +338,19 @@ fn init_refuses_to_overwrite_existing_store() {
 }
 
 #[test]
-fn init_rejects_unknown_template() {
+fn init_rejects_unknown_kit() {
     let dir = tempfile::tempdir().unwrap();
     Command::cargo_bin("shapes")
         .unwrap()
         .current_dir(dir.path())
-        .args(["init", "--template", "bogus"])
+        .args(["init", "--kit", "bogus"])
         .assert()
         .failure();
     assert!(
         !dir.path().join(".shapes").exists(),
-        "store should not be created when template is invalid",
+        "store should not be created when kit is invalid",
     );
 }
-
-// ---------------------------------------------------------------------------
-// Enforcement and clap arg validation
-// ---------------------------------------------------------------------------
 
 #[test]
 fn constraint_rejects_human_enforcement_with_helpful_error() {
@@ -299,11 +386,8 @@ fn create_shape_without_name_or_from_fails_with_clap_error() {
     );
 }
 
-// ---------------------------------------------------------------------------
-// Amendment create — regression for the kebab-case clap arg-id bug that
 // previously panicked clap's debug_assert when --from was combined with
 // --target-shape / --target-constraint / --version-impact.
-// ---------------------------------------------------------------------------
 
 #[test]
 fn amendment_create_via_flags_succeeds() {
@@ -352,10 +436,6 @@ fn amendment_create_via_from_stdin_succeeds() {
         .assert()
         .success();
 }
-
-// ---------------------------------------------------------------------------
-// Profile-driven kind validation (the surviving half of Profile-Aware Create)
-// ---------------------------------------------------------------------------
 
 #[test]
 fn profile_kind_validation_rejects_disallowed_kind() {
@@ -406,10 +486,6 @@ fn profile_kind_validation_accepts_allowed_kind() {
         .assert()
         .success();
 }
-
-// ---------------------------------------------------------------------------
-// Query / list / tree
-// ---------------------------------------------------------------------------
 
 #[test]
 fn list_and_tree_and_inheritance_work_after_linking_parent_and_child() {
@@ -499,17 +575,18 @@ fn list_and_tree_and_inheritance_work_after_linking_parent_and_child() {
         .args(["query", "ancestors", "shape", "2"])
         .assert()
         .success();
-    let ancestors_stdout =
-        String::from_utf8_lossy(&ancestors.get_output().stdout).to_string();
+    let ancestors_stdout = String::from_utf8_lossy(&ancestors.get_output().stdout).to_string();
     assert!(ancestors_stdout.contains("1"), "ancestors should include 1");
 
     let descendants = shapes_in(&dir)
         .args(["query", "descendants", "shape", "1"])
         .assert()
         .success();
-    let descendants_stdout =
-        String::from_utf8_lossy(&descendants.get_output().stdout).to_string();
-    assert!(descendants_stdout.contains("2"), "descendants should include 2");
+    let descendants_stdout = String::from_utf8_lossy(&descendants.get_output().stdout).to_string();
+    assert!(
+        descendants_stdout.contains("2"),
+        "descendants should include 2"
+    );
 
     // Constraint inheritance: child should see TheRule even though it's
     // declared on the parent.
@@ -517,17 +594,12 @@ fn list_and_tree_and_inheritance_work_after_linking_parent_and_child() {
         .args(["query", "constraints", "2"])
         .assert()
         .success();
-    let constraints_stdout =
-        String::from_utf8_lossy(&constraints.get_output().stdout).to_string();
+    let constraints_stdout = String::from_utf8_lossy(&constraints.get_output().stdout).to_string();
     assert!(
         constraints_stdout.contains("TheRule"),
         "child should inherit TheRule from parent: {constraints_stdout}",
     );
 }
-
-// ---------------------------------------------------------------------------
-// Validation
-// ---------------------------------------------------------------------------
 
 #[test]
 fn validate_detects_dangling_child_reference() {
@@ -576,45 +648,6 @@ fn create_from_stdin_rejects_malformed_yaml() {
         .failure();
 }
 
-// ---------------------------------------------------------------------------
-// Back-compat: legacy stores without `template:` in meta.yaml
-// ---------------------------------------------------------------------------
-
-#[test]
-fn legacy_meta_without_template_falls_back_to_software() {
-    let dir = tempfile::tempdir().unwrap();
-    let shapes_root = dir.path().join(".shapes");
-    fs::create_dir(&shapes_root).unwrap();
-    for sub in ["shapes", "constraints", "amendments", "profiles"] {
-        fs::create_dir(shapes_root.join(sub)).unwrap();
-    }
-    fs::write(shapes_root.join("meta.yaml"), "version: '0.1.0'\n").unwrap();
-
-    Command::cargo_bin("shapes")
-        .unwrap()
-        .current_dir(dir.path())
-        .args(["create", "shape", "--name", "Legacy", "--kind", "feature"])
-        .assert()
-        .success();
-
-    // Find the resulting file in shapes/ and confirm it used the software template.
-    let entries: Vec<_> = fs::read_dir(shapes_root.join("shapes"))
-        .unwrap()
-        .filter_map(Result::ok)
-        .map(|e| e.path())
-        .collect();
-    assert_eq!(entries.len(), 1);
-    let yaml = fs::read_to_string(&entries[0]).unwrap();
-    assert!(
-        yaml.contains("template: software"),
-        "legacy store should fall back to software template: {yaml}",
-    );
-}
-
-// ---------------------------------------------------------------------------
-// JSON output
-// ---------------------------------------------------------------------------
-
 #[test]
 fn list_supports_json_format() {
     let dir = fresh_store("software");
@@ -627,7 +660,10 @@ fn list_supports_json_format() {
         .assert()
         .success();
     let stdout = String::from_utf8_lossy(&assert.get_output().stdout).to_string();
-    assert!(stdout.trim_start().starts_with('['), "expected JSON array, got: {stdout}");
+    assert!(
+        stdout.trim_start().starts_with('['),
+        "expected JSON array, got: {stdout}"
+    );
     assert!(stdout.contains("\"id\""));
     assert!(stdout.contains("\"name\""));
 }
@@ -639,4 +675,592 @@ fn validate_supports_json_format() {
         .args(["validate", "--format", "json"])
         .assert()
         .success();
+}
+
+/// Snapshot coverage for scaffold output per constraint 30.
+///
+/// These capture the full scaffold YAML verbatim so any drift in
+/// whitespace, ordering, or comment text shows up as a reviewable
+/// `.snap` diff. Update with `cargo insta review` after intentional
+/// changes.
+mod scaffold_snapshots {
+    use super::{fresh_store, read_only_yaml_in, shapes_in};
+
+    #[test]
+    fn software_shape_scaffold_snapshot() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args([
+                "create",
+                "shape",
+                "--name",
+                "AuthService",
+                "--kind",
+                "service",
+            ])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "shapes");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn software_constraint_scaffold_snapshot() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args([
+                "create",
+                "constraint",
+                "--name",
+                "NoUnsafeBlocks",
+                "--kind",
+                "invariant",
+            ])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "constraints");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn software_profile_scaffold_snapshot() {
+        // fresh_store already seeds profile id 1 from the software kit.
+        // Create profile id 2 from the same kit and snapshot its on-disk
+        // YAML by reading it directly (can't use `read_only_yaml_in` —
+        // the dir now holds two files).
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "profile", "--name", "Strict"])
+            .assert()
+            .success();
+        let path = dir.path().join(".shapes/profiles/2-strict.yaml");
+        let yaml = std::fs::read_to_string(&path).expect("read created profile");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn research_shape_scaffold_snapshot() {
+        let dir = fresh_store("research");
+        shapes_in(&dir)
+            .args(["create", "shape", "--name", "DecayExperiment"])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "shapes");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn editorial_shape_scaffold_snapshot() {
+        let dir = fresh_store("editorial");
+        shapes_in(&dir)
+            .args(["create", "shape", "--name", "Chapter1"])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "shapes");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn minimal_shape_scaffold_snapshot() {
+        let dir = fresh_store("minimal");
+        shapes_in(&dir)
+            .args(["create", "shape", "--name", "Bare", "--kind", "anything"])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "shapes");
+        insta::assert_snapshot!(yaml);
+    }
+}
+
+/// Profile-driven validation invariants (INV-012..INV-016).
+///
+/// Each test stages a deliberately broken fixture in a fresh store
+/// (using `--from -` to bypass create-time validation), then runs
+/// `shapes validate` and asserts it fails with exit code 2 and the
+/// expected `INV-*` tag in stderr.
+mod profile_enforcement {
+    use super::{fresh_store, shapes_in};
+
+    /// Helper: run `shapes validate`, expect failure with exit 2, and
+    /// return stderr as a String.
+    fn validate_fails(dir: &tempfile::TempDir) -> String {
+        let assert = shapes_in(dir).arg("validate").assert().failure().code(2);
+        String::from_utf8_lossy(&assert.get_output().stderr).to_string()
+    }
+
+    /// INV-012: a shape whose `intent.kind` is not in the active
+    /// profile's allow-list must be flagged.
+    #[test]
+    fn inv_012_kind_outside_allow_list_is_flagged() {
+        let dir = fresh_store("software");
+        let bad = "id: 0\n\
+            name: bad-kind\n\
+            description: d\n\
+            profile: 1\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: nonexistent_kind\n  \
+              summary: s\n  \
+              source: human\n  \
+              goals: g\n  \
+              rationale: r\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-012") && stderr.contains("nonexistent_kind"),
+            "expected INV-012 for nonexistent_kind: {stderr}"
+        );
+    }
+
+    /// INV-013: a shape whose `intent.source` is not in the active
+    /// profile's source allow-list must be flagged.
+    ///
+    /// The default software profile does not declare a source
+    /// allow-list, so we first install a custom profile via `--from`
+    /// that does, then create a shape pointing at that profile with a
+    /// disallowed source.
+    #[test]
+    fn inv_013_source_outside_allow_list_is_flagged() {
+        let dir = fresh_store("software");
+        // Custom profile with intent.sources allow-list = [human, ai].
+        let strict_profile = "id: 0\n\
+            name: source-strict\n\
+            description: source allow-list test\n\
+            status: canonical\n\
+            intent:\n  \
+              kind: governance\n  \
+              summary: s\n  \
+              source: system\n\
+            fields:\n  \
+              shape:\n    \
+                intent:\n      \
+                  sources:\n        \
+                    - name: human\n          \
+                      description: hand-authored\n        \
+                    - name: ai\n          \
+                      description: agent-authored\n";
+        shapes_in(&dir)
+            .args(["create", "profile", "--from", "-"])
+            .write_stdin(strict_profile)
+            .assert()
+            .success();
+        // Shape with source: martian — not in [human, ai].
+        let bad_shape = "id: 0\n\
+            name: bad-source\n\
+            description: d\n\
+            profile: 2\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: martian\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad_shape)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-013") && stderr.contains("martian"),
+            "expected INV-013 for martian source: {stderr}"
+        );
+    }
+
+    /// INV-013 (dogfood): the software starter kit declares
+    /// `intent.sources = [human, ai]`. A shape created against the
+    /// active profile with `source: martian` must be rejected without
+    /// any custom profile setup.
+    #[test]
+    fn inv_013_software_kit_rejects_unlisted_source() {
+        let dir = fresh_store("software");
+        let bad = "id: 0\n\
+            name: bad-source-software-kit\n\
+            description: d\n\
+            profile: 1\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: martian\n  \
+              goals: g\n  \
+              rationale: r\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-013") && stderr.contains("martian"),
+            "expected INV-013 for martian source against software kit: {stderr}"
+        );
+    }
+
+    /// INV-014: a realization binding missing a required metadata
+    /// field declared by the profile must be flagged.
+    ///
+    /// The default software starter profile makes
+    /// `realization.fields.summary` required.
+    #[test]
+    fn inv_014_realization_missing_required_summary_is_flagged() {
+        let dir = fresh_store("software");
+        let bad = "id: 0\n\
+            name: missing-summary\n\
+            description: d\n\
+            profile: 1\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: human\n  \
+              goals: g\n  \
+              rationale: r\n\
+            realization:\n  \
+              - bindings:\n      \
+                  - scheme: path\n        \
+                    value: src/foo.rs\n        \
+                    metadata: {}\n    \
+                role: primary\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-014") && stderr.contains("summary"),
+            "expected INV-014 for missing realization summary: {stderr}"
+        );
+    }
+
+    /// INV-010: a shape that omits a profile-required intent field
+    /// must be flagged.
+    ///
+    /// The default software profile makes `intent.goals` and
+    /// `intent.rationale` required. Scaffold auto-populates them, so we
+    /// use `--from -` to feed YAML that explicitly omits `goals`.
+    #[test]
+    fn inv_010_missing_required_intent_field_is_flagged() {
+        let dir = fresh_store("software");
+        let bad = "id: 0\n\
+            name: missing-goals\n\
+            description: d\n\
+            profile: 1\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: human\n  \
+              rationale: r\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-010") && stderr.contains("goals"),
+            "expected INV-010 for missing intent.goals: {stderr}"
+        );
+    }
+
+    /// INV-015: a metadata value whose type does not match the
+    /// profile's declared `field_type` must be flagged.
+    #[test]
+    fn inv_015_metadata_type_mismatch_is_flagged() {
+        let dir = fresh_store("software");
+        // Custom profile that requires shape.metadata.priority to be
+        // an integer.
+        let strict_profile = "id: 0\n\
+            name: type-strict\n\
+            description: type checking test\n\
+            status: canonical\n\
+            intent:\n  \
+              kind: governance\n  \
+              summary: s\n  \
+              source: system\n\
+            fields:\n  \
+              shape:\n    \
+                metadata:\n      \
+                  fields:\n        \
+                    - name: priority\n          \
+                      description: numeric priority\n          \
+                      type: integer\n          \
+                      required: true\n";
+        shapes_in(&dir)
+            .args(["create", "profile", "--from", "-"])
+            .write_stdin(strict_profile)
+            .assert()
+            .success();
+        // Shape whose metadata.priority is a string, not an integer.
+        let bad_shape = "id: 0\n\
+            name: wrong-type\n\
+            description: d\n\
+            profile: 2\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: human\n\
+            metadata:\n  \
+              priority: high\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad_shape)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-015") && stderr.contains("integer"),
+            "expected INV-015 for non-integer priority: {stderr}"
+        );
+    }
+
+    /// INV-016: a profile whose `default_kind` is not in its own
+    /// `intent.kinds` allow-list must be flagged.
+    #[test]
+    fn inv_016_default_kind_not_in_allow_list_is_flagged() {
+        let dir = fresh_store("software");
+        let inconsistent_profile = "id: 0\n\
+            name: inconsistent\n\
+            description: default_kind not in allow-list\n\
+            status: canonical\n\
+            intent:\n  \
+              kind: governance\n  \
+              summary: s\n  \
+              source: system\n\
+            fields:\n  \
+              shape:\n    \
+                default_kind: ghost\n    \
+                intent:\n      \
+                  kinds:\n        \
+                    - name: real\n          \
+                      description: a real kind\n";
+        shapes_in(&dir)
+            .args(["create", "profile", "--from", "-"])
+            .write_stdin(inconsistent_profile)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-016") && stderr.contains("ghost"),
+            "expected INV-016 for default_kind 'ghost' outside allow-list: {stderr}"
+        );
+    }
+
+    /// Self-consistency also flags duplicate names within a single
+    /// FieldDef list.
+    #[test]
+    fn inv_016_duplicate_field_names_is_flagged() {
+        let dir = fresh_store("software");
+        let dup_profile = "id: 0\n\
+            name: duplicates\n\
+            description: dup field names\n\
+            status: canonical\n\
+            intent:\n  \
+              kind: governance\n  \
+              summary: s\n  \
+              source: system\n\
+            fields:\n  \
+              shape:\n    \
+                intent:\n      \
+                  fields:\n        \
+                    - name: goals\n          \
+                      description: first\n          \
+                      required: true\n        \
+                    - name: goals\n          \
+                      description: duplicate\n          \
+                      required: false\n";
+        shapes_in(&dir)
+            .args(["create", "profile", "--from", "-"])
+            .write_stdin(dup_profile)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-016") && stderr.contains("duplicate"),
+            "expected INV-016 for duplicate field name 'goals': {stderr}"
+        );
+    }
+}
+
+mod binding_existence {
+    use super::{fresh_store, shapes_in};
+
+    /// Run `shapes validate`, expect failure with exit 2, and return
+    /// stderr as a String.
+    fn validate_fails(dir: &tempfile::TempDir) -> String {
+        let assert = shapes_in(dir).arg("validate").assert().failure().code(2);
+        String::from_utf8_lossy(&assert.get_output().stderr).to_string()
+    }
+
+    /// Body for a shape with one realization binding using the given
+    /// scheme/value. Profile is omitted so this exercises ONLY the
+    /// binding-existence walk, not INV-010..INV-016.
+    fn shape_with_binding(scheme: &str, value: &str) -> String {
+        format!(
+            "id: 0\n\
+             name: bind-test\n\
+             description: d\n\
+             status: proposed\n\
+             intent:\n  \
+               kind: feature\n  \
+               summary: s\n  \
+               source: human\n\
+             realization:\n  \
+               - bindings:\n      \
+                   - scheme: {scheme}\n        \
+                     value: {value:?}\n        \
+                     metadata:\n          \
+                       summary: t\n    \
+                 role: primary\n",
+        )
+    }
+
+    /// INV-017: a path binding pointing at a file that doesn't exist
+    /// must be flagged.
+    #[test]
+    fn inv_017_missing_path_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", "src/does-not-exist.rs"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("does-not-exist"),
+            "expected INV-017 for missing file: {stderr}"
+        );
+    }
+
+    /// INV-017: an absolute path binding must be flagged before any
+    /// filesystem touch.
+    #[test]
+    fn inv_017_absolute_path_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", "/etc/passwd"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("absolute"),
+            "expected INV-017 for absolute path: {stderr}"
+        );
+    }
+
+    /// INV-017: a path that lexically escapes the workspace via
+    /// parent-dir components must be flagged without touching the
+    /// filesystem.
+    #[test]
+    fn inv_017_parent_escape_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", "../../etc/passwd"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("escapes"),
+            "expected INV-017 for parent-dir escape: {stderr}"
+        );
+    }
+
+    /// INV-017: an empty `value` must be flagged.
+    #[test]
+    fn inv_017_empty_value_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", ""))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("empty"),
+            "expected INV-017 for empty path: {stderr}"
+        );
+    }
+
+    /// INV-017: a path with backslash separators must be flagged so
+    /// the slash-only convention is portable across platforms.
+    #[test]
+    fn inv_017_backslash_separator_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", "src\\foo.rs"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("'/'"),
+            "expected INV-017 for backslash separator: {stderr}"
+        );
+    }
+
+    /// INV-017 positive: a path that resolves to a real file in the
+    /// workspace passes validate. The fresh_store seeds the standard
+    /// init layout, so `meta.yaml` is guaranteed to exist under the
+    /// `.shapes` directory; we use the directory itself to also
+    /// confirm directories are accepted.
+    #[test]
+    fn inv_017_existing_directory_passes() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", ".shapes"))
+            .assert()
+            .success();
+        shapes_in(&dir).arg("validate").assert().success();
+    }
+
+    /// INV-017 positive: a path resolving to a real file (not just a
+    /// directory) is also accepted. Uses meta.yaml under .shapes which
+    /// init guarantees.
+    #[test]
+    fn inv_017_existing_file_passes() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", ".shapes/meta.yaml"))
+            .assert()
+            .success();
+        shapes_in(&dir).arg("validate").assert().success();
+    }
+
+    /// INV-018: a url binding that lacks `scheme://` must be flagged.
+    #[test]
+    fn inv_018_missing_scheme_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("url", "not a url"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-018"),
+            "expected INV-018 for malformed url: {stderr}"
+        );
+    }
+
+    /// INV-018 positive: a well-formed https URL is accepted.
+    #[test]
+    fn inv_018_valid_https_url_passes() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("url", "https://example.com"))
+            .assert()
+            .success();
+        shapes_in(&dir).arg("validate").assert().success();
+    }
 }

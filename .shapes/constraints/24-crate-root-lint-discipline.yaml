@@ -1,0 +1,32 @@
+id: 24
+name: Crate-Root Lint Discipline
+description: >-
+  src/main.rs sets a fixed lint baseline for the whole CLI crate so that
+  unsafe code, missing docs, and stale 2015/2018 idioms are caught at build
+  time without per-file ceremony.
+kind: invariant
+rule: >-
+  src/main.rs declares the crate-wide lint baseline via inner attributes:
+  #![deny(unsafe_code)], #![warn(missing_docs)], #![warn(rust_2018_idioms)].
+  Clippy stays on its default group (no clippy::all, no clippy::pedantic).
+  cargo clippy --all-targets -- -D warnings must pass.
+enforcement: machine
+status: proposed
+profile: 1
+intent:
+  kind: invariant
+  summary: Fixed lint baseline at the crate root, enforced via cargo clippy
+  source: ai
+  rationale: >-
+    The crate root currently sets no lints. There is no project-wide
+    enforcement of unsafe-prohibition or doc coverage. Pinning the baseline
+    in main.rs makes the policy machine-checkable and prevents future drift.
+    clippy::all and clippy::pedantic are intentionally excluded — the user
+    chose the default clippy group to keep noise manageable on existing
+    code.
+  impact_if_violated: >-
+    Unsafe blocks could land without review, undocumented public items
+    accumulate, and drift from current Rust idioms goes unflagged.
+  verification_method: >-
+    Inspect src/main.rs for the four inner attributes; run
+    `cargo clippy --all-targets -- -D warnings` and confirm exit 0.

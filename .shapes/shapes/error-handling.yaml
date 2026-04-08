@@ -1,24 +1,33 @@
 id: 27
 name: Error Handling
 description: >-
-  Structured error hierarchy using thiserror. Four error types: StoreError
-  (file I/O and persistence), CreateError (node creation failures including
-  profile validation), ValidationError (validation-as-operation control flow),
-  and CliError (top-level wrapper that maps errors to exit codes 0/1/2).
-  The CliError::Other variant wraps anyhow::Error for backward compatibility
-  during incremental migration from anyhow.
+  Layered error strategy using thiserror plus anyhow. Two domain-specific
+  error types — CreateError (currently one variant: InvalidKind) and
+  ValidationError (currently one variant: IssuesFound) — encode failures
+  the CLI maps to typed exit codes via CliError::exit_code.
+  CliError::Other(anyhow::Error) is the primary catch-all for everything
+  else; this is the intended architecture, not a transitional shim.
 status: canonical
 profile: 1
+amendment_log:
+  - 26
 intent:
   kind: module
-  summary: Structured error hierarchy with thiserror for typed exit codes and domain-specific errors
+  summary: >-
+    Layered error strategy: typed error variants where they unlock typed
+    exit codes, anyhow propagation for everything else.
   source: human
   goals: >-
-    Provide domain-specific error types that enable typed exit codes,
-    structured error messages, and incremental migration from anyhow.
+    Provide typed errors exactly where the CLI needs to map them onto
+    process exit codes. Keep anyhow as the universal carrier so command
+    handlers do not have to invent variants for every failure mode.
   rationale: >-
-    The validate command previously used process::exit(2) for control flow.
-    With CliError, exit codes are determined by error type via exit_code().
+    Validate exits with code 2 specifically for "issues found", which
+    means we need a typed error variant the binary entry point can
+    pattern-match on. Same logic for InvalidKind. Everywhere else,
+    anyhow strings are richer than hand-rolled variant trees, and the
+    back-compat strip removed an unused store-layer error enum that
+    had been staged for an aborted full migration from anyhow.
 constraints:
   - 14
 parents:
@@ -29,5 +38,10 @@ realization:
       - scheme: path
         value: src/error.rs
         metadata:
-          summary: StoreError, CreateError, ValidationError, CliError enums with thiserror derives and exit_code() method
+          summary: >-
+            CreateError + ValidationError typed enums (one variant each),
+            CliError wrapper with #[from] for both plus anyhow::Error,
+            and CliError::exit_code mapping
+            ValidationError::IssuesFound to ExitCode::from(2) and
+            everything else to ExitCode::from(1).
     role: primary

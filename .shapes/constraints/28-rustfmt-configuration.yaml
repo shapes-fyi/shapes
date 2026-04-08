@@ -1,0 +1,27 @@
+id: 28
+name: Rustfmt Configuration
+description: >-
+  A rustfmt.toml exists at the repo root pinning the edition and any
+  project-wide formatting knobs. cargo fmt --check passes on every commit
+  touching src/.
+kind: invariant
+rule: >-
+  A rustfmt.toml exists at repo root pinning edition = "2024" and any
+  project-wide formatting overrides. cargo fmt --check passes on every commit
+  that touches src/.
+enforcement: machine
+status: proposed
+profile: 1
+intent:
+  kind: invariant
+  summary: Pinned rustfmt.toml at repo root, enforced by cargo fmt --check
+  source: ai
+  rationale: >-
+    Today the repo has no rustfmt.toml. Formatting drifts with whichever
+    rustfmt happens to be installed. Pinning the edition (and any other
+    knobs) eliminates accidental whitespace churn in PRs.
+  impact_if_violated: >-
+    Diff noise from formatter drift, contributors stepping on each other's
+    style choices, no enforceable baseline.
+  verification_method: >-
+    File exists at /rustfmt.toml; `cargo fmt --check` exits 0.

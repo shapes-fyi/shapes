@@ -1,3 +1,9 @@
+//! Graph traversal helpers for the shape and constraint DAGs.
+//!
+//! Implements ancestor / descendant walks, the inherited-constraint
+//! lookup that powers `shapes query constraints <shape-id>`, and the
+//! reverse "which shapes reference this constraint" lookup.
+
 use std::collections::{BTreeMap, HashSet, VecDeque};
 
 use anyhow::Result;
@@ -7,10 +13,7 @@ use crate::DagType;
 use crate::model::*;
 use crate::store::NodeStore;
 
-// ---------------------------------------------------------------------------
-// Ancestors
-// ---------------------------------------------------------------------------
-
+/// Returns all ancestor IDs of `id` in the chosen DAG, breadth-first.
 pub fn ancestors(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result<Vec<u64>> {
     let mut result = Vec::new();
     let mut visited = HashSet::new();
@@ -61,10 +64,7 @@ pub fn ancestors(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result<V
     Ok(result)
 }
 
-// ---------------------------------------------------------------------------
-// Descendants
-// ---------------------------------------------------------------------------
-
+/// Returns all descendant IDs of `id` in the chosen DAG, breadth-first.
 pub fn descendants(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result<Vec<u64>> {
     let mut result = Vec::new();
     let mut visited = HashSet::new();
@@ -115,11 +115,13 @@ pub fn descendants(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result
     Ok(result)
 }
 
-// ---------------------------------------------------------------------------
-// Effective constraints (shape-specific)
-// ---------------------------------------------------------------------------
-
-pub fn effective_constraints(store: &impl NodeStore, shape_id: u64) -> Result<Vec<ConstraintWithSource>> {
+/// Returns every constraint that applies to `shape_id`, including the
+/// constraints inherited from ancestor shapes. Each result records
+/// which shape it came from and whether it was inherited.
+pub fn effective_constraints(
+    store: &impl NodeStore,
+    shape_id: u64,
+) -> Result<Vec<ConstraintWithSource>> {
     let mut result = Vec::new();
     let mut seen = HashSet::new();
     let mut visited = HashSet::new();
@@ -155,19 +157,26 @@ pub fn effective_constraints(store: &impl NodeStore, shape_id: u64) -> Result<Ve
     Ok(result)
 }
 
+/// Result row from [`effective_constraints`].
 #[derive(Debug, Serialize)]
 pub struct ConstraintWithSource {
+    /// Identifier of the inherited or directly-applied constraint.
     pub constraint_id: ConstraintId,
+    /// Human-readable name pulled from the constraint node, or `???`
+    /// if the constraint cannot be loaded.
     pub constraint_name: String,
+    /// Shape that originally declared the constraint.
     pub source_shape_id: ShapeId,
+    /// `true` when the constraint was inherited from an ancestor.
     pub inherited: bool,
 }
 
-// ---------------------------------------------------------------------------
-// Reverse query: which shapes reference a constraint?
-// ---------------------------------------------------------------------------
-
-pub fn shapes_for_constraint(store: &impl NodeStore, constraint_id: u64) -> Result<Vec<ShapeForConstraint>> {
+/// Reverse lookup — returns every shape that references `constraint_id`,
+/// including shapes that inherit it through descent in the shape DAG.
+pub fn shapes_for_constraint(
+    store: &impl NodeStore,
+    constraint_id: u64,
+) -> Result<Vec<ShapeForConstraint>> {
     let _: Constraint = store.load(NodeType::Constraint, constraint_id)?;
 
     let shape_ids = store.list_ids(NodeType::Shape)?;
@@ -224,9 +233,14 @@ pub fn shapes_for_constraint(store: &impl NodeStore, constraint_id: u64) -> Resu
     Ok(result)
 }
 
+/// Result row from [`shapes_for_constraint`].
 #[derive(Debug, Serialize)]
 pub struct ShapeForConstraint {
+    /// Identifier of the matching shape.
     pub shape_id: ShapeId,
+    /// Human-readable shape name, or `???` if the shape cannot be
+    /// loaded.
     pub shape_name: String,
+    /// `true` when this shape only matches because of DAG inheritance.
     pub inherited: bool,
 }

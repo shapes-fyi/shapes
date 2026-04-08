@@ -40,7 +40,7 @@ parents:
 realization:
   - bindings:
       - scheme: path
-        value: src/model/common.rs
+        value: src/model/intent.rs
         metadata:
           summary: Intent struct — kind/summary/source required fields + flattened BTreeMap for arbitrary extra fields
     role: primary

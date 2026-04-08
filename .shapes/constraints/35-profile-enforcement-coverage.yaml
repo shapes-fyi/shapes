@@ -1,0 +1,58 @@
+id: 35
+name: Profile Enforcement Coverage
+description: >-
+  `shapes validate` enforces every aspect of the active Profile against
+  the shapes and constraints that reference it. Profile-declared rules
+  cannot exist as documentation only; if the schema declares it, the
+  validator checks it.
+kind: invariant
+rule: >-
+  `shapes validate` enforces every aspect of the active Profile against
+  shapes and constraints that reference it: required intent fields
+  (INV-010), kind allow-list (INV-012), source allow-list (INV-013),
+  required per-binding metadata fields on realization / evidence /
+  provenance (INV-014), declared field type checking (INV-015), and
+  Profile self-consistency including `default_kind` in the allow-list
+  and no duplicate field / kind / source names (INV-016). Adding a new
+  profile-driven rule requires extending `src/commands/dag/validate.rs`
+  and assigning a new INV-* tag.
+enforcement: machine
+profile: 1
+status: proposed
+intent:
+  kind: invariant
+  summary: >-
+    shapes validate enforces every Profile-declared rule via INV-010 +
+    INV-012..INV-016
+  source: ai
+  rationale: >-
+    The Template→Profile consolidation made Profile the sole source of
+    domain schema (constraint:34). This constraint is the matching
+    enforcement contract: every dimension a Profile can declare must
+    be checked at validate time. Otherwise the schema becomes
+    aspirational documentation and the same silent-divergence class of
+    bug returns — only this time it would manifest as "the profile
+    says X but no validator ever looks at X".
+  impact_if_violated: >-
+    A profile can declare a rule (e.g. allow-listed sources, required
+    binding metadata, typed fields) that the validator silently
+    ignores. Authors then trust the schema for governance it does not
+    actually deliver, and post-hoc audits miss real violations.
+  verification_method: >-
+    Each INV-* tag listed in the rule must be exercised by at least
+    one integration test in tests/cli_scaffold.rs (currently the
+    `profile_enforcement` module). Adding a new profile-driven rule
+    without a matching test is a violation.
+realization:
+  - bindings:
+      - scheme: path
+        value: src/commands/dag/validate.rs
+        metadata:
+          summary: validate_profile_fields plus check_kind_in_allow_list / check_source_in_allow_list / check_field_types / check_required_fields and validate_profile_self_consistency carry every INV-* check
+    role: primary
+  - bindings:
+      - scheme: path
+        value: tests/cli_scaffold.rs
+        metadata:
+          summary: profile_enforcement integration-test module — one failing-fixture test per INV-012..INV-016
+    role: test

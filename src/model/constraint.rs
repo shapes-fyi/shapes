@@ -1,3 +1,11 @@
+//! The [`Constraint`] node — a strict, falsifiable rule the project
+//! must satisfy.
+//!
+//! Constraints form their own DAG (independent of the shape DAG) and
+//! are linked from shapes via `constraints: [id, ...]`. They inherit
+//! down the constraint DAG and are looked up via
+//! `shapes query constraints <shape-id>`.
+
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
@@ -5,14 +13,18 @@ use serde::{Deserialize, Serialize};
 use clap::ValueEnum;
 
 use super::{
-    AmendmentId, ConstraintId, ProfileId,
-    common::{Evidence, Intent, ParentRef, Provenance, Realization, Status},
+    AmendmentId, ConstraintId, Evidence, Intent, ParentRef, ProfileId, Provenance, Realization,
+    Status,
 };
 
+/// Whether a constraint is enforced by humans (`manual`) or by an
+/// automated check (`machine`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Enforcement {
+    /// Verified by code review or human inspection.
     Manual,
+    /// Verified by an automated check (lint, test, CI rule).
     Machine,
 }
 
@@ -30,27 +42,60 @@ pub struct Constraint {
     pub version: Option<String>,
     pub status: Status,
     pub intent: Intent,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub realization: Vec<Realization>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub evidence: Vec<Evidence>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub provenance: Vec<Provenance>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub amendment_log: Vec<AmendmentId>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub parents: Vec<ParentRef<ConstraintId>>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub children: Vec<ConstraintChildRef>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "BTreeMap::is_empty"
+    )]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
 impl Constraint {
+    /// Returns the IDs of every parent recorded in `parents`.
+    #[must_use]
     pub fn parent_ids(&self) -> Vec<ConstraintId> {
         self.parents.iter().map(|p| p.id).collect()
     }
 
+    /// Returns the IDs of every direct child, resolving inline children
+    /// to their stored ID.
+    #[must_use]
     pub fn child_ids(&self) -> Vec<ConstraintId> {
         self.children
             .iter()

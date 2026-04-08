@@ -1,0 +1,13 @@
+id: 25
+name: Profiles Automatic in Create — Reword constraint:17
+description: Profiles Automatic in Create — Reword constraint:17
+targets:
+  constraint_ids:
+  - 17
+status: proposed
+intent:
+  kind: amendment
+  summary: 'Reword constraint 17 from ''Profiles Optional in Create'' to ''Profiles Automatic in Create''. The original concern (don''t force users to author a profile before creating any node) is honored differently after the Template→Profile consolidation: shapes init now seeds an active profile from a starter kit, so users still never manually author one for basic use, but the active profile is always present and is the sole source of field hints, kind allow-lists, and default kinds.'
+  source: ai
+initiated_by:
+  type: ai

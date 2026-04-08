@@ -1,11 +1,12 @@
+//! The [`Profile`] node — governance configuration that declares which
+//! intent fields are required, which kinds are allowed, and how
+//! amendments apply to canonical nodes.
+
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::{
-    AmendmentId, ProfileId,
-    common::{Intent, Provenance, Status},
-};
+use super::{AmendmentId, Intent, ProfileId, Provenance, Status};
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Profile {
@@ -16,7 +17,11 @@ pub struct Profile {
     pub version: Option<String>,
     pub status: Status,
     pub intent: Intent,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub provenance: Vec<Provenance>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lifecycle: Option<Lifecycle>,
@@ -26,21 +31,35 @@ pub struct Profile {
     pub versioning: Option<Versioning>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub amendment_rules: Option<AmendmentRules>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub amendment_log: Vec<AmendmentId>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "BTreeMap::is_empty"
+    )]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
-// ---------------------------------------------------------------------------
-// Lifecycle
-// ---------------------------------------------------------------------------
-
+/// Lifecycle definition: the named statuses a node may take and the
+/// gates between them.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Lifecycle {
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub statuses: Vec<StatusDef>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub gates: Vec<Gate>,
 }
 
@@ -56,16 +75,21 @@ pub struct StatusDef {
 pub struct Gate {
     pub from: String,
     pub to: String,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub preconditions: Vec<String>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub postconditions: Vec<String>,
 }
 
-// ---------------------------------------------------------------------------
-// Field declarations
-// ---------------------------------------------------------------------------
-
+/// Declaration of a single profile-defined field.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FieldDef {
     pub name: String,
@@ -86,6 +110,11 @@ pub struct ProfileFields {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FieldSection {
+    /// Default `intent.kind` used when `shapes create` is invoked
+    /// without `--kind`. The active profile owns this default; no
+    /// parallel hardcoded template supplies it.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default_kind: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub intent: Option<FieldGroup>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -104,18 +133,27 @@ pub struct FieldSection {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct FieldGroup {
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub fields: Vec<FieldDef>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub kinds: Vec<FieldDef>,
-    #[serde(default, deserialize_with = "crate::model::common::null_to_default", skip_serializing_if = "Vec::is_empty")]
+    #[serde(
+        default,
+        deserialize_with = "crate::model::serde_helpers::null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub sources: Vec<FieldDef>,
 }
 
-// ---------------------------------------------------------------------------
-// Versioning & amendment rules
-// ---------------------------------------------------------------------------
-
+/// Versioning configuration for a profile.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Versioning {
     pub scheme: String,

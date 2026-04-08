@@ -33,7 +33,7 @@ parents:
 realization:
   - bindings:
       - scheme: path
-        value: src/commands/dag.rs
+        value: src/commands/dag/tree.rs
         metadata:
           summary: print_tree() — find_roots(), print_subtree() recursive descent, Unicode box-drawing, inline constraint refs
     role: primary

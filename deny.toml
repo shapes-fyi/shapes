@@ -1,0 +1,50 @@
+# cargo-deny configuration — see https://embarkstudios.github.io/cargo-deny/
+#
+# Enforces constraint 29 (Supply Chain Gate): every dependency change
+# must pass `cargo deny check`. Covers RustSec advisories, licenses,
+# duplicate versions, banned crates, and source provenance.
+
+[graph]
+# Check all target triples; the CLI is cross-platform.
+all-features = true
+
+[advisories]
+version = 2
+# Fail on any known vulnerability or unmaintained crate. Add specific
+# IDs to `ignore` only with a justifying comment and a follow-up task.
+yanked = "deny"
+ignore = []
+
+[licenses]
+version = 2
+# Explicit allow-list of licenses the project accepts. Permissive
+# licenses only — copyleft requires a deliberate decision.
+allow = [
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "MIT",
+    "BSD-3-Clause",
+    "Unicode-3.0",
+]
+# Anything below this confidence threshold needs human review.
+confidence-threshold = 0.8
+# Crates that ship without a recognized license file — add with a
+# justification if they're actually permissively licensed upstream.
+exceptions = []
+
+[bans]
+# Allow multiple versions initially; flip to "deny" once the tree is
+# clean. Duplicates waste compile time and binary size.
+multiple-versions = "warn"
+wildcards = "deny"
+# Crates the project refuses to depend on. Add entries here with a
+# one-line reason when a dependency must be blocked.
+deny = []
+
+[sources]
+# Only allow crates from crates.io and the project's own GitHub org.
+# Any other git source must be added explicitly below.
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

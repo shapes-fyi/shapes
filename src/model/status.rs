@@ -1,3 +1,12 @@
+//! The lifecycle [`Status`] enum and its custom serde implementation.
+//!
+//! Every node in the shapes graph carries a `Status`. Statuses serialize
+//! either as a bare YAML string (`canonical`) when no detail is attached,
+//! or as a single-key map (`{canonical: {reason: "..."}}`) when the
+//! author wants to record `reason`, `uris`, `successors`, or `metadata`.
+//! Both forms round-trip through serde via the hand-rolled `Serialize`
+//! and `Deserialize` impls in this file.
+
 use std::collections::BTreeMap;
 use std::fmt;
 
@@ -5,36 +14,35 @@ use serde::de::{self, MapAccess, Visitor};
 use serde::ser::SerializeMap;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-// ---------------------------------------------------------------------------
-// Serde helpers — null-safe deserialization for Vec and BTreeMap fields
-// ---------------------------------------------------------------------------
+use super::serde_helpers::null_to_default;
 
-/// Deserializes a value that may be null, missing, or present.
-/// Maps null/missing to `T::default()`. Use with `#[serde(default, deserialize_with)]`.
-pub fn null_to_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
-where
-    D: Deserializer<'de>,
-    T: Deserialize<'de> + Default,
-{
-    Ok(Option::<T>::deserialize(deserializer)?.unwrap_or_default())
-}
-
-// ---------------------------------------------------------------------------
-// Status
-// ---------------------------------------------------------------------------
-
+/// Lifecycle state of a graph node.
+///
+/// Three progressive states (`proposed` → `promoted` → `canonical`) plus
+/// four terminal states (`rejected`, `superseded`, `abandoned`,
+/// `reverted`). Direct edits are allowed while `proposed`; promoted and
+/// canonical changes require Amendments.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Status {
+    /// Initial draft state — direct edits allowed.
     Proposed(StatusDetail),
+    /// Reviewed but not yet ratified.
     Promoted(StatusDetail),
+    /// Ratified state — changes require an Amendment.
     Canonical(StatusDetail),
+    /// Terminally rejected.
     Rejected(TerminalDetail),
+    /// Replaced by a successor node.
     Superseded(TerminalDetail),
+    /// Abandoned without a replacement.
     Abandoned(TerminalDetail),
+    /// Reverted after promotion or canonicalization.
     Reverted(TerminalDetail),
 }
 
 impl Status {
+    /// Returns the lower-case status name as it appears on disk.
+    #[must_use]
     pub fn name(&self) -> &'static str {
         match self {
             Status::Proposed(_) => "proposed",
@@ -47,37 +55,75 @@ impl Status {
         }
     }
 
+    /// Constructs a fresh `proposed` status with default detail.
+    #[must_use]
     pub fn proposed() -> Self {
         Status::Proposed(StatusDetail::default())
     }
+
+    /// Constructs a fresh `canonical` status with default detail.
+    #[must_use]
+    pub fn canonical() -> Self {
+        Status::Canonical(StatusDetail::default())
+    }
 }
 
+/// Optional metadata attached to a progressive status.
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct StatusDetail {
+    /// Free-form reason explaining the transition into this state.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
-    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "Vec::is_empty")]
+    /// External URIs documenting the transition.
+    #[serde(
+        default,
+        deserialize_with = "null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub uris: Vec<String>,
-    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
+    /// Open metadata bag for transition-specific facts.
+    #[serde(
+        default,
+        deserialize_with = "null_to_default",
+        skip_serializing_if = "BTreeMap::is_empty"
+    )]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
+/// Optional metadata attached to a terminal status, plus successor IDs.
 #[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
 pub struct TerminalDetail {
+    /// Free-form reason explaining the terminal transition.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reason: Option<String>,
-    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "Vec::is_empty")]
+    /// External URIs documenting the transition.
+    #[serde(
+        default,
+        deserialize_with = "null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub uris: Vec<String>,
-    /// Successor node IDs (same type as the owning node).
-    /// For shapes, these are ShapeId values; for constraints, ConstraintId values.
-    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "Vec::is_empty")]
+    /// Successor node IDs (same type as the owning node). For shapes
+    /// these are `ShapeId` values; for constraints, `ConstraintId`
+    /// values.
+    #[serde(
+        default,
+        deserialize_with = "null_to_default",
+        skip_serializing_if = "Vec::is_empty"
+    )]
     pub successors: Vec<u64>,
-    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
+    /// Open metadata bag for transition-specific facts.
+    #[serde(
+        default,
+        deserialize_with = "null_to_default",
+        skip_serializing_if = "BTreeMap::is_empty"
+    )]
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
-// Custom Serialize: if detail is default, emit bare string; otherwise tagged map.
 impl Serialize for Status {
+    /// Emits a bare string when the detail is the default value, or a
+    /// single-key map (`{name: detail}`) otherwise.
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         let name = self.name();
         match self {
@@ -106,8 +152,8 @@ impl Serialize for Status {
     }
 }
 
-// Custom Deserialize: accept bare string OR single-key map.
 impl<'de> Deserialize<'de> for Status {
+    /// Accepts either a bare string or a single-key map.
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         deserializer.deserialize_any(StatusVisitor)
     }
@@ -179,76 +225,6 @@ const VALID_STATUSES: &[&str] = &[
     "reverted",
 ];
 
-// ---------------------------------------------------------------------------
-// Intent
-// ---------------------------------------------------------------------------
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Intent {
-    pub kind: String,
-    pub summary: String,
-    pub source: serde_yml::Value,
-    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "Vec::is_empty")]
-    pub uris: Vec<String>,
-    #[serde(flatten)]
-    pub extra: BTreeMap<String, serde_yml::Value>,
-}
-
-// ---------------------------------------------------------------------------
-// ParentRef — generic over ID type
-// ---------------------------------------------------------------------------
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct ParentRef<Id> {
-    pub id: Id,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub role: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub reason: Option<String>,
-}
-
-// ---------------------------------------------------------------------------
-// Bindings
-// ---------------------------------------------------------------------------
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Binding {
-    pub scheme: String,
-    pub value: String,
-    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Realization {
-    pub bindings: Vec<Binding>,
-    pub role: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Evidence {
-    /// Unique identifier for this evidence record within its parent node's
-    /// evidence array. This is a freeform string (e.g., "test-suite-pass"),
-    /// NOT a node ID.
-    pub id: String,
-    #[serde(rename = "type")]
-    pub evidence_type: String,
-    pub bindings: Vec<Binding>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub trusted: Option<bool>,
-    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
-}
-
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub struct Provenance {
-    #[serde(rename = "type")]
-    pub provenance_type: String,
-    pub bindings: Vec<Binding>,
-    #[serde(default, deserialize_with = "null_to_default", skip_serializing_if = "BTreeMap::is_empty")]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -291,25 +267,5 @@ mod tests {
         assert!(yaml.contains("superseded"));
         let parsed: Status = serde_yml::from_str(&yaml).unwrap();
         assert_eq!(parsed, status);
-    }
-
-    #[test]
-    fn intent_roundtrip_with_extra_fields() {
-        let intent = Intent {
-            kind: "feature".into(),
-            summary: "Add auth".into(),
-            source: serde_yml::Value::String("human".into()),
-            uris: vec![],
-            extra: BTreeMap::from([(
-                "goals".into(),
-                serde_yml::Value::Sequence(vec![serde_yml::Value::String(
-                    "SSO support".into(),
-                )]),
-            )]),
-        };
-        let yaml = serde_yml::to_string(&intent).unwrap();
-        assert!(yaml.contains("goals"));
-        let parsed: Intent = serde_yml::from_str(&yaml).unwrap();
-        assert_eq!(parsed, intent);
     }
 }

@@ -1,0 +1,34 @@
+id: 29
+name: Supply Chain Gate
+description: >-
+  cargo deny check guards the supply chain — advisories, licenses,
+  duplicate versions, banned crates, and source provenance. Runs in CI
+  on every PR that touches Cargo.toml or Cargo.lock.
+kind: invariant
+rule: >-
+  cargo deny check must pass in CI on every commit that touches
+  Cargo.toml or Cargo.lock. Covers advisories (RustSec), license
+  allow-list, duplicate dependency versions, banned crates, and source
+  provenance. Config lives in /deny.toml.
+enforcement: machine
+status: proposed
+profile: 1
+intent:
+  kind: invariant
+  summary: cargo deny check gates every Cargo.toml/lock change in CI
+  source: ai
+  rationale: >-
+    Constraint 8 (Zero External Dependencies at Runtime) and constraint
+    11 (Main Branch Protection) both benefit from a machine-enforced
+    supply-chain gate. cargo-deny bundles RustSec advisory checks,
+    license enforcement, duplicate detection, and crate banning into
+    one config — the lowest-friction way to keep the dependency graph
+    honest without spreading policy across four separate tools.
+  impact_if_violated: >-
+    A dependency with a known CVE, incompatible license, or malicious
+    fork can land without review. Duplicate versions of core crates
+    bloat the binary and slow compile times. No tripwire on source
+    provenance means a crate could silently move off crates.io.
+  verification_method: >-
+    CI job runs `cargo deny check` and fails the build on any error.
+    Contributors can run `cargo deny check` locally before pushing.
