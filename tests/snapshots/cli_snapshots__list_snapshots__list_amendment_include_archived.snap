@@ -1,0 +1,14 @@
+---
+source: tests/cli_snapshots.rs
+expression: out
+---
+- type: amendment
+  id: 1
+  name: fixture-edit
+  status: proposed
+  kind: amendment
+- type: amendment
+  id: 2
+  name: fixture-edit-archived
+  status: proposed
+  kind: amendment
