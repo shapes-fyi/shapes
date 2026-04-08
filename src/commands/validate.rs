@@ -1,6 +1,8 @@
 //! `shapes validate` — runs graph integrity checks and emits issues
 //! using the requested output format.
 
+use std::env;
+
 use crate::OutputFormat;
 use crate::commands::dag;
 use crate::commands::shared::open_store;
@@ -11,7 +13,8 @@ use crate::error::{CliError, ValidationError};
 /// for [`ValidationError::IssuesFound`].
 pub fn validate(format: OutputFormat) -> Result<(), CliError> {
     let store = open_store()?;
-    let issues = dag::validate(&store)?;
+    let workspace_root = env::current_dir().map_err(|e| CliError::Other(e.into()))?;
+    let issues = dag::validate(&store, Some(&workspace_root))?;
     if issues.is_empty() {
         match format {
             OutputFormat::Json => println!("[]"),

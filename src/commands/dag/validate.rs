@@ -7,10 +7,12 @@
 
 use std::collections::{BTreeMap, HashSet};
 use std::fmt;
+use std::path::{Component, Path, PathBuf};
 
 use anyhow::Result;
 use serde::Serialize;
 
+use crate::model::bindings::Binding;
 use crate::model::profile::{FieldDef, FieldSection};
 use crate::model::*;
 use crate::store::NodeStore;
@@ -53,7 +55,19 @@ impl fmt::Display for ValidationIssue {
     }
 }
 
-pub fn validate(store: &impl NodeStore) -> Result<Vec<ValidationIssue>> {
+/// Runs every graph integrity check against `store` and returns the
+/// list of issues found.
+///
+/// `workspace_root` is the absolute path of the directory that contains
+/// the `.shapes/` store (i.e. the project root). It is used by the
+/// path-binding existence check (INV-017) to resolve repo-relative
+/// `scheme: path` binding values. Pass `None` for in-memory test stores
+/// that have no on-disk workspace; INV-017 will be skipped in that case.
+pub fn validate(
+    store: &impl NodeStore,
+    workspace_root: Option<&Path>,
+) -> Result<Vec<ValidationIssue>> {
+    let _ = workspace_root; // wired into the binding-existence walk in a follow-up commit
     let mut issues = Vec::new();
 
     let shape_ids = store.list_ids(NodeType::Shape)?;
@@ -847,6 +861,163 @@ fn check_no_duplicate_names(
                     fd.name,
                 ),
             });
+        }
+    }
+}
+
+/// INV-017: every `scheme: path` binding must be a non-empty,
+/// repo-relative, slash-separated path that lexically stays under
+/// `workspace_root` and resolves to a file or directory on disk.
+///
+/// The check is intentionally lexical for the escape rule (`..`
+/// components) and only touches the filesystem to confirm existence —
+/// it never calls `canonicalize`, which would mangle the location
+/// string in error output and behave differently on case-insensitive
+/// volumes.
+#[allow(dead_code)] // wired into the validate() walk in a follow-up commit
+fn check_path_binding_exists(
+    workspace_root: &Path,
+    bindings: &[Binding],
+    node_type: &str,
+    node_id: u64,
+    location: &str,
+    issues: &mut Vec<ValidationIssue>,
+) {
+    for (bidx, binding) in bindings.iter().enumerate() {
+        if binding.scheme != "path" {
+            continue;
+        }
+        let value = binding.value.as_str();
+        let where_ = format!("{location}.bindings[{bidx}]");
+        let push = |msg: String, issues: &mut Vec<ValidationIssue>| {
+            issues.push(ValidationIssue {
+                invariant: "INV-017".into(),
+                severity: Severity::Error,
+                node_type: node_type.into(),
+                node_id: node_id.to_string(),
+                message: format!("{where_}: {msg}"),
+            });
+        };
+
+        if value.is_empty() {
+            push("path binding value is empty".into(), issues);
+            continue;
+        }
+        if value.contains('\\') {
+            push(
+                format!("path '{value}' contains '\\'; bindings must use '/' separators"),
+                issues,
+            );
+            continue;
+        }
+        let candidate = Path::new(value);
+        if candidate.is_absolute() {
+            push(
+                format!("path '{value}' is absolute; bindings must be repo-relative"),
+                issues,
+            );
+            continue;
+        }
+        // Lexical normalization: walk components, reject any net-negative
+        // depth so `../../escape` is caught without touching the filesystem.
+        let mut depth: i32 = 0;
+        let mut escapes = false;
+        for comp in candidate.components() {
+            match comp {
+                Component::CurDir => {}
+                Component::ParentDir => {
+                    depth -= 1;
+                    if depth < 0 {
+                        escapes = true;
+                        break;
+                    }
+                }
+                Component::Normal(_) => {
+                    depth += 1;
+                }
+                Component::RootDir | Component::Prefix(_) => {
+                    escapes = true;
+                    break;
+                }
+            }
+        }
+        if escapes {
+            push(format!("path '{value}' escapes the workspace root"), issues);
+            continue;
+        }
+
+        let resolved: PathBuf = workspace_root.join(candidate);
+        // `Path::exists` follows symlinks; a dangling symlink fails here,
+        // which is the documented INV-017 behavior.
+        if !resolved.exists() {
+            push(
+                format!("path '{value}' does not resolve to an existing file or directory"),
+                issues,
+            );
+        }
+    }
+}
+
+/// INV-018: every `scheme: url` binding must be a non-empty
+/// well-formed absolute URL with scheme in {http, https, git, ssh}.
+/// Hand-rolled offline check — no network and no `url` crate
+/// dependency. Tighten only if the repo's URL bindings ever grow
+/// past trivial cases.
+#[allow(dead_code)] // wired into the validate() walk in a follow-up commit
+fn check_url_binding_well_formed(
+    bindings: &[Binding],
+    node_type: &str,
+    node_id: u64,
+    location: &str,
+    issues: &mut Vec<ValidationIssue>,
+) {
+    const ALLOWED_SCHEMES: &[&str] = &["http", "https", "git", "ssh"];
+    for (bidx, binding) in bindings.iter().enumerate() {
+        if binding.scheme != "url" {
+            continue;
+        }
+        let value = binding.value.as_str();
+        let where_ = format!("{location}.bindings[{bidx}]");
+        let push = |msg: String, issues: &mut Vec<ValidationIssue>| {
+            issues.push(ValidationIssue {
+                invariant: "INV-018".into(),
+                severity: Severity::Error,
+                node_type: node_type.into(),
+                node_id: node_id.to_string(),
+                message: format!("{where_}: {msg}"),
+            });
+        };
+
+        if value.is_empty() {
+            push("url binding value is empty".into(), issues);
+            continue;
+        }
+        if value.chars().any(char::is_whitespace) {
+            push(format!("url '{value}' contains whitespace"), issues);
+            continue;
+        }
+        let Some((scheme, rest)) = value.split_once("://") else {
+            push(
+                format!("url '{value}' is not a well-formed absolute URL (missing scheme://)"),
+                issues,
+            );
+            continue;
+        };
+        if !ALLOWED_SCHEMES.contains(&scheme) {
+            push(
+                format!(
+                    "url '{value}' has unsupported scheme '{scheme}'; allowed: {}",
+                    ALLOWED_SCHEMES.join(", ")
+                ),
+                issues,
+            );
+            continue;
+        }
+        if rest.is_empty() {
+            push(
+                format!("url '{value}' has empty authority/path after '{scheme}://'"),
+                issues,
+            );
         }
     }
 }

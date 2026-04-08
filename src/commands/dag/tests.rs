@@ -82,13 +82,13 @@ fn validate_detects_dangling_constraint_ref() {
     shape.constraints = vec![ConstraintId::new(999)];
     store.insert(NodeType::Shape, 1, &shape);
 
-    let issues = validate(&store).unwrap();
+    let issues = validate(&store, None).unwrap();
     assert!(issues.iter().any(|i| i.invariant == "INV-003"));
 }
 
 #[test]
 fn validate_clean_graph() {
     let store = MockStore::new();
-    let issues = validate(&store).unwrap();
+    let issues = validate(&store, None).unwrap();
     assert!(issues.is_empty());
 }
