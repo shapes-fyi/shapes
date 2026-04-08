@@ -1,0 +1,9 @@
+---
+source: tests/cli_snapshots.rs
+expression: stderr
+---
+[error] [INV-003] shape:2 — references non-existent constraint 999
+[error] [INV-009] shape:1 — lists shape 2 as parent, but parent does not list 1 as child
+[error] [INV-019] amendment:1 — targets shape 1, but shape 1.amendment_log does not contain 1
+3 validation issue(s) found
+Error: 3 validation issue(s) found

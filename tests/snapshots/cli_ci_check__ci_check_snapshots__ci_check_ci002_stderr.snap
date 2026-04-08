@@ -1,0 +1,7 @@
+---
+source: tests/cli_ci_check.rs
+expression: stderr
+---
+[error] [CI-002] shape:1 — shape 1 was modified on a promoted base, but no amendment in this PR targets it
+1 ci-check issue(s) found
+Error: 1 ci-check issue(s) found

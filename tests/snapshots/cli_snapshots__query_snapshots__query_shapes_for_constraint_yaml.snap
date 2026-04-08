@@ -1,0 +1,10 @@
+---
+source: tests/cli_snapshots.rs
+expression: out
+---
+- shape_id: 1
+  shape_name: Parent
+  inherited: false
+- shape_id: 2
+  shape_name: Child
+  inherited: true

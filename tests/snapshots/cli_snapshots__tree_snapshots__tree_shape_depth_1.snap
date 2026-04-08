@@ -1,0 +1,8 @@
+---
+source: tests/cli_snapshots.rs
+expression: out
+---
+shape:1 Parent [proposed] kind=module
+├── constraint:1 ParentRule
+├── constraint:2 ChildRule
+└── shape:2 Child [proposed] kind=feature

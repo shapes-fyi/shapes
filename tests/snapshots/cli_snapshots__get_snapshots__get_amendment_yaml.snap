@@ -1,0 +1,19 @@
+---
+source: tests/cli_snapshots.rs
+expression: yaml
+---
+id: 1
+name: fixture-edit
+description: Fixture amendment used by CLI snapshot tests.
+targets:
+  shape_ids:
+  - 1
+  constraint_ids:
+  - 1
+status: proposed
+intent:
+  kind: amendment
+  summary: fixture amendment targeting shape 1 and constraint 1
+  source: ai
+initiated_by:
+  type: ai
