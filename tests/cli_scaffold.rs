@@ -907,6 +907,37 @@ mod profile_enforcement {
         );
     }
 
+    /// INV-010: a shape that omits a profile-required intent field
+    /// must be flagged.
+    ///
+    /// The default software profile makes `intent.goals` and
+    /// `intent.rationale` required. Scaffold auto-populates them, so we
+    /// use `--from -` to feed YAML that explicitly omits `goals`.
+    #[test]
+    fn inv_010_missing_required_intent_field_is_flagged() {
+        let dir = fresh_store("software");
+        let bad = "id: 0\n\
+            name: missing-goals\n\
+            description: d\n\
+            profile: 1\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: human\n  \
+              rationale: r\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-010") && stderr.contains("goals"),
+            "expected INV-010 for missing intent.goals: {stderr}"
+        );
+    }
+
     /// INV-015: a metadata value whose type does not match the
     /// profile's declared `field_type` must be flagged.
     #[test]
