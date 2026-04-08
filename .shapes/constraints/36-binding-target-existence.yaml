@@ -1,20 +1,26 @@
 id: 36
 name: Binding Target Existence
 description: >-
-  Realization, evidence, and provenance bindings on every Shape, Constraint,
-  and Amendment must point at things that actually exist. Path bindings must
-  resolve to a file or directory inside the workspace; URL bindings must
-  parse as well-formed absolute URLs with a recognized scheme. Without this
-  rule, file renames and refactors silently rot the graph: the old paths
-  pass `shapes validate` while pointing at deleted code, and future agents
-  follow the dead pointers thinking they describe current state.
+  Realization bindings on every Shape, Constraint, and Amendment must
+  point at code that actually exists in the workspace — they are the
+  graph's "this implements that" promise. Realization rot is the
+  failure mode INV-017 was added to catch. Evidence and provenance
+  bindings, by contrast, often legitimately reference external or
+  transient artifacts (test runs, frozen benchmark snapshots,
+  screenshots, dashboards, Slack threads), so the path-existence rule
+  is intentionally narrowed to realization. URL bindings on every
+  binding type must parse as well-formed absolute URLs — that's a
+  cheap format-only check with no I/O.
 kind: invariant
 rule: >-
-  Every `scheme: path` binding must be a non-empty repo-relative
-  slash-separated path that lexically stays under the workspace root and
-  resolves to an existing file or directory. Every `scheme: url` binding
+  Every `scheme: path` binding **inside a `realization` block** must
+  be a non-empty repo-relative slash-separated path that lexically
+  stays under the workspace root and resolves to an existing file or
+  directory. Every `scheme: url` binding (in any binding holder)
   must be a non-empty well-formed absolute URL with scheme in
-  `{http, https, git, ssh}`.
+  `{http, https, git, ssh}`. Path-existence checks are intentionally
+  not applied to `evidence` or `provenance` bindings — those may
+  legitimately reference external or transient artifacts.
 enforcement: machine
 profile: 1
 status: proposed
