@@ -12,7 +12,7 @@ rule: >-
   PRs. String-contains assertions are acceptable only for behaviors
   that cannot be captured as deterministic output.
 enforcement: manual
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: requirement
