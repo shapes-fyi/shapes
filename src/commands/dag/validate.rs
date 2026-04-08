@@ -409,26 +409,10 @@ pub fn validate(
     Ok(issues)
 }
 
-/// Walks every binding-holding array on a node and runs binding-level
-/// validators against them.
-///
-/// **INV-017 (path existence)** is checked **only on realization
-/// bindings**. Realization bindings are where the rubber meets the
-/// road — they tell agents and humans where the node is realized in
-/// code, and the graph's "this implements that" promise depends on
-/// them resolving. Evidence and provenance bindings legitimately
-/// reference external or transient artifacts (test runs, frozen
-/// benchmark snapshots, screenshots, dashboards, Slack threads, etc.)
-/// that aren't always checked into the repo, so forcing them all to
-/// resolve would either bloat the repo or eliminate a useful binding
-/// type. amendment:22's bench-snapshot evidence binding is the
-/// canonical example.
-///
-/// **INV-018 (url well-formedness)** is checked on all binding types.
-/// It's a pure format check with no I/O, so it's cheap and safe to
-/// apply universally — a malformed URL is wrong wherever it appears.
-///
-/// Path checks are skipped entirely when `workspace_root` is `None`.
+/// Walks every binding-holding array on a node (realization, evidence,
+/// provenance) and runs the path-existence (INV-017) and url-well-formed
+/// (INV-018) checks against each binding. Path checks are skipped when
+/// `workspace_root` is `None`.
 fn check_node_bindings(
     node_type: &str,
     node_id: u64,
@@ -448,14 +432,16 @@ fn check_node_bindings(
     for (idx, e) in evidence.iter().enumerate() {
         let location = format!("evidence[{idx}]");
         check_url_binding_well_formed(&e.bindings, node_type, node_id, &location, issues);
-        // INV-017 intentionally skipped on evidence bindings — see fn
-        // doc comment above for the rationale.
+        if let Some(root) = workspace_root {
+            check_path_binding_exists(root, &e.bindings, node_type, node_id, &location, issues);
+        }
     }
     for (idx, p) in provenance.iter().enumerate() {
         let location = format!("provenance[{idx}]");
         check_url_binding_well_formed(&p.bindings, node_type, node_id, &location, issues);
-        // INV-017 intentionally skipped on provenance bindings — see
-        // fn doc comment above for the rationale.
+        if let Some(root) = workspace_root {
+            check_path_binding_exists(root, &p.bindings, node_type, node_id, &location, issues);
+        }
     }
 }
 

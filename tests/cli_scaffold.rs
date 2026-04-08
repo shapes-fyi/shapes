@@ -1260,41 +1260,6 @@ mod binding_existence {
         shapes_in(&dir).arg("validate").assert().success();
     }
 
-    /// INV-017 scope: an evidence binding pointing at a missing path
-    /// must NOT be flagged. Path-existence is intentionally narrowed
-    /// to realization bindings — evidence and provenance often
-    /// reference external or transient artifacts (test runs, frozen
-    /// snapshots, screenshots) that aren't checked into the repo.
-    #[test]
-    fn inv_017_evidence_binding_with_missing_path_is_not_flagged() {
-        let dir = fresh_store("software");
-        let body = "id: 0\n\
-            name: ev-only\n\
-            description: d\n\
-            profile: 1\n\
-            status: proposed\n\
-            intent:\n  \
-              kind: feature\n  \
-              summary: s\n  \
-              source: human\n  \
-              goals: g\n  \
-              rationale: r\n\
-            evidence:\n  \
-              - id: external-screenshot\n    \
-                type: review\n    \
-                bindings:\n      \
-                  - scheme: path\n        \
-                    value: docs/does-not-exist.png\n        \
-                    metadata:\n          \
-                      summary: \"frozen historical screenshot\"\n";
-        shapes_in(&dir)
-            .args(["create", "shape", "--from", "-"])
-            .write_stdin(body)
-            .assert()
-            .success();
-        shapes_in(&dir).arg("validate").assert().success();
-    }
-
     /// INV-018: a url binding that lacks `scheme://` must be flagged.
     #[test]
     fn inv_018_missing_scheme_is_flagged() {
