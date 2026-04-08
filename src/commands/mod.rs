@@ -4,13 +4,13 @@
 //!
 //! Verb layout:
 //!
-//! - [`init`] — `shapes init`
-//! - [`create`] — `shapes create {shape, constraint, amendment, profile}`
-//! - [`get`] — `shapes get`
-//! - [`list`] — `shapes list`
-//! - [`tree`] — `shapes tree`
-//! - [`query`] — `shapes query`
-//! - [`validate`] — `shapes validate`
+//! - [`mod@init`] — `shapes init`
+//! - [`mod@create`] — `shapes create {shape, constraint, amendment, profile}`
+//! - [`mod@get`] — `shapes get`
+//! - [`mod@list`] — `shapes list`
+//! - [`mod@tree`] — `shapes tree`
+//! - [`mod@query`] — `shapes query`
+//! - [`mod@validate`] — `shapes validate`
 //!
 //! Plus the verb-internal helper modules [`scaffold`] (YAML scaffold
 //! writers), [`shared`] (output helpers, store opening), and [`dag`]

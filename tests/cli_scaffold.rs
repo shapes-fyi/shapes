@@ -47,10 +47,6 @@ fn read_only_yaml_in(dir: &TempDir, subdir: &str) -> String {
     fs::read_to_string(&entries[0]).expect("read yaml")
 }
 
-// ---------------------------------------------------------------------------
-// Software template
-// ---------------------------------------------------------------------------
-
 #[test]
 fn software_shape_scaffold_has_required_fields_and_stubs() {
     let dir = fresh_store("software");
@@ -185,10 +181,6 @@ fn software_profile_scaffold_seeds_template_fields() {
     shapes_in(&dir).arg("validate").assert().success();
 }
 
-// ---------------------------------------------------------------------------
-// Other templates
-// ---------------------------------------------------------------------------
-
 #[test]
 fn research_template_uses_research_field_hints() {
     let dir = fresh_store("research");
@@ -240,10 +232,6 @@ fn minimal_template_only_requires_rationale() {
     shapes_in(&dir).arg("validate").assert().success();
 }
 
-// ---------------------------------------------------------------------------
-// --from path still works (regression check)
-// ---------------------------------------------------------------------------
-
 #[test]
 fn from_stdin_path_still_works_without_name_flag() {
     let dir = fresh_store("software");
@@ -265,10 +253,6 @@ fn from_stdin_path_still_works_without_name_flag() {
         .assert()
         .success();
 }
-
-// ---------------------------------------------------------------------------
-// Template override
-// ---------------------------------------------------------------------------
 
 #[test]
 fn per_call_template_override_does_not_modify_meta() {
@@ -300,10 +284,6 @@ fn per_call_template_override_does_not_modify_meta() {
     );
 }
 
-// ---------------------------------------------------------------------------
-// init guards
-// ---------------------------------------------------------------------------
-
 #[test]
 fn init_refuses_to_overwrite_existing_store() {
     let dir = fresh_store("software");
@@ -329,10 +309,6 @@ fn init_rejects_unknown_template() {
         "store should not be created when template is invalid",
     );
 }
-
-// ---------------------------------------------------------------------------
-// Enforcement and clap arg validation
-// ---------------------------------------------------------------------------
 
 #[test]
 fn constraint_rejects_human_enforcement_with_helpful_error() {
@@ -368,11 +344,8 @@ fn create_shape_without_name_or_from_fails_with_clap_error() {
     );
 }
 
-// ---------------------------------------------------------------------------
-// Amendment create — regression for the kebab-case clap arg-id bug that
 // previously panicked clap's debug_assert when --from was combined with
 // --target-shape / --target-constraint / --version-impact.
-// ---------------------------------------------------------------------------
 
 #[test]
 fn amendment_create_via_flags_succeeds() {
@@ -421,10 +394,6 @@ fn amendment_create_via_from_stdin_succeeds() {
         .assert()
         .success();
 }
-
-// ---------------------------------------------------------------------------
-// Profile-driven kind validation (the surviving half of Profile-Aware Create)
-// ---------------------------------------------------------------------------
 
 #[test]
 fn profile_kind_validation_rejects_disallowed_kind() {
@@ -475,10 +444,6 @@ fn profile_kind_validation_accepts_allowed_kind() {
         .assert()
         .success();
 }
-
-// ---------------------------------------------------------------------------
-// Query / list / tree
-// ---------------------------------------------------------------------------
 
 #[test]
 fn list_and_tree_and_inheritance_work_after_linking_parent_and_child() {
@@ -594,10 +559,6 @@ fn list_and_tree_and_inheritance_work_after_linking_parent_and_child() {
     );
 }
 
-// ---------------------------------------------------------------------------
-// Validation
-// ---------------------------------------------------------------------------
-
 #[test]
 fn validate_detects_dangling_child_reference() {
     let dir = fresh_store("software");
@@ -645,10 +606,6 @@ fn create_from_stdin_rejects_malformed_yaml() {
         .failure();
 }
 
-// ---------------------------------------------------------------------------
-// Back-compat: legacy stores without `template:` in meta.yaml
-// ---------------------------------------------------------------------------
-
 #[test]
 fn legacy_meta_without_template_falls_back_to_software() {
     let dir = tempfile::tempdir().unwrap();
@@ -680,10 +637,6 @@ fn legacy_meta_without_template_falls_back_to_software() {
     );
 }
 
-// ---------------------------------------------------------------------------
-// JSON output
-// ---------------------------------------------------------------------------
-
 #[test]
 fn list_supports_json_format() {
     let dir = fresh_store("software");
@@ -711,4 +664,94 @@ fn validate_supports_json_format() {
         .args(["validate", "--format", "json"])
         .assert()
         .success();
+}
+
+/// Snapshot coverage for scaffold output per constraint 30.
+///
+/// These capture the full scaffold YAML verbatim so any drift in
+/// whitespace, ordering, or comment text shows up as a reviewable
+/// `.snap` diff. Update with `cargo insta review` after intentional
+/// changes.
+mod scaffold_snapshots {
+    use super::{fresh_store, read_only_yaml_in, shapes_in};
+
+    #[test]
+    fn software_shape_scaffold_snapshot() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args([
+                "create",
+                "shape",
+                "--name",
+                "AuthService",
+                "--kind",
+                "service",
+            ])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "shapes");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn software_constraint_scaffold_snapshot() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args([
+                "create",
+                "constraint",
+                "--name",
+                "NoUnsafeBlocks",
+                "--kind",
+                "invariant",
+            ])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "constraints");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn software_profile_scaffold_snapshot() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "profile", "--name", "Strict"])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "profiles");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn research_shape_scaffold_snapshot() {
+        let dir = fresh_store("research");
+        shapes_in(&dir)
+            .args(["create", "shape", "--name", "DecayExperiment"])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "shapes");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn editorial_shape_scaffold_snapshot() {
+        let dir = fresh_store("editorial");
+        shapes_in(&dir)
+            .args(["create", "shape", "--name", "Chapter1"])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "shapes");
+        insta::assert_snapshot!(yaml);
+    }
+
+    #[test]
+    fn minimal_shape_scaffold_snapshot() {
+        let dir = fresh_store("minimal");
+        shapes_in(&dir)
+            .args(["create", "shape", "--name", "Bare", "--kind", "anything"])
+            .assert()
+            .success();
+        let yaml = read_only_yaml_in(&dir, "shapes");
+        insta::assert_snapshot!(yaml);
+    }
 }

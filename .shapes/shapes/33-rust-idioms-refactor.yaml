@@ -2,11 +2,14 @@ id: 33
 name: Rust Idioms Refactor
 description: >-
   Whole-crate refactor that brings src/ into strict alignment with idiomatic
-  Rust by enforcing the new architectural constraints (C-A..C-J): lean
-  mod.rs files, module-level //! docs, /// docs on every public symbol,
-  removal of ASCII section dividers, &str-over-String discipline, a fixed
-  crate-root lint baseline, justified #[allow] attributes, no silent
-  unwrap/expect, #[must_use] on pure getters, and a pinned rustfmt.toml.
+  Rust by enforcing the new architectural constraints (19–32): lean mod.rs
+  files, module-level //! docs, /// docs on every public symbol, removal of
+  ASCII section dividers, &str-over-String discipline, a fixed crate-root
+  lint baseline, justified #[allow] attributes, no silent unwrap/expect,
+  #[must_use] on pure getters, a pinned rustfmt.toml, a cargo-deny supply
+  chain gate, cargo-machete dead-dep enforcement, insta snapshot coverage
+  of CLI output, rustdoc warnings promoted to errors, and a GitHub Actions
+  workflow that wires the whole lot into CI.
 status: proposed
 profile: 1
 parents:
@@ -53,6 +56,10 @@ constraints:
   - 26
   - 27
   - 28
+  - 29
+  - 30
+  - 31
+  - 32
 realization:
   - bindings:
       - scheme: path
@@ -102,3 +109,21 @@ realization:
         metadata:
           summary: New file at repo root pinning edition = "2024" per constraint 28
     role: supporting
+  - bindings:
+      - scheme: path
+        value: deny.toml
+        metadata:
+          summary: New file at repo root configuring cargo-deny (advisories, licenses, bans, sources) per constraint 29
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: .github/workflows/ci.yml
+        metadata:
+          summary: New GitHub Actions workflow running fmt, clippy, test, doc, deny, and machete on every PR; wires constraints 24, 28, 29, 31, 32 into CI
+    role: supporting
+  - bindings:
+      - scheme: path
+        value: tests/snapshots/
+        metadata:
+          summary: insta snapshot directory — captures verbatim CLI scaffold output per constraint 30
+    role: test

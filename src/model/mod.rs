@@ -9,7 +9,7 @@
 //! - [`status`] — lifecycle [`Status`] enum and its custom serde
 //! - [`intent`] — the [`Intent`] open map
 //! - [`refs`] — generic [`ParentRef`]
-//! - [`bindings`] — [`Binding`], [`Realization`], [`Evidence`], [`Provenance`]
+//! - [`bindings`] — [`bindings::Binding`], [`Realization`], [`Evidence`], [`Provenance`]
 //! - [`serde_helpers`] — shared serde utilities
 //! - [`shape`], [`constraint`], [`amendment`], [`profile`] — node types
 

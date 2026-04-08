@@ -1,0 +1,39 @@
+id: 30
+name: Snapshot Tests for CLI Output
+description: >-
+  CLI commands whose stdout, stderr, or on-disk scaffold output is
+  part of the agent-readable contract are covered by insta snapshots,
+  so reviewers see a diff on any byte change.
+kind: requirement
+rule: >-
+  Every CLI command that emits stdout/stderr text or writes a scaffold
+  file is covered by an insta snapshot in tests/. The snapshot
+  captures the full output verbatim; reviewers diff the .snap file in
+  PRs. String-contains assertions are acceptable only for behaviors
+  that cannot be captured as deterministic output.
+enforcement: manual
+status: proposed
+profile: 1
+intent:
+  kind: requirement
+  summary: insta snapshots cover every behavior-surface CLI output
+  source: ai
+  rationale: >-
+    The Rust Idioms Refactor plan explicitly called out the CLI's
+    observable surface — clap schema, scaffold YAML text, exit codes,
+    stdout/stderr layout — as byte-load-bearing for agents. Existing
+    tests assert substrings, which miss regressions in whitespace,
+    ordering, and surrounding context. insta snapshots make every byte
+    of output part of the review diff so silent drifts become
+    impossible to land accidentally.
+  impact_if_violated: >-
+    Agents that parse shapes CLI output can break on a whitespace or
+    ordering change that no test flagged, and reviewers have no way
+    to see the change in a PR diff.
+  verification_method: >-
+    Snapshot files live under tests/snapshots/; CI runs `cargo test`
+    and `cargo insta pending-snapshots --exit-code` (or equivalent) to
+    fail on unreviewed changes.
+  exceptions: >-
+    Non-deterministic output (timestamps, absolute paths, PIDs) may
+    be redacted with insta filters rather than matched literally.
