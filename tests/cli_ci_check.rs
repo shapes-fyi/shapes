@@ -623,3 +623,86 @@ fn ci_002_full_shapes_dir_deletion_fires() {
         "expected CI-002 deletion for full .shapes/ removal: {stderr}"
     );
 }
+
+/// Insta snapshot coverage for ci-check stderr output per constraint 30.
+///
+/// These lock the exact message text of the CI-001 / CI-002 invariants
+/// plus the clean-case summary line emitted at
+/// src/commands/ci_check.rs:584-598. Any wording drift surfaces as a
+/// reviewable `.snap` diff. Update with `cargo insta review` after an
+/// intentional copy change.
+mod ci_check_snapshots {
+    use super::*;
+
+    /// Clean case: base commit has a promoted shape; HEAD modifies
+    /// that shape's intent AND adds an amendment targeting it, so
+    /// CI-002 is satisfied and ci-check passes. Stderr should be
+    /// exactly "No issues found.\n" (ci_check.rs:584).
+    #[test]
+    fn ci_check_clean_stderr() {
+        let (dir, _base0) = init_git_store("software");
+        let (id, base) = promoted_shape_on_base(&dir, "Promoted");
+        // Mutate the promoted shape's intent summary.
+        set_intent_summary(&yaml_path(&dir, "shapes", id), "snapshot fixture rewrite");
+        // Add an amendment targeting the shape to satisfy CI-002.
+        Command::cargo_bin("shapes")
+            .unwrap()
+            .current_dir(dir.path())
+            .args([
+                "create",
+                "amendment",
+                "--name",
+                "satisfy",
+                "--target-shape",
+                "1",
+                "--summary",
+                "rewrite promoted intent",
+                "--source",
+                "ai",
+            ])
+            .assert()
+            .success();
+        let out = shapes_in(&dir)
+            .args(["ci-check", "--base", &base])
+            .assert()
+            .success()
+            .get_output()
+            .stderr
+            .clone();
+        let stderr = String::from_utf8(out).expect("stderr is utf-8");
+        insta::assert_snapshot!(stderr);
+    }
+
+    /// CI-001: `--require-shapes-changes` is set but the PR has no
+    /// diff under .shapes/. Only an unrelated README change. Locks
+    /// the "[error] [CI-001] pull-request:- — PR has no changes …"
+    /// line plus the summary "{} ci-check issue(s) found" at
+    /// ci_check.rs:598.
+    #[test]
+    fn ci_check_ci001_stderr() {
+        let (dir, base) = init_git_store("software");
+        fs::write(dir.path().join("README.md"), "noop").unwrap();
+        let stderr = shapes_in(&dir)
+            .args(["ci-check", "--base", &base, "--require-shapes-changes"])
+            .assert()
+            .failure()
+            .code(2)
+            .get_output()
+            .stderr
+            .clone();
+        let stderr = String::from_utf8(stderr).expect("stderr is utf-8");
+        insta::assert_snapshot!(stderr);
+    }
+
+    /// CI-002: modify a promoted shape's intent without creating any
+    /// amendment targeting it. Locks the full CI-002 message text
+    /// including the node id, the cited field, and the summary count.
+    #[test]
+    fn ci_check_ci002_stderr() {
+        let (dir, _base0) = init_git_store("software");
+        let (id, base) = promoted_shape_on_base(&dir, "Promoted");
+        set_intent_summary(&yaml_path(&dir, "shapes", id), "snapshot fixture rewrite");
+        let stderr = ci_check_fails(&dir, &base);
+        insta::assert_snapshot!(stderr);
+    }
+}

@@ -1,0 +1,6 @@
+---
+source: tests/cli_snapshots.rs
+expression: out
+---
+constraint:1 ParentRule [proposed] kind=invariant
+└── constraint:2 ChildRule [proposed] kind=invariant

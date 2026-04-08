@@ -1,0 +1,21 @@
+---
+source: tests/cli_snapshots.rs
+expression: yaml
+---
+id: 1
+name: ParentRule
+description: Fixture parent constraint used by CLI snapshot tests.
+kind: invariant
+rule: Fixture rule; not enforced by any code, exists solely to populate the constraint DAG for snapshot tests.
+enforcement: manual
+profile: 1
+status: proposed
+intent:
+  kind: invariant
+  summary: fixture parent rule
+  source: ai
+  rationale: gives the seed fixture a deterministic constraint-DAG parent
+amendment_log:
+- 1
+children:
+- constraint: 2

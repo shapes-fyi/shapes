@@ -1,0 +1,5 @@
+---
+source: tests/cli_ci_check.rs
+expression: stderr
+---
+No issues found.

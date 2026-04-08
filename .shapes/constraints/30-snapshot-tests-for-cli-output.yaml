@@ -12,7 +12,7 @@ rule: >-
   PRs. String-contains assertions are acceptable only for behaviors
   that cannot be captured as deterministic output.
 enforcement: manual
-status: proposed
+status: canonical
 profile: 1
 intent:
   kind: requirement
@@ -37,3 +37,36 @@ intent:
   exceptions: >-
     Non-deterministic output (timestamps, absolute paths, PIDs) may
     be redacted with insta filters rather than matched literally.
+evidence:
+  - id: insta-snapshots-cover-every-cli-command
+    type: test
+    bindings:
+      - scheme: path
+        value: tests/cli_snapshots.rs
+        metadata:
+          summary: >-
+            Insta snapshot suite for every CLI read command —
+            get/list/tree/query/validate — over a deterministic fixture
+            seeded via `shapes create --from -`. Covers yaml + json
+            output formats, the clean and dirty validate paths, and
+            reciprocal inheritance walks. 23 snapshots under
+            tests/snapshots/cli_snapshots__*.snap.
+      - scheme: path
+        value: tests/cli_ci_check.rs
+        metadata:
+          summary: >-
+            ci_check_snapshots module — locks the exact stderr message
+            text for the clean path, CI-001
+            (no-.shapes-diff-under-require-shapes-changes), and CI-002
+            (promoted shape edited without amendment). 3 snapshots
+            under tests/snapshots/cli_ci_check__ci_check_snapshots__*.snap.
+      - scheme: path
+        value: tests/cli_scaffold.rs
+        metadata:
+          summary: >-
+            Pre-existing scaffold_snapshots module — locks the YAML
+            emitted by `shapes create` for shapes/constraints/profiles
+            across the software, research, editorial, and minimal kits.
+            Listed here for completeness so the evidence set for
+            constraint 30 names every snapshot file that realizes it.
+    trusted: true

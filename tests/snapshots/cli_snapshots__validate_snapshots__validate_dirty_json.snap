@@ -1,0 +1,27 @@
+---
+source: tests/cli_snapshots.rs
+expression: stdout
+---
+[
+  {
+    "invariant": "INV-003",
+    "severity": "error",
+    "node_type": "shape",
+    "node_id": "2",
+    "message": "references non-existent constraint 999"
+  },
+  {
+    "invariant": "INV-009",
+    "severity": "error",
+    "node_type": "shape",
+    "node_id": "1",
+    "message": "lists shape 2 as parent, but parent does not list 1 as child"
+  },
+  {
+    "invariant": "INV-019",
+    "severity": "error",
+    "node_type": "amendment",
+    "node_id": "1",
+    "message": "targets shape 1, but shape 1.amendment_log does not contain 1"
+  }
+]

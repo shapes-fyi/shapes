@@ -1,0 +1,23 @@
+---
+source: tests/cli_snapshots.rs
+expression: yaml
+---
+id: 1
+name: Parent
+description: Fixture parent shape used by CLI snapshot tests.
+profile: 1
+status: proposed
+intent:
+  kind: module
+  summary: fixture parent
+  source: ai
+  goals: exist as a parent shape for the snapshot fixture
+  rationale: gives the seed fixture a deterministic shape-DAG parent
+constraints:
+- 1
+- 2
+amendment_log:
+- 1
+children:
+- shape: 2
+  role: feature

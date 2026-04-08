@@ -1,0 +1,5 @@
+---
+source: tests/cli_snapshots.rs
+expression: stderr
+---
+No issues found.

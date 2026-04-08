@@ -1,0 +1,34 @@
+---
+source: tests/cli_snapshots.rs
+expression: out
+---
+- type: shape
+  id: 1
+  name: Parent
+  status: proposed
+  kind: module
+- type: shape
+  id: 2
+  name: Child
+  status: proposed
+  kind: feature
+- type: constraint
+  id: 1
+  name: ParentRule
+  status: proposed
+  kind: invariant
+- type: constraint
+  id: 2
+  name: ChildRule
+  status: proposed
+  kind: invariant
+- type: amendment
+  id: 1
+  name: fixture-edit
+  status: proposed
+  kind: amendment
+- type: profile
+  id: 1
+  name: software starter profile
+  status: canonical
+  kind: governance

@@ -1,0 +1,12 @@
+---
+source: tests/cli_snapshots.rs
+expression: out
+---
+- constraint_id: 1
+  constraint_name: ParentRule
+  source_shape_id: 1
+  inherited: true
+- constraint_id: 2
+  constraint_name: ChildRule
+  source_shape_id: 1
+  inherited: true
