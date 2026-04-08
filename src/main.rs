@@ -146,12 +146,12 @@ enum Command {
     /// no-shapes-changes (CI-001 when `--require-shapes-changes` is
     /// passed). Exit 0 if clean, 2 if issues found.
     ///
-    /// By default CI-002 treats every field on a promoted / canonical
-    /// node as semantic, including `realization`, `evidence`, and
-    /// `provenance` bindings. Pass `--allow-realization-refresh`,
-    /// `--allow-evidence-refresh`, and/or `--allow-provenance-refresh`
-    /// to treat those scopes as mechanical hygiene — whether to do so
-    /// is a project-specific policy choice, not a universal rule.
+    /// CI-002 is strict: every field on a promoted or canonical node
+    /// counts, including `realization`, `evidence`, and `provenance`
+    /// bindings. There are no opt-out flags — the whole point of the
+    /// check is to force explicit maintenance through the amendment
+    /// workflow. To edit a node without an amendment, leave it in
+    /// `proposed` state.
     CiCheck {
         /// Base ref to diff against (e.g. origin/main, the PR base sha)
         #[arg(long, default_value = "origin/main")]
@@ -162,18 +162,6 @@ enum Command {
         /// Fail when the PR does not touch the shapes directory
         #[arg(long)]
         require_shapes_changes: bool,
-        /// Treat `realization` binding changes on promoted/canonical
-        /// nodes as mechanical hygiene — do not require an amendment
-        #[arg(long)]
-        allow_realization_refresh: bool,
-        /// Treat `evidence` binding changes on promoted/canonical
-        /// nodes as mechanical hygiene — do not require an amendment
-        #[arg(long)]
-        allow_evidence_refresh: bool,
-        /// Treat `provenance` binding changes on promoted/canonical
-        /// nodes as mechanical hygiene — do not require an amendment
-        #[arg(long)]
-        allow_provenance_refresh: bool,
     },
 }
 
@@ -386,20 +374,7 @@ fn run(cli: Cli) -> Result<(), CliError> {
             base,
             shapes_dir,
             require_shapes_changes,
-            allow_realization_refresh,
-            allow_evidence_refresh,
-            allow_provenance_refresh,
-        } => commands::ci_check(
-            &base,
-            &shapes_dir,
-            require_shapes_changes,
-            commands::MonitoredFields {
-                allow_realization_refresh,
-                allow_evidence_refresh,
-                allow_provenance_refresh,
-            },
-            cli.format,
-        )?,
+        } => commands::ci_check(&base, &shapes_dir, require_shapes_changes, cli.format)?,
     }
 
     Ok(())

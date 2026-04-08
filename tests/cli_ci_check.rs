@@ -350,48 +350,25 @@ fn ci_002_promoted_shape_change_with_satisfying_amendment_passes() {
         .success();
 }
 
-/// Helper: append an arbitrary realization block to a shape's yaml so
-/// we can test the realization-refresh behavior both with and without
-/// the `--allow-realization-refresh` opt-out flag.
-fn append_realization(path: &std::path::Path) {
-    let text = fs::read_to_string(path).unwrap();
+/// CI-002 (strict): changing realization bindings on a promoted or
+/// canonical node fires CI-002. Every edit under realization counts
+/// — there is no opt-out flag. Projects that want the edit to land
+/// must author an amendment targeting the node.
+#[test]
+fn ci_002_realization_only_change_fires() {
+    let (dir, _base0) = init_git_store("software");
+    let (id, base) = promoted_shape_on_base(&dir, "Promoted");
+    let path = yaml_path(&dir, "shapes", id);
+    let text = fs::read_to_string(&path).unwrap();
     let appended = format!(
         "{text}realization:\n  - bindings:\n      - scheme: path\n        value: Cargo.toml\n        metadata:\n          summary: arbitrary realization\n    role: primary\n"
     );
-    fs::write(path, appended).unwrap();
-}
-
-/// CI-002 (strict default): changing realization bindings on a
-/// promoted/canonical node fires CI-002 out of the box. Projects that
-/// treat binding refreshes as mechanical hygiene opt out explicitly
-/// via `--allow-realization-refresh`.
-#[test]
-fn ci_002_realization_only_change_fires_by_default() {
-    let (dir, _base0) = init_git_store("software");
-    let (id, base) = promoted_shape_on_base(&dir, "Promoted");
-    append_realization(&yaml_path(&dir, "shapes", id));
+    fs::write(&path, appended).unwrap();
     let stderr = ci_check_fails(&dir, &base);
     assert!(
         stderr.contains("CI-002") && stderr.contains(&id.to_string()),
-        "expected CI-002 for realization-only change under strict default: {stderr}"
+        "expected CI-002 for realization-only change: {stderr}"
     );
-}
-
-/// CI-002 opt-out: with `--allow-realization-refresh`, realization
-/// binding changes on a promoted/canonical node become mechanical
-/// hygiene and no amendment is required. Whether to use this flag is
-/// a per-project policy decision.
-#[test]
-fn ci_002_realization_refresh_allowed_when_flag_set() {
-    let (dir, _base0) = init_git_store("software");
-    let (id, base) = promoted_shape_on_base(&dir, "Promoted");
-    append_realization(&yaml_path(&dir, "shapes", id));
-    shapes_in(&dir)
-        .args(["ci-check", "--base", &base, "--allow-realization-refresh"])
-        .assert()
-        .success();
-    // Sanity: id was used in the fixture.
-    let _ = id;
 }
 
 /// CI-002: changing the shape's `constraints` list (a monitored

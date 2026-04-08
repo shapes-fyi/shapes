@@ -22,29 +22,24 @@
 //!
 //! ## Monitored field set (the heart of CI-002)
 //!
-//! By default CI-002 treats every field as semantic and requires an
-//! amendment for any change on a promoted / canonical node. Some
-//! projects want to be more lenient about pure binding refreshes —
-//! renaming files, updating `metadata.summary` text, or moving
-//! realization pointers around after a refactor. Whether those count
-//! as "mechanical hygiene" or "semantic change" is a per-project
-//! policy call, so the realization / evidence / provenance scopes are
-//! exposed as opt-out flags on the command, not hardcoded.
+//! CI-002 treats **every** field on a promoted or canonical node as
+//! semantic and requires an amendment for any change — including
+//! `realization`, `evidence`, and `provenance` binding edits. There
+//! are no opt-out flags. The entire point of the check is to force
+//! explicit maintenance: if a binding needs to move because a file
+//! was renamed, the edit lands through an amendment just like any
+//! other change to a canonical node.
 //!
-//! Strict (default) — every change on a promoted/canonical node
-//! requires an amendment:
-//!
-//! | Node | Monitored | Not monitored |
+//! | Node | Monitored (any change requires amendment) | Not monitored |
 //! |---|---|---|
 //! | Shape | name, description, intent, profile, predecessors, constraints, parents, children, realization, evidence, provenance | id, status, version, amendment_log, metadata |
 //! | Constraint | name, description, kind, rule, enforcement, intent, profile, parents, children, realization, evidence, provenance | id, status, version, amendment_log, metadata |
 //! | Profile | name, description, intent, fields, lifecycle, versioning, amendment_rules, provenance | id, status, version, amendment_log, metadata |
 //!
-//! Pass `--allow-realization-refresh`, `--allow-evidence-refresh`,
-//! and/or `--allow-provenance-refresh` to drop those binding scopes
-//! from the monitored set. The shapes-fyi/shapes repo's own CI job
-//! opts into all three to match the maintainer's realization-refresh
-//! workflow preference — that choice lives in `ci.yml`, not here.
+//! The only way to edit a node without creating an amendment is to
+//! leave it in `proposed` state — direct edits are still allowed
+//! there. Once a node is promoted or canonical, every subsequent
+//! change lands through the amendment workflow.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -58,21 +53,6 @@ use crate::commands::dag::{Severity, ValidationIssue};
 use crate::error::{CiCheckError, CliError};
 use crate::model::{Amendment, Constraint, NodeType, Profile, Shape};
 
-/// Policy knobs for the CI-002 monitored field set. Defaults to the
-/// strictest interpretation (every field on every binding holder
-/// counts); individual flags opt pieces out.
-#[derive(Debug, Default, Clone, Copy)]
-pub struct MonitoredFields {
-    /// When `true`, changes to `realization` bindings do not fire
-    /// CI-002 on promoted/canonical nodes.
-    pub allow_realization_refresh: bool,
-    /// When `true`, changes to `evidence` bindings do not fire CI-002.
-    pub allow_evidence_refresh: bool,
-    /// When `true`, changes to `provenance` bindings do not fire
-    /// CI-002.
-    pub allow_provenance_refresh: bool,
-}
-
 /// Runs the PR-level checks against the working tree, comparing each
 /// monitored file against its state on `base`.
 ///
@@ -82,7 +62,6 @@ pub fn ci_check(
     base: &str,
     shapes_dir: &Path,
     require_shapes_changes: bool,
-    monitored: MonitoredFields,
     format: OutputFormat,
 ) -> Result<(), CliError> {
     // Fail fast with a friendly message if `git` isn't on PATH —
@@ -118,30 +97,30 @@ pub fn ci_check(
     if shapes_dir.is_dir() {
         let satisfied =
             collect_satisfied_targets(base, shapes_dir, &mut issues).map_err(CliError::Other)?;
-        check_required_amendments::<Shape, _>(
+        check_required_amendments::<Shape>(
             base,
             shapes_dir,
             NodeType::Shape,
             &satisfied.shape_ids,
-            |base, head| shape_monitored_changed(base, head, monitored),
+            shape_monitored_changed,
             &mut issues,
         )
         .map_err(CliError::Other)?;
-        check_required_amendments::<Constraint, _>(
+        check_required_amendments::<Constraint>(
             base,
             shapes_dir,
             NodeType::Constraint,
             &satisfied.constraint_ids,
-            |base, head| constraint_monitored_changed(base, head, monitored),
+            constraint_monitored_changed,
             &mut issues,
         )
         .map_err(CliError::Other)?;
-        check_required_amendments::<Profile, _>(
+        check_required_amendments::<Profile>(
             base,
             shapes_dir,
             NodeType::Profile,
             &satisfied.profile_ids,
-            |base, head| profile_monitored_changed(base, head, monitored),
+            profile_monitored_changed,
             &mut issues,
         )
         .map_err(CliError::Other)?;
@@ -230,17 +209,16 @@ fn collect_satisfied_targets(
 /// by node id and emits CI-002 issues for each promoted/canonical node
 /// that was semantically modified or deleted without a satisfying
 /// amendment.
-fn check_required_amendments<T, F>(
+fn check_required_amendments<T>(
     base: &str,
     shapes_dir: &Path,
     node_type: NodeType,
     satisfied: &BTreeSet<u64>,
-    monitored_changed: F,
+    monitored_changed: fn(&T, &T) -> bool,
     issues: &mut Vec<ValidationIssue>,
 ) -> Result<()>
 where
     T: DeserializeOwned + StatusedNode,
-    F: Fn(&T, &T) -> bool,
 {
     let type_dir = shapes_dir.join(node_type.dir_name());
     let head_map: BTreeMap<u64, T> = if type_dir.is_dir() {
@@ -312,8 +290,8 @@ impl StatusedNode for Profile {
     }
 }
 
-fn shape_monitored_changed(base: &Shape, head: &Shape, cfg: MonitoredFields) -> bool {
-    if base.name != head.name
+fn shape_monitored_changed(base: &Shape, head: &Shape) -> bool {
+    base.name != head.name
         || base.description != head.description
         || base.intent != head.intent
         || base.profile != head.profile
@@ -321,27 +299,13 @@ fn shape_monitored_changed(base: &Shape, head: &Shape, cfg: MonitoredFields) -> 
         || base.constraints != head.constraints
         || base.parents != head.parents
         || base.children != head.children
-    {
-        return true;
-    }
-    if !cfg.allow_realization_refresh && base.realization != head.realization {
-        return true;
-    }
-    if !cfg.allow_evidence_refresh && base.evidence != head.evidence {
-        return true;
-    }
-    if !cfg.allow_provenance_refresh && base.provenance != head.provenance {
-        return true;
-    }
-    false
+        || base.realization != head.realization
+        || base.evidence != head.evidence
+        || base.provenance != head.provenance
 }
 
-fn constraint_monitored_changed(
-    base: &Constraint,
-    head: &Constraint,
-    cfg: MonitoredFields,
-) -> bool {
-    if base.name != head.name
+fn constraint_monitored_changed(base: &Constraint, head: &Constraint) -> bool {
+    base.name != head.name
         || base.description != head.description
         || base.kind != head.kind
         || base.rule != head.rule
@@ -350,39 +314,20 @@ fn constraint_monitored_changed(
         || base.profile != head.profile
         || base.parents != head.parents
         || base.children != head.children
-    {
-        return true;
-    }
-    if !cfg.allow_realization_refresh && base.realization != head.realization {
-        return true;
-    }
-    if !cfg.allow_evidence_refresh && base.evidence != head.evidence {
-        return true;
-    }
-    if !cfg.allow_provenance_refresh && base.provenance != head.provenance {
-        return true;
-    }
-    false
+        || base.realization != head.realization
+        || base.evidence != head.evidence
+        || base.provenance != head.provenance
 }
 
-fn profile_monitored_changed(base: &Profile, head: &Profile, cfg: MonitoredFields) -> bool {
-    if base.name != head.name
+fn profile_monitored_changed(base: &Profile, head: &Profile) -> bool {
+    base.name != head.name
         || base.description != head.description
         || base.intent != head.intent
         || base.fields != head.fields
         || base.lifecycle != head.lifecycle
         || base.versioning != head.versioning
         || base.amendment_rules != head.amendment_rules
-    {
-        return true;
-    }
-    // Profiles have no realization/evidence scopes in the model;
-    // only provenance. Profile realization/evidence flags are
-    // accepted at the CLI surface for symmetry but are no-ops here.
-    if !cfg.allow_provenance_refresh && base.provenance != head.provenance {
-        return true;
-    }
-    false
+        || base.provenance != head.provenance
 }
 
 /// Walks `dir` for top-level `*.yaml` files (non-recursive, matching

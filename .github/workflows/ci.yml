@@ -93,15 +93,7 @@ jobs:
       - name: shapes validate
         run: ./target/release/shapes validate
       - name: shapes ci-check
-        # This repo's maintainer policy: realization / evidence /
-        # provenance binding refreshes are mechanical hygiene and do
-        # not require an amendment. This is a per-project choice, not
-        # a universal rule — downstream consumers of the composite
-        # action pick their own policy via the allow-*-refresh inputs.
         run: |
           ./target/release/shapes ci-check \
             --base "${{ github.event.pull_request.base.sha }}" \
-            --require-shapes-changes \
-            --allow-realization-refresh \
-            --allow-evidence-refresh \
-            --allow-provenance-refresh
+            --require-shapes-changes

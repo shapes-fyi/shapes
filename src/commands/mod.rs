@@ -29,7 +29,7 @@ mod shared;
 mod tree;
 mod validate;
 
-pub use ci_check::{MonitoredFields, ci_check};
+pub use ci_check::ci_check;
 pub use create::create;
 pub use get::get;
 pub use init::init;
