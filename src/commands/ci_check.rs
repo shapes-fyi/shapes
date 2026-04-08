@@ -206,7 +206,7 @@ fn collect_satisfied_targets(
                 });
             }
             (Some(base_amend), Some((rel, head_amend))) => {
-                if base_amend != head_amend {
+                if base_amend != head_amend && !is_archive_only_change(base_amend, head_amend) {
                     issues.push(ValidationIssue {
                         invariant: "CI-003".into(),
                         severity: Severity::Error,
@@ -219,15 +219,30 @@ fn collect_satisfied_targets(
                     });
                     // Modified amendments do NOT satisfy CI-002.
                 }
-                // Unchanged amendments also do not re-satisfy
-                // CI-002 — they already landed on a prior PR, and
-                // the target node already accounted for them.
+                // Unchanged amendments (and archive-only toggles)
+                // also do not re-satisfy CI-002 — they already landed
+                // on a prior PR, and the target node already accounted
+                // for them.
             }
             (None, None) => unreachable!("id came from union of both maps"),
         }
     }
 
     Ok(satisfied)
+}
+
+/// Returns `true` when `base` and `head` differ only in their
+/// `archived` field. Toggling `archived` is the sole permitted
+/// mutation of a canonical amendment — it is display-only metadata, so
+/// CI-003 treats archive/unarchive edits as immutability-preserving.
+/// Every other field delta still trips CI-003.
+fn is_archive_only_change(base: &Amendment, head: &Amendment) -> bool {
+    if base.archived == head.archived {
+        return false;
+    }
+    let mut normalized = head.clone();
+    normalized.archived = base.archived;
+    base == &normalized
 }
 
 /// For one node type, pairs the disk view (HEAD) with the base view
