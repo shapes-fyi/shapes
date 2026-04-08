@@ -15,11 +15,6 @@ use crate::model::*;
 use crate::store::NodeStore;
 
 /// Severity classification for a [`ValidationIssue`].
-//
-// `dead_code` is allowed because `Warning` is part of the public
-// vocabulary even though every issue currently emitted is an
-// `Error`. Remove this allow once a check produces warnings.
-#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Severity {

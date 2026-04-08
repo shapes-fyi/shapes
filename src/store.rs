@@ -7,7 +7,6 @@
 //! filename slugifier. See constraint 15 (NodeStore Trait Boundary) in
 //! `.shapes/`.
 
-use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -41,48 +40,26 @@ pub trait NodeStore {
         // which we handle explicitly here.
         Ok(ids.into_iter().max().unwrap_or(0) + 1)
     }
-
-    /// Loads every node of a given type into a `BTreeMap` keyed by raw
-    /// ID. The default implementation calls [`load`](Self::load) per
-    /// ID; backends that can do a single-pass scan should override.
-    //
-    // `dead_code` is allowed because this method is part of the
-    // public read API and is intended for future bulk operations
-    // (e.g. graph re-indexing) even though no command currently
-    // calls it.
-    #[allow(dead_code)]
-    fn load_all<T: DeserializeOwned>(&self, node_type: NodeType) -> Result<BTreeMap<u64, T>> {
-        let ids = self.list_ids(node_type)?;
-        let mut map = BTreeMap::new();
-        for id in ids {
-            let node: T = self.load(node_type, id)?;
-            map.insert(id, node);
-        }
-        Ok(map)
-    }
 }
 
 /// On-disk metadata document for a `.shapes/` store.
 ///
-/// Records the spec version the store was written against and, if
-/// known, the active scaffolding template (`software`, `research`, ...)
-/// so future scaffolds default to the same flavour.
+/// Records the spec version the store was written against and the
+/// active scaffolding template (`software`, `research`, ...) so
+/// future scaffolds default to the same flavour.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Meta {
     /// Spec version this store conforms to.
     pub version: String,
     /// Active scaffolding template (e.g. `software`, `research`).
-    /// Optional for back-compat with stores written before templates
-    /// existed.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub template: Option<String>,
+    pub template: String,
 }
 
 impl Meta {
-    fn new(template: Option<&str>) -> Self {
+    fn new(template: &str) -> Self {
         Meta {
             version: "0.1.0".into(),
-            template: template.map(str::to_string),
+            template: template.to_owned(),
         }
     }
 }
@@ -93,15 +70,10 @@ struct IdOnly {
     id: u64,
 }
 
-/// Helper struct used to extract `id` and `name` for filename
-/// generation.
+/// Helper struct used to extract the `name` field for filename
+/// generation. Unknown fields (like `id`) are ignored by serde.
 #[derive(Deserialize)]
-struct IdAndName {
-    // The id field is required for the YAML to parse but is unused at
-    // this call site — `slugify` only consumes `name`. Keep it as a
-    // load-bearing field so serde finds it.
-    #[allow(dead_code)]
-    id: u64,
+struct JustName {
     name: String,
 }
 
@@ -121,9 +93,8 @@ impl FileStore {
     }
 
     /// Initializes a new `.shapes/` store under `dir`. `template` is
-    /// the scaffolding template to record in `meta.yaml`; pass `None`
-    /// for the legacy template-less behavior.
-    pub fn init(dir: &Path, template: Option<&str>) -> Result<Self> {
+    /// the scaffolding template to record in `meta.yaml`.
+    pub fn init(dir: &Path, template: &str) -> Result<Self> {
         let root = dir.join(SHAPES_DIR);
         if root.is_dir() {
             bail!(".shapes/ directory already exists.");
@@ -194,7 +165,7 @@ impl FileStore {
 
         // New node — serialize to extract the name for the filename.
         let yaml = serde_yml::to_string(node)?;
-        let slug = if let Ok(parsed) = serde_yml::from_str::<IdAndName>(&yaml) {
+        let slug = if let Ok(parsed) = serde_yml::from_str::<JustName>(&yaml) {
             slugify(&parsed.name)
         } else {
             id.to_string()

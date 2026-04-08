@@ -3,7 +3,7 @@
 //! validating user-provided `kind` values against the profile's allow
 //! list.
 
-use anyhow::Result;
+use anyhow::{Context, Result, anyhow};
 
 use crate::error::CreateError;
 use crate::model::profile::FieldSection;
@@ -59,15 +59,19 @@ pub fn validate_kind_against_profile(
 /// Resolves which template to use for a scaffold call.
 ///
 /// A per-call `--template` always wins; otherwise the active template
-/// is read from `meta.yaml`; otherwise the resolver falls back to
-/// `software`.
+/// is read from the store's `meta.yaml`. Both a missing `meta.yaml`
+/// and an unknown template name surface as hard errors — the store
+/// is expected to carry a valid `template:` field at all times.
 pub fn resolve_template(
     store: &FileStore,
     override_kind: Option<TemplateKind>,
-) -> &'static Template {
+) -> Result<&'static Template> {
     if let Some(k) = override_kind {
-        return k.template();
+        return Ok(k.template());
     }
-    let meta_template = store.read_meta().ok().and_then(|m| m.template);
-    templates::resolve(meta_template.as_deref())
+    let meta = store
+        .read_meta()
+        .context("failed to read .shapes/meta.yaml")?;
+    templates::resolve(&meta.template)
+        .ok_or_else(|| anyhow!("unknown template '{}' in .shapes/meta.yaml", meta.template))
 }

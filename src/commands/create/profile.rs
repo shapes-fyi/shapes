@@ -51,7 +51,7 @@ pub fn create_profile(
     let name = args
         .name
         .expect("clap requires --name when --from is absent");
-    let template = resolve_template(store, args.template);
+    let template = resolve_template(store, args.template)?;
     let amendment_model_str = match args.amendment_model {
         AmendmentModel::Merge => "merge",
         AmendmentModel::Overlay => "overlay",

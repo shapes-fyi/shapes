@@ -73,16 +73,18 @@ impl TemplateKind {
     }
 }
 
-/// Look up a template by its stored string name. Returns the `software`
-/// template as a fallback for unknown or missing names so existing stores
-/// without a `template:` field in `meta.yaml` keep working.
-pub fn resolve(name: Option<&str>) -> &'static Template {
+/// Looks up a template by its stored string name.
+///
+/// Returns `None` for unknown names; callers surface that as an error
+/// because every store is expected to carry a valid `template:` field
+/// in `meta.yaml`.
+pub fn resolve(name: &str) -> Option<&'static Template> {
     match name {
-        Some("software") => &SOFTWARE,
-        Some("research") => &RESEARCH,
-        Some("editorial") => &EDITORIAL,
-        Some("minimal") => &MINIMAL,
-        _ => &SOFTWARE,
+        "software" => Some(&SOFTWARE),
+        "research" => Some(&RESEARCH),
+        "editorial" => Some(&EDITORIAL),
+        "minimal" => Some(&MINIMAL),
+        _ => None,
     }
 }
 

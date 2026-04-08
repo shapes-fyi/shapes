@@ -607,37 +607,6 @@ fn create_from_stdin_rejects_malformed_yaml() {
 }
 
 #[test]
-fn legacy_meta_without_template_falls_back_to_software() {
-    let dir = tempfile::tempdir().unwrap();
-    let shapes_root = dir.path().join(".shapes");
-    fs::create_dir(&shapes_root).unwrap();
-    for sub in ["shapes", "constraints", "amendments", "profiles"] {
-        fs::create_dir(shapes_root.join(sub)).unwrap();
-    }
-    fs::write(shapes_root.join("meta.yaml"), "version: '0.1.0'\n").unwrap();
-
-    Command::cargo_bin("shapes")
-        .unwrap()
-        .current_dir(dir.path())
-        .args(["create", "shape", "--name", "Legacy", "--kind", "feature"])
-        .assert()
-        .success();
-
-    // Find the resulting file in shapes/ and confirm it used the software template.
-    let entries: Vec<_> = fs::read_dir(shapes_root.join("shapes"))
-        .unwrap()
-        .filter_map(Result::ok)
-        .map(|e| e.path())
-        .collect();
-    assert_eq!(entries.len(), 1);
-    let yaml = fs::read_to_string(&entries[0]).unwrap();
-    assert!(
-        yaml.contains("template: software"),
-        "legacy store should fall back to software template: {yaml}",
-    );
-}
-
-#[test]
 fn list_supports_json_format() {
     let dir = fresh_store("software");
     shapes_in(&dir)
