@@ -16,6 +16,7 @@ mod model;
 mod store;
 mod templates;
 
+use std::path::PathBuf;
 use std::process::ExitCode;
 
 use clap::{Parser, Subcommand, ValueEnum};
@@ -136,6 +137,25 @@ enum Command {
     /// empty amendment targets, and profile field requirement violations.
     /// Exit code 0 if clean, 2 if issues found.
     Validate,
+
+    /// Run PR-level shape-graph checks against a base ref.
+    ///
+    /// Compares the working tree to `--base` and reports CI-* issues
+    /// for missing-amendment-on-promoted-or-canonical-change (CI-002),
+    /// modified-amendment-immutability (CI-003), and optionally
+    /// no-shapes-changes (CI-001 when `--require-shapes-changes` is
+    /// passed). Exit 0 if clean, 2 if issues found.
+    CiCheck {
+        /// Base ref to diff against (e.g. origin/main, the PR base sha)
+        #[arg(long, default_value = "origin/main")]
+        base: String,
+        /// Path to the shapes directory, relative to cwd
+        #[arg(long, default_value = ".shapes")]
+        shapes_dir: PathBuf,
+        /// Fail when the PR does not touch the shapes directory
+        #[arg(long)]
+        require_shapes_changes: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -343,6 +363,11 @@ fn run(cli: Cli) -> Result<(), CliError> {
         Command::Query { operation } => commands::query(operation, cli.format)?,
 
         Command::Validate => commands::validate(cli.format)?,
+        Command::CiCheck {
+            base,
+            shapes_dir,
+            require_shapes_changes,
+        } => commands::ci_check(&base, &shapes_dir, require_shapes_changes, cli.format)?,
     }
 
     Ok(())

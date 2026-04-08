@@ -42,6 +42,21 @@ pub enum ValidationError {
     },
 }
 
+/// Errors raised by the `ci-check` subcommand.
+///
+/// Modeled as a typed error so the CLI can return the dedicated exit
+/// code 2 (matching `validate`) when PR-level checks fail, distinct
+/// from a generic crash.
+#[derive(Debug, Error)]
+pub enum CiCheckError {
+    /// One or more PR-level issues were reported during a run.
+    #[error("{count} ci-check issue(s) found")]
+    IssuesFound {
+        /// Number of issues that were emitted.
+        count: usize,
+    },
+}
+
 /// Top-level error wrapper used by `main` to compute exit codes and
 /// format messages.
 #[derive(Debug, Error)]
@@ -54,6 +69,10 @@ pub enum CliError {
     #[error("{0}")]
     Validation(#[from] ValidationError),
 
+    /// CI-check-flow failure.
+    #[error("{0}")]
+    CiCheck(#[from] CiCheckError),
+
     /// Anything else the store or command layer raised through
     /// `anyhow`.
     #[error("{0:#}")]
@@ -62,11 +81,13 @@ pub enum CliError {
 
 impl CliError {
     /// Returns the process exit code that should be reported for this
-    /// error: `2` for validation failures, `1` for everything else.
+    /// error: `2` for validation or ci-check failures, `1` for
+    /// everything else.
     #[must_use]
     pub fn exit_code(&self) -> ExitCode {
         match self {
-            CliError::Validation(ValidationError::IssuesFound { .. }) => ExitCode::from(2),
+            CliError::Validation(ValidationError::IssuesFound { .. })
+            | CliError::CiCheck(CiCheckError::IssuesFound { .. }) => ExitCode::from(2),
             _ => ExitCode::from(1),
         }
     }
