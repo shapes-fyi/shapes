@@ -66,6 +66,7 @@ constraints:
   - 33
   - 34
   - 35
+  - 36
 realization:
   - bindings:
       - scheme: path
@@ -87,9 +88,9 @@ realization:
     role: supporting
   - bindings:
       - scheme: path
-        value: src/model/common.rs
+        value: src/model
         metadata:
-          summary: Multi-section file (serde helpers, Status, Intent, newtype IDs) to be decomposed into sibling files under src/model/
+          summary: Post-refactor model module — the multi-section common.rs was decomposed into siblings ids.rs, node_type.rs, status.rs, intent.rs, refs.rs, bindings.rs, serde_helpers.rs
     role: supporting
   - bindings:
       - scheme: path

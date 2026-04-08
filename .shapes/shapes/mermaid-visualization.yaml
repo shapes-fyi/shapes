@@ -33,13 +33,7 @@ parents:
 realization:
   - bindings:
       - scheme: path
-        value: apps/web/src/components/spec/mermaid-diagram.tsx
-        metadata:
-          summary: MermaidDiagram component — SSR SVG rendering, theme-aware color mapping
-    role: primary
-  - bindings:
-      - scheme: path
         value: apps/web/src/components/spec/example-toggle.tsx
         metadata:
-          summary: ExampleToggle — multi-domain YAML examples with integrated Mermaid diagrams
-    role: supporting
+          summary: ExampleToggle — multi-domain YAML examples with theme-aware Mermaid diagrams loaded via dynamic import (beautiful-mermaid lives in its own lazy chunk per the redesign), drives the per-domain mermaidId mapping
+    role: primary

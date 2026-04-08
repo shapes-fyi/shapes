@@ -40,7 +40,7 @@ children:
 realization:
   - bindings:
       - scheme: path
-        value: src/model/common.rs
+        value: src/model/status.rs
         metadata:
           summary: Status enum (7 states), StatusDetail, TerminalDetail, custom serde for bare string vs tagged map
     role: primary

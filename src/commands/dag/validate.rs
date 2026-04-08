@@ -67,7 +67,6 @@ pub fn validate(
     store: &impl NodeStore,
     workspace_root: Option<&Path>,
 ) -> Result<Vec<ValidationIssue>> {
-    let _ = workspace_root; // wired into the binding-existence walk in a follow-up commit
     let mut issues = Vec::new();
 
     let shape_ids = store.list_ids(NodeType::Shape)?;
@@ -369,7 +368,81 @@ pub fn validate(
         validate_profile_self_consistency(profile, &mut issues);
     }
 
+    // Binding target existence (INV-017 path / INV-018 url) — walks every
+    // shape, constraint, and amendment binding holder. Path checks are
+    // skipped when the caller did not supply a workspace_root (in-memory
+    // test stores), since there is no on-disk repo to resolve against.
+    for (&id, shape) in &shapes {
+        check_node_bindings(
+            "shape",
+            id.get(),
+            &shape.realization,
+            &shape.evidence,
+            &shape.provenance,
+            workspace_root,
+            &mut issues,
+        );
+    }
+    for (&id, constraint) in &constraints {
+        check_node_bindings(
+            "constraint",
+            id.get(),
+            &constraint.realization,
+            &constraint.evidence,
+            &constraint.provenance,
+            workspace_root,
+            &mut issues,
+        );
+    }
+    for (&id, amendment) in &amendments {
+        check_node_bindings(
+            "amendment",
+            id.get(),
+            &amendment.realization,
+            &amendment.evidence,
+            &amendment.provenance,
+            workspace_root,
+            &mut issues,
+        );
+    }
+
     Ok(issues)
+}
+
+/// Walks every binding-holding array on a node (realization, evidence,
+/// provenance) and runs the path-existence (INV-017) and url-well-formed
+/// (INV-018) checks against each binding. Path checks are skipped when
+/// `workspace_root` is `None`.
+fn check_node_bindings(
+    node_type: &str,
+    node_id: u64,
+    realization: &[Realization],
+    evidence: &[Evidence],
+    provenance: &[Provenance],
+    workspace_root: Option<&Path>,
+    issues: &mut Vec<ValidationIssue>,
+) {
+    for (idx, r) in realization.iter().enumerate() {
+        let location = format!("realization[{idx}]");
+        check_url_binding_well_formed(&r.bindings, node_type, node_id, &location, issues);
+        if let Some(root) = workspace_root {
+            check_path_binding_exists(root, &r.bindings, node_type, node_id, &location, issues);
+        }
+    }
+    for (idx, e) in evidence.iter().enumerate() {
+        let location = format!("evidence[{idx}]");
+        check_url_binding_well_formed(&e.bindings, node_type, node_id, &location, issues);
+        if let Some(root) = workspace_root {
+            check_path_binding_exists(root, &e.bindings, node_type, node_id, &location, issues);
+        }
+    }
+    for (idx, p) in provenance.iter().enumerate() {
+        let location = format!("provenance[{idx}]");
+        check_url_binding_well_formed(&p.bindings, node_type, node_id, &location, issues);
+        if let Some(root) = workspace_root {
+            check_path_binding_exists(root, &p.bindings, node_type, node_id, &location, issues);
+        }
+    }
 }
 
 fn detect_cycles_in<Id: Copy + Eq + Ord + std::hash::Hash + fmt::Display, T>(
@@ -874,7 +947,6 @@ fn check_no_duplicate_names(
 /// it never calls `canonicalize`, which would mangle the location
 /// string in error output and behave differently on case-insensitive
 /// volumes.
-#[allow(dead_code)] // wired into the validate() walk in a follow-up commit
 fn check_path_binding_exists(
     workspace_root: &Path,
     bindings: &[Binding],
@@ -963,7 +1035,6 @@ fn check_path_binding_exists(
 /// Hand-rolled offline check — no network and no `url` crate
 /// dependency. Tighten only if the repo's URL bindings ever grow
 /// past trivial cases.
-#[allow(dead_code)] // wired into the validate() walk in a follow-up commit
 fn check_url_binding_well_formed(
     bindings: &[Binding],
     node_type: &str,

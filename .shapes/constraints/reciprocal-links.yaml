@@ -31,16 +31,16 @@ intent:
 realization:
   - bindings:
       - scheme: path
-        value: src/commands/dag.rs
+        value: src/commands/dag/validate.rs
         metadata:
-          summary: Reciprocal link checks in validate() — iterates parent/child refs, verifies matching entries exist
+          summary: Reciprocal link checks inside validate() — iterates parent/child refs across both DAGs, emits INV-008/INV-009 issues for missing back-links
     role: primary
 evidence:
   - id: reciprocal-check-impl
     type: implementation
     bindings:
       - scheme: path
-        value: src/commands/dag.rs
+        value: src/commands/dag/validate.rs
         metadata:
-          summary: Reciprocal link checks in validate() — iterates shape and constraint children, verifies parent back-links exist
+          summary: Reciprocal link checks inside validate() — iterates shape and constraint children, verifies parent back-links exist
     trusted: true

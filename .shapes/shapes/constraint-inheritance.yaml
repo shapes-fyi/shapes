@@ -37,7 +37,7 @@ parents:
 realization:
   - bindings:
       - scheme: path
-        value: src/commands/dag.rs
+        value: src/commands/dag/walk.rs
         metadata:
           summary: effective_constraints() — BFS ancestor walk collecting constraint refs, ConstraintWithSource struct
     role: primary

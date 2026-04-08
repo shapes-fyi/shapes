@@ -1026,3 +1026,180 @@ mod profile_enforcement {
         );
     }
 }
+
+mod binding_existence {
+    use super::{fresh_store, shapes_in};
+
+    /// Run `shapes validate`, expect failure with exit 2, and return
+    /// stderr as a String.
+    fn validate_fails(dir: &tempfile::TempDir) -> String {
+        let assert = shapes_in(dir).arg("validate").assert().failure().code(2);
+        String::from_utf8_lossy(&assert.get_output().stderr).to_string()
+    }
+
+    /// Body for a shape with one realization binding using the given
+    /// scheme/value. Profile is omitted so this exercises ONLY the
+    /// binding-existence walk, not INV-010..INV-016.
+    fn shape_with_binding(scheme: &str, value: &str) -> String {
+        format!(
+            "id: 0\n\
+             name: bind-test\n\
+             description: d\n\
+             status: proposed\n\
+             intent:\n  \
+               kind: feature\n  \
+               summary: s\n  \
+               source: human\n\
+             realization:\n  \
+               - bindings:\n      \
+                   - scheme: {scheme}\n        \
+                     value: {value:?}\n        \
+                     metadata:\n          \
+                       summary: t\n    \
+                 role: primary\n",
+        )
+    }
+
+    /// INV-017: a path binding pointing at a file that doesn't exist
+    /// must be flagged.
+    #[test]
+    fn inv_017_missing_path_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", "src/does-not-exist.rs"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("does-not-exist"),
+            "expected INV-017 for missing file: {stderr}"
+        );
+    }
+
+    /// INV-017: an absolute path binding must be flagged before any
+    /// filesystem touch.
+    #[test]
+    fn inv_017_absolute_path_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", "/etc/passwd"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("absolute"),
+            "expected INV-017 for absolute path: {stderr}"
+        );
+    }
+
+    /// INV-017: a path that lexically escapes the workspace via
+    /// parent-dir components must be flagged without touching the
+    /// filesystem.
+    #[test]
+    fn inv_017_parent_escape_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", "../../etc/passwd"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("escapes"),
+            "expected INV-017 for parent-dir escape: {stderr}"
+        );
+    }
+
+    /// INV-017: an empty `value` must be flagged.
+    #[test]
+    fn inv_017_empty_value_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", ""))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("empty"),
+            "expected INV-017 for empty path: {stderr}"
+        );
+    }
+
+    /// INV-017: a path with backslash separators must be flagged so
+    /// the slash-only convention is portable across platforms.
+    #[test]
+    fn inv_017_backslash_separator_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", "src\\foo.rs"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-017") && stderr.contains("'/'"),
+            "expected INV-017 for backslash separator: {stderr}"
+        );
+    }
+
+    /// INV-017 positive: a path that resolves to a real file in the
+    /// workspace passes validate. The fresh_store seeds the standard
+    /// init layout, so `meta.yaml` is guaranteed to exist under the
+    /// `.shapes` directory; we use the directory itself to also
+    /// confirm directories are accepted.
+    #[test]
+    fn inv_017_existing_directory_passes() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", ".shapes"))
+            .assert()
+            .success();
+        shapes_in(&dir).arg("validate").assert().success();
+    }
+
+    /// INV-017 positive: a path resolving to a real file (not just a
+    /// directory) is also accepted. Uses meta.yaml under .shapes which
+    /// init guarantees.
+    #[test]
+    fn inv_017_existing_file_passes() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("path", ".shapes/meta.yaml"))
+            .assert()
+            .success();
+        shapes_in(&dir).arg("validate").assert().success();
+    }
+
+    /// INV-018: a url binding that lacks `scheme://` must be flagged.
+    #[test]
+    fn inv_018_missing_scheme_is_flagged() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("url", "not a url"))
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-018"),
+            "expected INV-018 for malformed url: {stderr}"
+        );
+    }
+
+    /// INV-018 positive: a well-formed https URL is accepted.
+    #[test]
+    fn inv_018_valid_https_url_passes() {
+        let dir = fresh_store("software");
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(shape_with_binding("url", "https://example.com"))
+            .assert()
+            .success();
+        shapes_in(&dir).arg("validate").assert().success();
+    }
+}
