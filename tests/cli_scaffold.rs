@@ -870,6 +870,36 @@ mod profile_enforcement {
         );
     }
 
+    /// INV-013 (dogfood): the software starter kit declares
+    /// `intent.sources = [human, ai]`. A shape created against the
+    /// active profile with `source: martian` must be rejected without
+    /// any custom profile setup.
+    #[test]
+    fn inv_013_software_kit_rejects_unlisted_source() {
+        let dir = fresh_store("software");
+        let bad = "id: 0\n\
+            name: bad-source-software-kit\n\
+            description: d\n\
+            profile: 1\n\
+            status: proposed\n\
+            intent:\n  \
+              kind: feature\n  \
+              summary: s\n  \
+              source: martian\n  \
+              goals: g\n  \
+              rationale: r\n";
+        shapes_in(&dir)
+            .args(["create", "shape", "--from", "-"])
+            .write_stdin(bad)
+            .assert()
+            .success();
+        let stderr = validate_fails(&dir);
+        assert!(
+            stderr.contains("INV-013") && stderr.contains("martian"),
+            "expected INV-013 for martian source against software kit: {stderr}"
+        );
+    }
+
     /// INV-014: a realization binding missing a required metadata
     /// field declared by the profile must be flagged.
     ///

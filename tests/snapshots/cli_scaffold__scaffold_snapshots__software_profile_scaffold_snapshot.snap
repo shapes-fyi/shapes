@@ -1,5 +1,6 @@
 ---
 source: tests/cli_scaffold.rs
+assertion_line: 738
 expression: yaml
 ---
 id: 2
@@ -49,6 +50,13 @@ fields:
       - name: pattern
         description: A reusable design pattern
         required: false
+      sources:
+      - name: human
+        description: Hand-authored by an engineer
+        required: false
+      - name: ai
+        description: Authored by an AI agent
+        required: false
     realization:
       fields:
       - name: summary
@@ -93,6 +101,13 @@ fields:
         required: false
       - name: policy
         description: Organizational or compliance rule
+        required: false
+      sources:
+      - name: human
+        description: Hand-authored by an engineer
+        required: false
+      - name: ai
+        description: Authored by an AI agent
         required: false
     realization:
       fields:

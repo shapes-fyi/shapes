@@ -38,10 +38,15 @@ pub(crate) struct StarterKit {
     /// Allowed shape kinds (seeded into
     /// `profile.fields.shape.intent.kinds`).
     pub shape_kinds: &'static [KindHint],
+    /// Allowed shape `intent.source` values (seeded into
+    /// `profile.fields.shape.intent.sources`). Empty = unrestricted.
+    pub shape_sources: &'static [FieldHint],
     /// Constraint intent field hints.
     pub constraint_intent_fields: &'static [FieldHint],
     /// Allowed constraint kinds.
     pub constraint_kinds: &'static [KindHint],
+    /// Allowed constraint `intent.source` values. Empty = unrestricted.
+    pub constraint_sources: &'static [FieldHint],
     /// Default value for `shape.intent.kind` when `--kind` is omitted.
     pub default_shape_kind: &'static str,
     /// Default value for `constraint.intent.kind` when `--kind` is
@@ -135,11 +140,13 @@ impl StarterKit {
                     self.default_shape_kind,
                     self.shape_intent_fields,
                     self.shape_kinds,
+                    self.shape_sources,
                 )),
                 constraint: Some(node_section(
                     self.default_constraint_kind,
                     self.constraint_intent_fields,
                     self.constraint_kinds,
+                    self.constraint_sources,
                 )),
             }),
             versioning: None,
@@ -164,20 +171,22 @@ impl StarterKit {
 }
 
 /// Constructs a [`FieldSection`] for one node type (shape or
-/// constraint) from the kit's field and kind hints. Every section
-/// also requires a `summary` metadata field on every realization and
-/// evidence binding so that bindings explain themselves to readers.
+/// constraint) from the kit's field, kind, and source hints. Every
+/// section also requires a `summary` metadata field on every
+/// realization and evidence binding so that bindings explain
+/// themselves to readers.
 fn node_section(
     default_kind: &'static str,
     fields: &'static [FieldHint],
     kinds: &'static [KindHint],
+    sources: &'static [FieldHint],
 ) -> FieldSection {
     FieldSection {
         default_kind: Some(default_kind.to_owned()),
         intent: Some(FieldGroup {
             fields: fields.iter().map(field_hint_to_def).collect(),
             kinds: kinds.iter().map(kind_hint_to_def).collect(),
-            sources: vec![],
+            sources: sources.iter().map(field_hint_to_def).collect(),
         }),
         status: None,
         constraints: None,
@@ -221,6 +230,23 @@ fn kind_hint_to_def(hint: &KindHint) -> FieldDef {
     }
 }
 
+/// Source allow-list shared by every node section in the software
+/// kit. Constrains who may have authored a shape or constraint to
+/// `human` or `ai`, matching the project's actual authorship pattern
+/// and giving INV-013 something to enforce on this repo's own profile.
+static SOFTWARE_SOURCES: [FieldHint; 2] = [
+    FieldHint {
+        name: "human",
+        description: "Hand-authored by an engineer",
+        required: false,
+    },
+    FieldHint {
+        name: "ai",
+        description: "Authored by an AI agent",
+        required: false,
+    },
+];
+
 pub(crate) static SOFTWARE: StarterKit = StarterKit {
     name: "software",
     description: "Software engineering project",
@@ -246,6 +272,8 @@ pub(crate) static SOFTWARE: StarterKit = StarterKit {
             required: false,
         },
     ],
+    shape_sources: &SOFTWARE_SOURCES,
+    constraint_sources: &SOFTWARE_SOURCES,
     shape_kinds: &[
         KindHint {
             name: "system",
@@ -331,6 +359,8 @@ pub(crate) static SOFTWARE: StarterKit = StarterKit {
 pub(crate) static RESEARCH: StarterKit = StarterKit {
     name: "research",
     description: "Research project — experiments, datasets, findings",
+    shape_sources: &[],
+    constraint_sources: &[],
     shape_intent_fields: &[
         FieldHint {
             name: "hypotheses",
@@ -417,6 +447,8 @@ pub(crate) static RESEARCH: StarterKit = StarterKit {
 pub(crate) static EDITORIAL: StarterKit = StarterKit {
     name: "editorial",
     description: "Editorial / writing project — books, articles, narratives",
+    shape_sources: &[],
+    constraint_sources: &[],
     shape_intent_fields: &[
         FieldHint {
             name: "themes",
@@ -502,6 +534,8 @@ pub(crate) static EDITORIAL: StarterKit = StarterKit {
 pub(crate) static MINIMAL: StarterKit = StarterKit {
     name: "minimal",
     description: "Minimal — only `rationale` is required, no kind hints",
+    shape_sources: &[],
+    constraint_sources: &[],
     shape_intent_fields: &[FieldHint {
         name: "rationale",
         description: "Why this shape exists",

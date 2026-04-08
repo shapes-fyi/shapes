@@ -41,6 +41,11 @@ fields:
           description: How data moves through the system
         - name: pattern
           description: Recurring design pattern or structural convention
+      sources:
+        - name: human
+          description: Hand-authored by an engineer
+        - name: ai
+          description: Authored by an AI agent
     realization:
       fields:
         - name: summary
@@ -89,6 +94,11 @@ fields:
           description: Numeric or resource threshold
         - name: policy
           description: Organizational or process rule
+      sources:
+        - name: human
+          description: Hand-authored by an engineer
+        - name: ai
+          description: Authored by an AI agent
     realization:
       fields:
         - name: summary
