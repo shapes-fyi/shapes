@@ -79,7 +79,7 @@ jobs:
       - uses: bnjbvr/cargo-machete@v0.9.1
 
   shapes-ci:
-    name: shapes ci-check (dogfood)
+    name: shapes ci-check
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
     steps:

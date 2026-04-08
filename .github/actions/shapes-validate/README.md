@@ -2,6 +2,8 @@
 
 A reusable composite action that runs `shapes validate` and `shapes ci-check` against your repository's `.shapes/` directory.
 
+> **Pre-stable:** shapes-cli has not cut a stable release yet. This action currently tracks the `main` branch of `shapes-fyi/shapes` for both the action ref (`@main` in `uses:`) and the CLI install (`cargo install --branch main`). When `v1` ships, the defaults will move to tag pinning. For now, `main` is the stable-enough point.
+
 ## What it enforces
 
 | Check | Default | Description |
@@ -29,7 +31,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0   # required so the base ref is available for git show
-      - uses: shapes-fyi/shapes/.github/actions/shapes-validate@v1
+      - uses: shapes-fyi/shapes/.github/actions/shapes-validate@main
 ```
 
 > **Important:** the action does not check out your repository for you, and it requires `fetch-depth: 0` so `git show <base>:<path>` can read the base ref. Forgetting this is the most common reason CI-002 reports false negatives.
@@ -41,7 +43,7 @@ jobs:
 | `shapes-dir` | `.shapes` | Path to the shapes directory, relative to the repo root. |
 | `base-ref` | `${{ github.event.pull_request.base.sha }}` | Base ref to diff against. Set explicitly when reusing the action outside the `pull_request` event. |
 | `require-shapes-changes` | `'true'` | Set to `'false'` to allow PRs that don't touch the shapes directory. |
-| `shapes-version` | `v1` | Git ref of `shapes-fyi/shapes` to install. Pin to a release tag for stability. |
+| `shapes-version` | `main` | Branch of `shapes-fyi/shapes` to install. Tracks the latest commit on `main` until shapes-cli cuts a stable release. |
 | `install-shapes` | `'true'` | Set to `'false'` if a previous step has already placed `shapes` on PATH. |
 
 ## Examples
@@ -49,7 +51,7 @@ jobs:
 ### Allow code-only PRs (opt-out of CI-001)
 
 ```yaml
-- uses: shapes-fyi/shapes/.github/actions/shapes-validate@v1
+- uses: shapes-fyi/shapes/.github/actions/shapes-validate@main
   with:
     require-shapes-changes: 'false'
 ```
@@ -57,24 +59,16 @@ jobs:
 ### Custom shapes directory
 
 ```yaml
-- uses: shapes-fyi/shapes/.github/actions/shapes-validate@v1
+- uses: shapes-fyi/shapes/.github/actions/shapes-validate@main
   with:
     shapes-dir: docs/shapes
-```
-
-### Pin to a specific shapes-cli release
-
-```yaml
-- uses: shapes-fyi/shapes/.github/actions/shapes-validate@v1
-  with:
-    shapes-version: v1.2.0
 ```
 
 ### Reuse a binary already on PATH
 
 ```yaml
 - run: cargo install --locked --git https://github.com/shapes-fyi/shapes shapes-cli
-- uses: shapes-fyi/shapes/.github/actions/shapes-validate@v1
+- uses: shapes-fyi/shapes/.github/actions/shapes-validate@main
   with:
     install-shapes: 'false'
 ```

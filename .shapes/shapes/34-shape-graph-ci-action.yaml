@@ -77,15 +77,19 @@ realization:
         metadata:
           summary: >-
             Composite action consumed as `uses:
-            shapes-fyi/shapes/.github/actions/shapes-validate@v1` —
-            installs the CLI via `cargo install --locked --git --tag
-            <version>` and runs validate + ci-check
+            shapes-fyi/shapes/.github/actions/shapes-validate@main`
+            while shapes-cli is pre-stable — installs the CLI via
+            `cargo install --locked --git --branch <ref>` (default
+            `main`) and runs validate + ci-check. Defaults move to
+            `--tag v1` once the first stable release ships.
       - scheme: path
         value: .github/actions/shapes-validate/README.md
         metadata:
           summary: >-
-            Usage docs — the `fetch-depth` zero requirement, the four
-            CI-* / INV-* check families, four worked examples
+            Usage docs — the pre-stable main-tracking note, the
+            `fetch-depth` zero requirement, the four CI-* / INV-*
+            check families, and three worked examples (code-only
+            opt-out, custom shapes dir, reuse on-PATH binary)
     role: primary
   - bindings:
       - scheme: path
