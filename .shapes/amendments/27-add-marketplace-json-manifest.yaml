@@ -1,0 +1,14 @@
+id: 27
+name: add marketplace.json manifest
+description: add marketplace.json manifest
+targets:
+  shape_ids:
+  - 6
+status: proposed
+version_impact: minor
+intent:
+  kind: amendment
+  summary: Adds .claude-plugin/marketplace.json so the repo is addable via /plugin marketplace add shapes-fyi/shapes. Single-plugin catalog pointing at the repo root; plugin.json remains the authority (strict default).
+  source: ai
+initiated_by:
+  type: ai
