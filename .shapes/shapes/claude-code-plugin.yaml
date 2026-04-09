@@ -2,11 +2,12 @@ id: 6
 name: Claude Code Plugin
 description: >-
   Plugin and skills for Claude Code that teach AI agents the Shapes
-  Specification and the context-first workflow. Includes three skills: context
+  Specification and the context-first workflow. Includes four skills: context
   (auto-loaded when .shapes/ exists, teaches spec concepts), init
-  (bootstraps shapes through code analysis and engineer interview), and
-  maintain (audits existing graph for quality and coverage). The plugin
-  registers via plugin.json and skills via SKILL.md files.
+  (bootstraps shapes through code analysis and engineer interview),
+  maintain (keeps graph in sync with code changes), and archive
+  (walks amendments and archives stale ones). The plugin registers via
+  plugin.json and skills via SKILL.md files.
 profile: 1
 status: canonical
 intent:
@@ -40,6 +41,8 @@ children:
     role: feature
   - shape: 16
     role: feature
+  - shape: 35
+    role: feature
 realization:
   - bindings:
       - scheme: path
@@ -63,7 +66,13 @@ realization:
       - scheme: path
         value: skills/shapes-maintain/SKILL.md
         metadata:
-          summary: Maintain skill — graph audit, validation fixes, coverage checks, stale realization detection
+          summary: Maintain skill — graph sync, validation fixes, coverage checks, stale realization detection
+    role: primary
+  - bindings:
+      - scheme: path
+        value: skills/shapes-archive/SKILL.md
+        metadata:
+          summary: Archive skill — archival pass decision framework, criteria, step-by-step procedure, CLI commands
     role: primary
   - bindings:
       - scheme: path
@@ -73,3 +82,4 @@ realization:
     role: supporting
 amendment_log:
   - 27
+  - 30

@@ -1,12 +1,11 @@
 id: 16
 name: Maintain Skill
 description: >-
-  Audit skill that reviews an existing shapes graph for quality, consistency,
-  and coverage. Loads the full graph, fixes validation errors, checks for
-  duplicates, flags shallow nodes (one-liners, missing realizations, vague
-  constraint rules), verifies realization bindings point to existing files,
-  checks for uncovered source files and orphan nodes, reviews structural
-  organization, presents findings by severity, and applies approved changes.
+  Keeps the shapes graph in sync with code changes. Provides the decision
+  framework for when to create shapes, amendments, or constraints, how to
+  bind realizations after implementation, and ensures the graph stays valid.
+  Also covers deep audits for periodic health checks. Amendment archival is
+  handled by the separate shapes-archive skill.
 profile: 1
 status: canonical
 intent:
@@ -27,6 +26,8 @@ intent:
     A shapes graph that drifts from reality is worse than no graph at all —
     agents would make decisions based on stale context. Periodic maintenance
     keeps the graph trustworthy.
+amendment_log:
+  - 30
 parents:
   - id: 6
     role: feature
