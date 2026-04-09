@@ -1,0 +1,14 @@
+id: 33
+name: Add Claude Code GitHub Integration shape
+description: Add Claude Code GitHub Integration shape
+targets:
+  shape_ids:
+  - 1
+status: proposed
+version_impact: minor
+intent:
+  kind: amendment
+  summary: Adds shape:36 (Claude Code GitHub Integration) as a child of shape:1. This new shape captures the two GitHub Actions workflows (claude.yml, claude-code-review.yml) that give Claude Code a repo-native entry point, gated to the snowmead user.
+  source: ai
+initiated_by:
+  type: ai
