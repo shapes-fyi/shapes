@@ -53,21 +53,31 @@ pub fn fmt(check: bool) -> Result<()> {
                     .strip_prefix(std::env::current_dir().unwrap_or_default())
                     .unwrap_or(&path);
                 if check {
-                    eprintln!("  not canonical: {}", rel.display());
+                    eprintln!("Diff in {}:", rel.display());
+                    let orig_lines: Vec<&str> = original.lines().collect();
+                    let canon_lines: Vec<&str> = canonical.lines().collect();
+                    let max = orig_lines.len().max(canon_lines.len());
+                    for i in 0..max {
+                        match (orig_lines.get(i), canon_lines.get(i)) {
+                            (Some(o), Some(c)) if o != c => {
+                                eprintln!("-{o}");
+                                eprintln!("+{c}");
+                            }
+                            (Some(o), None) => eprintln!("-{o}"),
+                            (None, Some(c)) => eprintln!("+{c}"),
+                            _ => {}
+                        }
+                    }
+                    eprintln!();
                 } else {
                     fs::write(&path, &canonical)?;
-                    eprintln!("  formatted: {}", rel.display());
                 }
             }
         }
     }
 
-    if dirty == 0 {
-        eprintln!("All files already canonical.");
-    } else if check {
+    if check && dirty > 0 {
         anyhow::bail!("{dirty} file(s) not in canonical format (run `shapes fmt` to fix)");
-    } else {
-        eprintln!("Formatted {dirty} file(s).");
     }
 
     Ok(())
