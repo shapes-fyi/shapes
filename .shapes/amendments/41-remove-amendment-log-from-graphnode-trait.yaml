@@ -11,3 +11,4 @@ intent:
   source: ai
 initiated_by:
   type: ai
+version_impact: minor

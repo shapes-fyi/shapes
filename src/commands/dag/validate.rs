@@ -472,7 +472,7 @@ fn validate_profile_fields_for<N: DagNode>(
         {
             validate_profile_fields(
                 profile,
-                &N::Id::NODE_TYPE.to_string(),
+                N::Id::NODE_TYPE,
                 id.get(),
                 node.intent(),
                 node.metadata(),
@@ -626,7 +626,7 @@ fn detect_cycles_in<Id: Copy + Eq + Ord + std::hash::Hash + fmt::Display, T>(
 #[allow(clippy::too_many_arguments)]
 fn validate_profile_fields(
     profile: &Profile,
-    node_type: &str,
+    node_type: NodeType,
     node_id: u64,
     intent: &Intent,
     metadata: &BTreeMap<String, serde_yml::Value>,
@@ -639,11 +639,14 @@ fn validate_profile_fields(
         return;
     };
     let section = match node_type {
-        "shape" => &fields.shape,
-        "constraint" => &fields.constraint,
-        _ => return,
+        NodeType::Shape => &fields.shape,
+        NodeType::Constraint => &fields.constraint,
+        NodeType::Amendment | NodeType::Profile => return,
     };
     let Some(section) = section else { return };
+    // Convert to &str once for downstream display helpers.
+    let type_str = node_type.to_string();
+    let node_type = type_str.as_str();
 
     if let Some(ref group) = section.intent {
         // INV-010: required intent fields.
