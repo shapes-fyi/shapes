@@ -14,6 +14,8 @@ exclude = [
   "bench/",
   "docs/",
   "node_modules/",
+  "spec/",
+  "tests/",
   ".github/",
   ".shapes/",
   ".claude-plugin/",
@@ -26,9 +28,12 @@ exclude = [
   "logo.png",
   "CLAUDE.md",
   "AGENTS.md",
+  "TRADEMARK.md",
   ".impeccable.md",
   ".prettierrc",
   ".prettierignore",
+  "deny.toml",
+  "rustfmt.toml",
 ]
 
 [[bin]]
