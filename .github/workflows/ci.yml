@@ -112,6 +112,8 @@ jobs:
         run: cargo build --release --locked
       - name: shapes validate
         run: ./target/release/shapes validate
+      - name: shapes fmt --check
+        run: ./target/release/shapes fmt --check
       - name: shapes ci-check
         run: |
           ./target/release/shapes ci-check \
