@@ -25,14 +25,6 @@ pub trait NodeId:
     /// The [`NodeType`] this identifier belongs to.
     const NODE_TYPE: NodeType;
 
-    /// Wraps a raw `u64` as a typed identifier.
-    ///
-    /// Currently called through concrete types (e.g. `ShapeId::new`),
-    /// not through the trait bound. Retained for generic node
-    /// construction in future code (e.g. `N::Id::new(raw)`).
-    #[allow(dead_code)]
-    fn new(raw: u64) -> Self;
-
     /// Returns the underlying raw `u64`.
     fn get(self) -> u64;
 }
@@ -84,10 +76,6 @@ macro_rules! define_id {
 
         impl NodeId for $Name {
             const NODE_TYPE: NodeType = $node_type;
-
-            fn new(raw: u64) -> Self {
-                Self(raw)
-            }
 
             fn get(self) -> u64 {
                 self.0

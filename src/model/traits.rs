@@ -4,13 +4,13 @@
 //! at the Rust type level:
 //!
 //! - [`GraphNode`] — fields shared by all four node types (id, name,
-//!   status, intent, amendment_log). Implemented by Shape, Constraint,
-//!   Amendment, and Profile.
+//!   status, intent). Implemented by Shape, Constraint, Amendment, and
+//!   Profile.
 //! - [`DagNode`] — the DAG-navigable subset shared by Shape and
 //!   Constraint only (parent/child links, constraint references, binding
 //!   accessors). A subtrait of `GraphNode`.
 //!
-//! See shape 36 (Type-Level Trait Hierarchy) and constraints 38/39 in
+//! See shape 37 (Type-Level Trait Hierarchy) and constraints 38/39 in
 //! `.shapes/`.
 
 use std::collections::BTreeMap;

@@ -118,8 +118,6 @@ impl super::traits::GraphNode for Amendment {
     fn intent(&self) -> &super::Intent {
         &self.intent
     }
-    // amendment_log() uses the default empty slice — amendments don't
-    // track other amendments.
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

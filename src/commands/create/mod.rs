@@ -32,7 +32,6 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             source,
             profile,
             description,
-            kit,
             from,
         } => create_shape(
             &store,
@@ -43,7 +42,6 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                 source,
                 profile,
                 description,
-                kit,
                 from,
             },
             id_only,
@@ -59,7 +57,6 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
             intent_kind,
             profile,
             description,
-            kit,
             from,
         } => create_constraint(
             &store,
@@ -73,7 +70,6 @@ pub fn create(cmd: CreateCommand, id_only: bool, format: OutputFormat) -> Result
                 intent_kind,
                 profile,
                 description,
-                kit,
                 from,
             },
             id_only,

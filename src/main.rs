@@ -249,11 +249,8 @@ enum CreateCommand {
         /// Full description (defaults to a TODO placeholder if omitted)
         #[arg(long)]
         description: Option<String>,
-        /// Override the active profile's seeding kit for this scaffold only (does not modify meta.yaml)
-        #[arg(long, value_enum, conflicts_with = "from")]
-        kit: Option<KitKind>,
         /// Read full YAML definition from file (use - for stdin). Mutually exclusive with other flags.
-        #[arg(long, conflicts_with_all = &["name", "kind", "summary", "source", "description", "kit"])]
+        #[arg(long, conflicts_with_all = &["name", "kind", "summary", "source", "description"])]
         from: Option<String>,
     },
 
@@ -290,11 +287,8 @@ enum CreateCommand {
         /// Full description (defaults to a TODO placeholder if omitted)
         #[arg(long)]
         description: Option<String>,
-        /// Override the active profile's seeding kit for this scaffold only (does not modify meta.yaml)
-        #[arg(long, value_enum, conflicts_with = "from")]
-        kit: Option<KitKind>,
         /// Read full YAML definition from file (use - for stdin)
-        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent_kind", "description", "kit"])]
+        #[arg(long, conflicts_with_all = &["name", "kind", "rule", "enforcement", "summary", "source", "intent_kind", "description"])]
         from: Option<String>,
     },
 
