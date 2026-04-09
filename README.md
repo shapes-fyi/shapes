@@ -1,5 +1,9 @@
 # Shapes
 
+[![Crates.io](https://img.shields.io/crates/v/shapes-cli.svg)](https://crates.io/crates/shapes-cli)
+[![CI](https://github.com/shapes-fyi/shapes/actions/workflows/ci.yml/badge.svg)](https://github.com/shapes-fyi/shapes/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+
 **Record the intent, constraints, and decisions that shape a project.**
 
 Shapes captures what your code means — not just what it does — as a queryable graph of YAML files in a `.shapes/` directory, version-controlled alongside your code. Agents transcribe human intent into this context layer, query it before making changes, and maintain it as the project evolves.
@@ -55,7 +59,7 @@ Shapes aggregates intent, constraints, and boundaries into a **single structured
 ### Install the CLI
 
 ```bash
-cargo install --git https://github.com/shapes-fyi/shapes
+cargo install shapes-cli
 ```
 
 ### Install the Agent Skills
