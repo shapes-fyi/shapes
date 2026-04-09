@@ -1,0 +1,14 @@
+id: 45
+name: Add Release Pipeline child
+description: |
+  Adds shape:38 (Release Pipeline) as a component child of the root Shapes CLI shape, reflecting the new release workflow added in PR #53.
+targets:
+  shape_ids:
+  - 1
+status: proposed
+intent:
+  kind: amendment
+  summary: Add shape:38 (Release Pipeline) as a component child of shape:1 (Shapes CLI)
+  source: ai
+initiated_by:
+  type: ai

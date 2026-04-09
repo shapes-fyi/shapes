@@ -1,0 +1,14 @@
+id: 42
+name: Release workflow and crates.io publishing
+description: Release workflow and crates.io publishing
+targets:
+  shape_ids:
+  - 1
+status: proposed
+intent:
+  kind: amendment
+  summary: Added GitHub Actions release workflow for cross-platform binary builds, crates.io publishing, and Claude-drafted release notes. Updated Cargo.toml with crates.io metadata and exclude patterns. Added README badges.
+  source: human
+initiated_by:
+  type: human
+archived: true

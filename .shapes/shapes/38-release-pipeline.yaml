@@ -1,0 +1,40 @@
+id: 38
+name: Release Pipeline
+description: |
+  GitHub Actions workflow that automates the full release cycle for shapes-cli. Triggered on v* tag push, it reuses the existing CI workflow as a gate, builds cross-platform binaries for 5 targets (linux x86_64/aarch64, macOS x86_64/aarch64, windows x86_64), publishes to crates.io with an idempotency guard that skips already-published versions, and creates GitHub releases with Claude Code-drafted release notes. Binary assets are packaged as tar.gz (unix) or zip (windows) with the naming convention shapes-{tag}-{target}.{ext}.
+profile: 1
+status: proposed
+intent:
+  kind: feature
+  summary: 'Cross-platform release workflow: CI gate, 5-target binary builds, idempotent crates.io publish, and Claude Code-drafted GitHub releases'
+  source: ai
+  goals: |
+    Automate the entire release process so cutting a release is a single git tag push. Binaries should cover the major platforms users need. The crates.io publish must be idempotent so the workflow is safe to re-run. Release notes should be meaningful — Claude Code analyzes the git log and produces structured Markdown.
+  non_goals: |
+    Does not handle version bumping — the engineer updates Cargo.toml manually before tagging. Does not publish to package managers beyond crates.io (homebrew, apt, etc.). Does not run integration tests beyond what the existing CI workflow covers.
+  rationale: |
+    Manual releases are error-prone and discourage frequent shipping. Cross-platform binaries lower the barrier to adoption for users who don't have a Rust toolchain. Claude-drafted release notes ensure every release has meaningful documentation without manual effort.
+constraints:
+- 11
+realization:
+- bindings:
+  - scheme: path
+    value: '.github/workflows/release.yml'
+    metadata:
+      summary: Full release workflow — CI gate, binary matrix build, crates.io publish, GitHub release with Claude-drafted notes
+  role: primary
+- bindings:
+  - scheme: path
+    value: '.github/workflows/ci.yml'
+    metadata:
+      summary: CI workflow with workflow_call trigger for reuse by release pipeline
+  role: supporting
+- bindings:
+  - scheme: path
+    value: Cargo.toml
+    metadata:
+      summary: Crate metadata — readme, keywords, categories, exclude patterns for crates.io publishing
+  role: supporting
+parents:
+- id: 1
+  role: component

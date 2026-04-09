@@ -19,6 +19,8 @@ realization:
     metadata:
       summary: Spec reference — node types, DAGs, Intent open map, Profiles, bindings, context-first workflow
   role: primary
+amendment_log:
+- 44
 parents:
 - id: 6
   role: feature

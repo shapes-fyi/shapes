@@ -1,0 +1,14 @@
+id: 43
+name: Skill shell injection for auto-context
+description: Skill shell injection for auto-context
+targets:
+  shape_ids:
+  - 6
+status: proposed
+intent:
+  kind: amendment
+  summary: Added shell injection blocks to shapes-context, shapes-maintain, and shapes-archive skills that auto-execute shapes --version, crates.io update check, and shapes tree shape on load. Includes guards for missing CLI and missing .shapes/ directory.
+  source: human
+initiated_by:
+  type: human
+archived: true
