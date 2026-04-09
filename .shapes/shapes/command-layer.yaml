@@ -41,9 +41,16 @@ realization:
     metadata:
       summary: Cross-verb helpers — output(yaml/json), read_from(stdin/path), open_store, report_created.
   role: supporting
+- bindings:
+  - scheme: path
+    value: src/commands/fmt.rs
+    metadata:
+      summary: shapes fmt — normalizes all .shapes/ YAML files to serde canonical format. Walks all node types, deserializes each file, re-serializes through serde, writes back if different. Supports --check flag for CI enforcement.
+  role: primary
 amendment_log:
 - 20
 - 26
+- 32
 parents:
 - id: 1
   role: component

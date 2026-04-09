@@ -24,6 +24,7 @@ realization:
   role: primary
 amendment_log:
 - 21
+- 32
 parents:
 - id: 1
   role: interface
