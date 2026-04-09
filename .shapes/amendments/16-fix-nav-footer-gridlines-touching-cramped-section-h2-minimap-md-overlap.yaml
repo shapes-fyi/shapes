@@ -9,98 +9,12 @@ intent:
   kind: amendment
   summary: Focused bug fix for four real visual issues surfaced by running the site locally. Nav and footer wordmarks sit on the GridLines vertical rails because they lack the inner cell padding the hero uses. In Practice and Install h2 overflow their col-span-2 cells at md and lg causing mid-word break-words wrap. Two Graphs h2 overflows the title block at md and lg. Spec page minimap popover overlaps content column at md viewport.
   source: ai
-  rationale: >-
-    The user ran the site locally and reported text touching the
-    background grid on the home page and awkward text wrapping.
-    A targeted code audit with viewport geometry math confirmed
-    four real bugs that the prior audit/polish passes missed.
-    Bug A root cause: GridLines renders a fixed Container with
-    an inner border-x div whose vertical rails sit at the
-    Container content edge (px-6 sm:px-10 lg:px-16 = 24/40/64
-    px inset from the viewport). The hero wordmark is nested
-    two levels deep (Container -> grid -> cell with p-6 sm:p-10
-    lg:p-14), so it sits inside the rails by the cell padding
-    amount. Nav and footer, by contrast, put content directly
-    inside the Container flex with zero inner padding, so their
-    wordmarks land exactly on the rails. Every prior audit
-    treated nav and footer as trivial flex containers and
-    never checked them against GridLines. Fix: add an inner
-    px-6 sm:px-10 lg:px-14 wrapper inside the Container in
-    both nav and footer, matching the hero cell padding scale.
-    This both aligns nav and footer wordmarks with the hero
-    wordmark vertically (same x position) and moves them clear
-    of the rails. Bug B root cause: In Practice and Install
-    text cells use md:col-span-2 of md:grid-cols-6 which is
-    33 percent width. At md (768 px) that yields roughly 229
-    px cell with 149 px text area after sm:p-10 padding. The
-    h2 scale text-4xl sm:text-5xl lg:text-6xl renders
-    "Structured" or "One" at 48 to 60 px font size, which
-    nominally measures around 264 to 330 px wide for
-    "Structured" — comfortably exceeding the 149 px text
-    area. The existing break-words falls back to an ugly
-    mid-word break. The cleanest fix is widening the text
-    cells to md:col-span-3, giving a true 50/50 split. The
-    code cells narrow to md:col-span-3 but still handle the
-    YAML example (yaml-scroll auto-handles overflow) and the
-    short cargo install line. Bug C root cause: Two Graphs
-    h2 reads "Shapes and Constraints" on line one, 22
-    characters. At md the text area is 608 px; sm:text-6xl
-    (60 px) measures around 726 px for the phrase. At lg
-    the text area is 784 px; lg:text-7xl (72 px) measures
-    around 871 px. Both overflow. Fix: cap the scale at
-    text-3xl sm:text-4xl md:text-5xl lg:text-6xl. lg:text-6xl
-    is still dramatic at 60 px but fits. Bug D root cause:
-    section-minimap is hidden md:block (from amendment:12).
-    At md (768 px), the spec content max-w-[68ch] is about
-    700 px inside a 728 px Container content area. The minimap
-    wrapper is fixed right-4 sm:right-6 which positions its
-    center at about 744 px from viewport left — inside the
-    content column. When the popover opens with min-w-[14rem]
-    it extends across the content. Fix: change md:block to
-    lg:block. Mobile and tablet readers still have the inline
-    TOC at the top of the page; only desktop (lg+) with real
-    side space gets the minimap.
-  goals: >-
-    Nav and footer content visually aligns with hero cell
-    content and sits clear of the GridLines rails at every
-    breakpoint. In Practice and Install headings fit on one
-    or two clean lines with no break-words mid-word fallback.
-    Two Graphs heading fits at every breakpoint including md
-    and lg where it previously overflowed. Spec minimap
-    popover does not overlap the content column at md.
-  non_goals: >-
-    Does not redesign the GridLines geometry. Does not
-    restructure the home page grid system. Does not touch
-    spec content. Does not change typography tokens, colors,
-    motion, or any semantic pattern. Does not add new
-    primitives. Does not change the minimap behavior on
-    desktop. Does not touch the Container primitive.
+  affected_files: 'apps/web/src/components/nav.tsx — wrap the flex content in an inner div with px-6 sm:px-10 lg:px-14 so the logo and link cluster sit inside the GridLines rails. apps/web/src/components/footer.tsx — same inner wrapper pattern as nav. apps/web/src/routes/index.tsx — In Practice and Install sections: md:col-span-2 plus md:col-span-4 become md:col-span-3 plus md:col-span-3. Two Graphs h2: scale drops from text-5xl sm:text-6xl lg:text-7xl to text-3xl sm:text-4xl md:text-5xl lg:text-6xl. apps/web/src/components/spec/section-minimap.tsx — the fixed wrapper hidden md:block becomes hidden lg:block so the minimap only renders at desktop width where it has room outside the content column.'
+  goals: Nav and footer content visually aligns with hero cell content and sits clear of the GridLines rails at every breakpoint. In Practice and Install headings fit on one or two clean lines with no break-words mid-word fallback. Two Graphs heading fits at every breakpoint including md and lg where it previously overflowed. Spec minimap popover does not overlap the content column at md.
+  non_goals: Does not redesign the GridLines geometry. Does not restructure the home page grid system. Does not touch spec content. Does not change typography tokens, colors, motion, or any semantic pattern. Does not add new primitives. Does not change the minimap behavior on desktop. Does not touch the Container primitive.
+  rationale: 'The user ran the site locally and reported text touching the background grid on the home page and awkward text wrapping. A targeted code audit with viewport geometry math confirmed four real bugs that the prior audit/polish passes missed. Bug A root cause: GridLines renders a fixed Container with an inner border-x div whose vertical rails sit at the Container content edge (px-6 sm:px-10 lg:px-16 = 24/40/64 px inset from the viewport). The hero wordmark is nested two levels deep (Container -> grid -> cell with p-6 sm:p-10 lg:p-14), so it sits inside the rails by the cell padding amount. Nav and footer, by contrast, put content directly inside the Container flex with zero inner padding, so their wordmarks land exactly on the rails. Every prior audit treated nav and footer as trivial flex containers and never checked them against GridLines. Fix: add an inner px-6 sm:px-10 lg:px-14 wrapper inside the Container in both nav and footer, matching the hero cell padding scale. This both aligns nav and footer wordmarks with the hero wordmark vertically (same x position) and moves them clear of the rails. Bug B root cause: In Practice and Install text cells use md:col-span-2 of md:grid-cols-6 which is 33 percent width. At md (768 px) that yields roughly 229 px cell with 149 px text area after sm:p-10 padding. The h2 scale text-4xl sm:text-5xl lg:text-6xl renders "Structured" or "One" at 48 to 60 px font size, which nominally measures around 264 to 330 px wide for "Structured" — comfortably exceeding the 149 px text area. The existing break-words falls back to an ugly mid-word break. The cleanest fix is widening the text cells to md:col-span-3, giving a true 50/50 split. The code cells narrow to md:col-span-3 but still handle the YAML example (yaml-scroll auto-handles overflow) and the short cargo install line. Bug C root cause: Two Graphs h2 reads "Shapes and Constraints" on line one, 22 characters. At md the text area is 608 px; sm:text-6xl (60 px) measures around 726 px for the phrase. At lg the text area is 784 px; lg:text-7xl (72 px) measures around 871 px. Both overflow. Fix: cap the scale at text-3xl sm:text-4xl md:text-5xl lg:text-6xl. lg:text-6xl is still dramatic at 60 px but fits. Bug D root cause: section-minimap is hidden md:block (from amendment:12). At md (768 px), the spec content max-w-[68ch] is about 700 px inside a 728 px Container content area. The minimap wrapper is fixed right-4 sm:right-6 which positions its center at about 744 px from viewport left — inside the content column. When the popover opens with min-w-[14rem] it extends across the content. Fix: change md:block to lg:block. Mobile and tablet readers still have the inline TOC at the top of the page; only desktop (lg+) with real side space gets the minimap.'
   spec_section: N/A — visual bug fix, no spec change
-  affected_files: >-
-    apps/web/src/components/nav.tsx — wrap the flex content
-    in an inner div with px-6 sm:px-10 lg:px-14 so the logo
-    and link cluster sit inside the GridLines rails.
-    apps/web/src/components/footer.tsx — same inner wrapper
-    pattern as nav.
-    apps/web/src/routes/index.tsx — In Practice and Install
-    sections: md:col-span-2 plus md:col-span-4 become
-    md:col-span-3 plus md:col-span-3. Two Graphs h2: scale
-    drops from text-5xl sm:text-6xl lg:text-7xl to
-    text-3xl sm:text-4xl md:text-5xl lg:text-6xl.
-    apps/web/src/components/spec/section-minimap.tsx — the
-    fixed wrapper hidden md:block becomes hidden lg:block so
-    the minimap only renders at desktop width where it has
-    room outside the content column.
-  verification: >-
-    bun run format clean. bun run typecheck clean. bun run
-    build clean. shapes validate clean. Manual browser check
-    at 375 px, 768 px, 1024 px, and 1440 px. At 375 nav and
-    footer clear the viewport edges. At 768 nav and footer
-    wordmarks visibly offset from the vertical rails; In
-    Practice and Install h2 render cleanly without mid-word
-    breaks; Two Graphs h2 fits cleanly; minimap hidden on
-    spec page. At 1024 minimap visible on spec and does not
-    overlap text column. At 1440 nav footer and hero
-    wordmarks align vertically at the same x position.
+  verification: bun run format clean. bun run typecheck clean. bun run build clean. shapes validate clean. Manual browser check at 375 px, 768 px, 1024 px, and 1440 px. At 375 nav and footer clear the viewport edges. At 768 nav and footer wordmarks visibly offset from the vertical rails; In Practice and Install h2 render cleanly without mid-word breaks; Two Graphs h2 fits cleanly; minimap hidden on spec page. At 1024 minimap visible on spec and does not overlap text column. At 1440 nav footer and hero wordmarks align vertically at the same x position.
 initiated_by:
   type: ai
+archived: true

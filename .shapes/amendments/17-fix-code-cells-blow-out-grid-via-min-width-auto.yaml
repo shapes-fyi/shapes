@@ -9,62 +9,12 @@ intent:
   kind: amendment
   summary: Code blocks in In Practice and Install escape their bordered boxes because the grid items containing them default to min-width auto, refusing to shrink below the intrinsic width of the longest unwrappable line in the pre. The CodeBlock's overflow-x-auto never activates because the cell itself expands. Adding min-w-0 to the grid items lets the track minmax(0, 1fr) actually clamp the cell, so overflow-x-auto kicks in and the text scrolls horizontally inside the bordered box.
   source: ai
-  rationale: >-
-    The user reported that code cards and install commands are
-    cut off because the boxes are not wide enough — but the bug
-    is the opposite of what it looks like. The boxes are not
-    too narrow; they are too WIDE. The pre containing the YAML
-    or the cargo command has overflow-x-auto, which should
-    clip the text and show a horizontal scrollbar. Instead,
-    the long unwrappable line is making the cell itself
-    expand past 50 percent of the row, blowing out the layout
-    and rendering text past the bordered box. This is the
-    classic CSS Grid min-width auto gotcha. Tailwind v4
-    md:grid-cols-6 compiles to repeat(6, minmax(0, 1fr)) so
-    the TRACKS can shrink to zero. But each grid ITEM has
-    min-width: auto by default, which CSS Grid interprets as
-    "the intrinsic minimum content width of this item." For
-    a pre with non-wrapping long lines, that intrinsic width
-    is the full width of the longest line. The item refuses
-    to shrink below it, the track expands to accommodate, and
-    the box visually overflows its expected 50 percent width.
-    The pre's overflow-x-auto never activates because the
-    pre never reaches its parent's clamped width. Setting
-    min-width: 0 on the grid item via the min-w-0 utility
-    overrides the auto default, lets the item shrink to the
-    track's minmax(0, 1fr) min, and finally lets the pre
-    inside it overflow-x-auto as designed. The same fix
-    applies to every grid item that wraps a CodeBlock or pre
-    on the home page — In Practice (text + code cells),
-    Install (text + code cells), and the Two Graphs DAG
-    columns. The hero already gets it because its CodeBlock
-    contains the short TREE_EXAMPLE that fits anyway, but
-    apply min-w-0 there too as defense in depth.
-  goals: >-
-    Long YAML lines and the cargo install URL clip and
-    scroll horizontally inside their bordered CodeBlock
-    boxes instead of escaping past the right border. The
-    50/50 grid split actually holds at 50/50 instead of
-    being silently expanded by content blowout.
-  non_goals: >-
-    Does not change CodeBlock styling, font sizes, padding,
-    or border treatment. Does not change grid track
-    definitions. Does not introduce new tokens or
-    primitives. Does not touch typography or color.
+  affected_files: apps/web/src/routes/index.tsx — add min-w-0 to four grid items in In Practice and Install (text cell + code cell each), to both Two Graphs DAG column cells, and to both hero cells (defensive).
+  goals: Long YAML lines and the cargo install URL clip and scroll horizontally inside their bordered CodeBlock boxes instead of escaping past the right border. The 50/50 grid split actually holds at 50/50 instead of being silently expanded by content blowout.
+  non_goals: Does not change CodeBlock styling, font sizes, padding, or border treatment. Does not change grid track definitions. Does not introduce new tokens or primitives. Does not touch typography or color.
+  rationale: 'The user reported that code cards and install commands are cut off because the boxes are not wide enough — but the bug is the opposite of what it looks like. The boxes are not too narrow; they are too WIDE. The pre containing the YAML or the cargo command has overflow-x-auto, which should clip the text and show a horizontal scrollbar. Instead, the long unwrappable line is making the cell itself expand past 50 percent of the row, blowing out the layout and rendering text past the bordered box. This is the classic CSS Grid min-width auto gotcha. Tailwind v4 md:grid-cols-6 compiles to repeat(6, minmax(0, 1fr)) so the TRACKS can shrink to zero. But each grid ITEM has min-width: auto by default, which CSS Grid interprets as "the intrinsic minimum content width of this item." For a pre with non-wrapping long lines, that intrinsic width is the full width of the longest line. The item refuses to shrink below it, the track expands to accommodate, and the box visually overflows its expected 50 percent width. The pre''s overflow-x-auto never activates because the pre never reaches its parent''s clamped width. Setting min-width: 0 on the grid item via the min-w-0 utility overrides the auto default, lets the item shrink to the track''s minmax(0, 1fr) min, and finally lets the pre inside it overflow-x-auto as designed. The same fix applies to every grid item that wraps a CodeBlock or pre on the home page — In Practice (text + code cells), Install (text + code cells), and the Two Graphs DAG columns. The hero already gets it because its CodeBlock contains the short TREE_EXAMPLE that fits anyway, but apply min-w-0 there too as defense in depth.'
   spec_section: N/A — CSS Grid bug fix
-  affected_files: >-
-    apps/web/src/routes/index.tsx — add min-w-0 to four
-    grid items in In Practice and Install (text cell + code
-    cell each), to both Two Graphs DAG column cells, and
-    to both hero cells (defensive).
-  verification: >-
-    bun run format clean. bun run typecheck clean. shapes
-    validate clean. Manual browser check at 768 px and
-    1024 px and 1440 px — In Practice YAML cell shows a
-    bordered box with the YAML clipped at the right edge
-    and a horizontal scrollbar appears at the bottom of
-    the box. Install cargo command similarly clips inside
-    its bordered box. Two Graphs DAG columns hold their
-    50 percent split. Hero code cell does not regress.
+  verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual browser check at 768 px and 1024 px and 1440 px — In Practice YAML cell shows a bordered box with the YAML clipped at the right edge and a horizontal scrollbar appears at the bottom of the box. Install cargo command similarly clips inside its bordered box. Two Graphs DAG columns hold their 50 percent split. Hero code cell does not regress.
 initiated_by:
   type: ai
+archived: true

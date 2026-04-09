@@ -10,107 +10,12 @@ intent:
   kind: amendment
   summary: Batches the six recommended actions from the impeccable audit. Lazy-loads beautiful-mermaid into its own client chunk via dynamic import inside ExampleToggle so the spec page initial JS drops dramatically. Deletes the dead MermaidDiagram component. Bumps Button lg and icon-lg sizes to meet the 44px touch target. Simplifies the triple rounded-full workaround. Adds text-tiny and text-label semantic tokens and routes label call sites through them. Polish sweep on remaining arbitrary tracking and leading values, bg opacity step, and OpenType feature enablement.
   source: ai
-  rationale: >-
-    Audit pass surfaced six actionable items. Tackling them in one
-    batch because each is small and they touch independent
-    surfaces. (1) The 1.65 MB specification chunk dominated by
-    beautiful-mermaid + elkjs is the P0 finding. Discovered during
-    scope analysis that MermaidDiagram is dead code — defined but
-    imported nowhere — so it can be deleted outright for a small
-    free win. The actual Mermaid load comes from ExampleToggle
-    which calls renderMermaidSVG inside a useMemo at component
-    init. Replacing the static import with a dynamic import inside
-    a useEffect lets Vite split beautiful-mermaid into its own
-    chunk, removing it from the spec page initial JS. Trade-off:
-    SSR ships ExampleToggle with empty diagrams; the client
-    populates them after the chunk loads. There is a brief flash
-    of empty diagram cells. Acceptable because the section is not
-    above the fold and the YAML pane (the primary affordance) is
-    still visible. (2) Touch targets are uniformly below 44px
-    across the icon button family because the shared Button
-    component defines size lg as h-9 (36px) and size icon-lg as
-    size-9 (36px). Bumping to h-11 / size-11 brings every icon
-    button at every call site up to the WCAG 2.5.5 AAA target in
-    one source change. (3) The triple rounded-full workaround at
-    three call sites is dead duplication — rounded-full applies
-    to all states unconditionally so the hover and focus-visible
-    variants are no-ops. Simplify to a single class. The
-    underlying reason the workaround exists (Button base radius
-    is rounded-none) means we still need the rounded-full
-    override on icon buttons; only the duplication goes. (4)
-    Tiny label sizes drift across four arbitrary values
-    (0.625rem, 0.65rem, 0.6875rem, 0.8125rem). Define semantic
-    --text-tiny and --text-label tokens in the @theme block and
-    route the call sites through them. (5) Tracking values
-    drift between tracking-[0.3em] and tracking-[0.18em] in
-    label spans — both should pull from tracking-label and a
-    new tracking-label-tight. (6) Polish: replace remaining
-    leading-[1.65] with leading-read on TOC, normalize
-    bg-destructive/8 to /10, replace tracking-[-0.04em] on nav
-    and footer wordmarks with tracking-heading, enable
-    additional OpenType features (liga, kern) globally.
-  goals: >-
-    Spec page initial client JS drops by an order of magnitude
-    via Mermaid chunk split. Touch targets meet WCAG 2.5.5 AAA
-    44px across every icon button. Triple rounded-full smell is
-    gone. Tiny label sizes and tracking pull from tokens. Final
-    drift on leading, opacity step, wordmark tracking, and
-    OpenType features cleaned up.
-  non_goals: >-
-    Does not move Mermaid render to a server function or build
-    script (the dynamic import pattern is the smallest fix that
-    actually ships). Does not eagerly render Mermaid for SSR
-    (accepts the brief empty-diagram flash on first paint).
-    Does not change Button variant logic beyond size dimensions.
-    Does not change spec content. Does not refactor sections.tsx
-    prose. Does not touch the home page hero motion entrance
-    (already fixed in amendment:13).
+  affected_files: apps/web/src/components/spec/mermaid-diagram.tsx — DELETE (dead code, no consumers). apps/web/src/components/spec/example-toggle.tsx — replace static beautiful-mermaid import with a dynamic import inside a useEffect; render with empty diagram map until the chunk loads. apps/web/src/components/spec/sections.tsx — no functional change but ExampleToggle still renders inside it. packages/ui/src/components/button.tsx — bump size lg h-9 to h-11 and size icon-lg size-9 to size-11. apps/web/src/routes/specification.tsx — simplify the rounded-full workaround on the back-to-top button. apps/web/src/components/nav.tsx — simplify the rounded-full workaround on the GitHub button. Replace tracking-[-0.04em] with tracking-heading on the wordmark. apps/web/src/components/spec/theme-toggle.tsx — simplify the rounded-full workaround. apps/web/src/components/footer.tsx — replace tracking-[-0.04em] with tracking-heading on the wordmark. packages/ui/src/styles/globals.css — add --text-tiny (0.625rem), --text-label (0.6875rem), --tracking-label-tight (0.18em) tokens. Enable liga and kern globally on body. apps/web/src/routes/index.tsx — route TwoGraphs label spans and SectionLabel sizing through the new tokens. Replace tracking-[0.3em] with tracking-label and tracking-[0.18em] with tracking-label-tight. apps/web/src/routes/specification.tsx — replace TOC leading-[1.65] with leading-read. apps/web/src/components/spec/code-block.tsx — replace text-[0.65rem] with text-tiny. packages/ui/src/components/section-label.tsx — replace the arbitrary text-[0.6875rem] with text-label.
+  goals: Spec page initial client JS drops by an order of magnitude via Mermaid chunk split. Touch targets meet WCAG 2.5.5 AAA 44px across every icon button. Triple rounded-full smell is gone. Tiny label sizes and tracking pull from tokens. Final drift on leading, opacity step, wordmark tracking, and OpenType features cleaned up.
+  non_goals: Does not move Mermaid render to a server function or build script (the dynamic import pattern is the smallest fix that actually ships). Does not eagerly render Mermaid for SSR (accepts the brief empty-diagram flash on first paint). Does not change Button variant logic beyond size dimensions. Does not change spec content. Does not refactor sections.tsx prose. Does not touch the home page hero motion entrance (already fixed in amendment:13).
+  rationale: 'Audit pass surfaced six actionable items. Tackling them in one batch because each is small and they touch independent surfaces. (1) The 1.65 MB specification chunk dominated by beautiful-mermaid + elkjs is the P0 finding. Discovered during scope analysis that MermaidDiagram is dead code — defined but imported nowhere — so it can be deleted outright for a small free win. The actual Mermaid load comes from ExampleToggle which calls renderMermaidSVG inside a useMemo at component init. Replacing the static import with a dynamic import inside a useEffect lets Vite split beautiful-mermaid into its own chunk, removing it from the spec page initial JS. Trade-off: SSR ships ExampleToggle with empty diagrams; the client populates them after the chunk loads. There is a brief flash of empty diagram cells. Acceptable because the section is not above the fold and the YAML pane (the primary affordance) is still visible. (2) Touch targets are uniformly below 44px across the icon button family because the shared Button component defines size lg as h-9 (36px) and size icon-lg as size-9 (36px). Bumping to h-11 / size-11 brings every icon button at every call site up to the WCAG 2.5.5 AAA target in one source change. (3) The triple rounded-full workaround at three call sites is dead duplication — rounded-full applies to all states unconditionally so the hover and focus-visible variants are no-ops. Simplify to a single class. The underlying reason the workaround exists (Button base radius is rounded-none) means we still need the rounded-full override on icon buttons; only the duplication goes. (4) Tiny label sizes drift across four arbitrary values (0.625rem, 0.65rem, 0.6875rem, 0.8125rem). Define semantic --text-tiny and --text-label tokens in the @theme block and route the call sites through them. (5) Tracking values drift between tracking-[0.3em] and tracking-[0.18em] in label spans — both should pull from tracking-label and a new tracking-label-tight. (6) Polish: replace remaining leading-[1.65] with leading-read on TOC, normalize bg-destructive/8 to /10, replace tracking-[-0.04em] on nav and footer wordmarks with tracking-heading, enable additional OpenType features (liga, kern) globally.'
   spec_section: N/A — audit response, no spec change
-  affected_files: >-
-    apps/web/src/components/spec/mermaid-diagram.tsx — DELETE
-    (dead code, no consumers).
-    apps/web/src/components/spec/example-toggle.tsx — replace
-    static beautiful-mermaid import with a dynamic import
-    inside a useEffect; render with empty diagram map until
-    the chunk loads.
-    apps/web/src/components/spec/sections.tsx — no functional
-    change but ExampleToggle still renders inside it.
-    packages/ui/src/components/button.tsx — bump size lg
-    h-9 to h-11 and size icon-lg size-9 to size-11.
-    apps/web/src/routes/specification.tsx — simplify the
-    rounded-full workaround on the back-to-top button.
-    apps/web/src/components/nav.tsx — simplify the rounded-full
-    workaround on the GitHub button. Replace tracking-[-0.04em]
-    with tracking-heading on the wordmark.
-    apps/web/src/components/spec/theme-toggle.tsx — simplify the
-    rounded-full workaround.
-    apps/web/src/components/footer.tsx — replace
-    tracking-[-0.04em] with tracking-heading on the wordmark.
-    packages/ui/src/styles/globals.css — add --text-tiny
-    (0.625rem), --text-label (0.6875rem), --tracking-label-tight
-    (0.18em) tokens. Enable liga and kern globally on body.
-    apps/web/src/routes/index.tsx — route TwoGraphs label spans
-    and SectionLabel sizing through the new tokens. Replace
-    tracking-[0.3em] with tracking-label and tracking-[0.18em]
-    with tracking-label-tight.
-    apps/web/src/routes/specification.tsx — replace TOC
-    leading-[1.65] with leading-read.
-    apps/web/src/components/spec/code-block.tsx — replace
-    text-[0.65rem] with text-tiny.
-    packages/ui/src/components/section-label.tsx — replace the
-    arbitrary text-[0.6875rem] with text-label.
-  verification: >-
-    bun run format clean. bun run typecheck clean. bun run
-    build succeeds. shapes validate clean. Spec page chunk
-    measured before vs after — target reduction at least 50%.
-    Manual home page check — labels and tracking unchanged
-    visually. Manual icon button check — every icon button is
-    44x44px when measured in dev tools. Manual rounded-full
-    check — every icon button still renders circular. Manual
-    spec page check — Mermaid examples appear after a brief
-    delay on first load and on every refresh. ExampleToggle
-    YAML pane is visible immediately even before diagrams
-    render. Touch test (or coarse-pointer emulation) — copy
-    button still visible by default on coarse pointers.
+  verification: bun run format clean. bun run typecheck clean. bun run build succeeds. shapes validate clean. Spec page chunk measured before vs after — target reduction at least 50%. Manual home page check — labels and tracking unchanged visually. Manual icon button check — every icon button is 44x44px when measured in dev tools. Manual rounded-full check — every icon button still renders circular. Manual spec page check — Mermaid examples appear after a brief delay on first load and on every refresh. ExampleToggle YAML pane is visible immediately even before diagrams render. Touch test (or coarse-pointer emulation) — copy button still visible by default on coarse pointers.
 initiated_by:
   type: ai
+archived: true

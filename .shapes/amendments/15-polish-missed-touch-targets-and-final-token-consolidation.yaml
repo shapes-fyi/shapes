@@ -10,81 +10,12 @@ intent:
   kind: amendment
   summary: 'Final polish sweep. Bumps theme toggle and back-to-top buttons from size icon (32px) to size icon-lg (now 44px after the audit fix) so the entire touch-critical icon button family meets WCAG 2.5.5 AAA. Adds three remaining drift tokens: text-code for the standard mono small size used in 5 places, leading-h1 for the spec h1 specific value, and tracking-meta for the spec metadata label tracking. Routes all call sites through the new tokens.'
   source: ai
-  rationale: >-
-    Polish grep on the post-audit codebase surfaced four real items.
-    First, amendment:14 bumped the Button icon-lg size from size-9
-    to size-11 (44px) but did not bump the plain icon size (still
-    size-8 = 32px). The theme toggle and the spec page back-to-top
-    button both use size icon, so they remained below the 44px
-    touch target. The simplest fix is to switch those two call
-    sites to size icon-lg, which now meets the target without
-    needing to change the icon variant for places that should
-    stay smaller. Second, the literal value text-[0.8125rem]
-    appears in five places — code-block.tsx, schema-explorer.tsx,
-    section-minimap.tsx, example-toggle.tsx YAML pane, and
-    index.tsx ShapesTree pre — every one of them is the standard
-    "small monospace" size for code rendering. Five duplicates of
-    the same magic number is exactly the kind of drift /typeset
-    is supposed to eliminate. Add a --text-code token (0.8125rem)
-    and route all five call sites through it. Third, the spec h1
-    uses an arbitrary leading-[0.95] that does not fit any of the
-    existing leading tokens (display 0.82, heading 0.88, subhead
-    1.1, read 1.65). 0.95 is the right value for a text-4xl
-    serif heading at this scale — promote it to --leading-h1.
-    Fourth, the spec metadata dt labels use tracking-[0.08em]
-    which is a UI label cadence narrower than tracking-label
-    (0.28em) and tracking-label-tight (0.18em). Promote to
-    --tracking-meta. Each token addition consolidates a
-    pattern that already exists in the code — none invents new
-    structure.
-  goals: >-
-    Theme toggle and back-to-top hit the 44px touch target.
-    Standard code small size, spec h1 leading, and spec
-    metadata tracking pull from named tokens. After this
-    amendment the only remaining arbitrary typography values
-    in the codebase should be context-specific one-offs
-    (schema-explorer YAML pane leading-[1.15], TOC sub
-    leading-[1.6]) that genuinely belong to one location.
-  non_goals: >-
-    Does not add a placeholder UI for the empty Mermaid
-    diagram flash (separate UX decision). Does not change the
-    icon button variant for places that should stay smaller
-    (only the two touch-critical sites switch to icon-lg).
-    Does not modify the console greeting eslint exception.
-    Does not refactor sections.tsx prose. Does not change
-    motion timing or easing.
+  affected_files: apps/web/src/components/spec/theme-toggle.tsx — bump size icon to size icon-lg. apps/web/src/routes/specification.tsx — bump back-to-top size icon to size icon-lg. packages/ui/src/styles/globals.css — add --text-code (0.8125rem), --leading-h1 (0.95), --tracking-meta (0.08em) tokens in @theme inline. apps/web/src/components/spec/code-block.tsx — replace text-[0.8125rem] with text-code. apps/web/src/components/spec/schema-explorer.tsx — replace text-[0.8125rem] with text-code. apps/web/src/components/spec/section-minimap.tsx — replace text-[0.8125rem] with text-code. apps/web/src/components/spec/example-toggle.tsx — replace text-[0.8125rem] with text-code on the YAML pane. apps/web/src/routes/index.tsx — replace text-[0.8125rem] with text-code on the ShapesTree pre. apps/web/src/routes/specification.tsx — replace leading-[0.95] with leading-h1 on the spec h1, replace tracking-[0.08em] with tracking-meta on metadata dt labels.
+  goals: Theme toggle and back-to-top hit the 44px touch target. Standard code small size, spec h1 leading, and spec metadata tracking pull from named tokens. After this amendment the only remaining arbitrary typography values in the codebase should be context-specific one-offs (schema-explorer YAML pane leading-[1.15], TOC sub leading-[1.6]) that genuinely belong to one location.
+  non_goals: Does not add a placeholder UI for the empty Mermaid diagram flash (separate UX decision). Does not change the icon button variant for places that should stay smaller (only the two touch-critical sites switch to icon-lg). Does not modify the console greeting eslint exception. Does not refactor sections.tsx prose. Does not change motion timing or easing.
+  rationale: Polish grep on the post-audit codebase surfaced four real items. First, amendment:14 bumped the Button icon-lg size from size-9 to size-11 (44px) but did not bump the plain icon size (still size-8 = 32px). The theme toggle and the spec page back-to-top button both use size icon, so they remained below the 44px touch target. The simplest fix is to switch those two call sites to size icon-lg, which now meets the target without needing to change the icon variant for places that should stay smaller. Second, the literal value text-[0.8125rem] appears in five places — code-block.tsx, schema-explorer.tsx, section-minimap.tsx, example-toggle.tsx YAML pane, and index.tsx ShapesTree pre — every one of them is the standard "small monospace" size for code rendering. Five duplicates of the same magic number is exactly the kind of drift /typeset is supposed to eliminate. Add a --text-code token (0.8125rem) and route all five call sites through it. Third, the spec h1 uses an arbitrary leading-[0.95] that does not fit any of the existing leading tokens (display 0.82, heading 0.88, subhead 1.1, read 1.65). 0.95 is the right value for a text-4xl serif heading at this scale — promote it to --leading-h1. Fourth, the spec metadata dt labels use tracking-[0.08em] which is a UI label cadence narrower than tracking-label (0.28em) and tracking-label-tight (0.18em). Promote to --tracking-meta. Each token addition consolidates a pattern that already exists in the code — none invents new structure.
   spec_section: N/A — final polish
-  affected_files: >-
-    apps/web/src/components/spec/theme-toggle.tsx — bump
-    size icon to size icon-lg.
-    apps/web/src/routes/specification.tsx — bump back-to-top
-    size icon to size icon-lg.
-    packages/ui/src/styles/globals.css — add --text-code
-    (0.8125rem), --leading-h1 (0.95), --tracking-meta
-    (0.08em) tokens in @theme inline.
-    apps/web/src/components/spec/code-block.tsx — replace
-    text-[0.8125rem] with text-code.
-    apps/web/src/components/spec/schema-explorer.tsx —
-    replace text-[0.8125rem] with text-code.
-    apps/web/src/components/spec/section-minimap.tsx —
-    replace text-[0.8125rem] with text-code.
-    apps/web/src/components/spec/example-toggle.tsx —
-    replace text-[0.8125rem] with text-code on the YAML
-    pane.
-    apps/web/src/routes/index.tsx — replace text-[0.8125rem]
-    with text-code on the ShapesTree pre.
-    apps/web/src/routes/specification.tsx — replace
-    leading-[0.95] with leading-h1 on the spec h1, replace
-    tracking-[0.08em] with tracking-meta on metadata dt
-    labels.
-  verification: >-
-    bun run format clean. bun run typecheck clean. bun run
-    build succeeds. shapes validate clean. Manual touch test
-    on theme toggle and back-to-top — both render at 44px.
-    Visual diff on spec h1 and metadata labels — no
-    rendering change (token values match the prior
-    arbitrary values exactly). Code blocks across the spec
-    page render at the same size as before. No bundle size
-    regression — token additions are CSS only.
+  verification: bun run format clean. bun run typecheck clean. bun run build succeeds. shapes validate clean. Manual touch test on theme toggle and back-to-top — both render at 44px. Visual diff on spec h1 and metadata labels — no rendering change (token values match the prior arbitrary values exactly). Code blocks across the spec page render at the same size as before. No bundle size regression — token additions are CSS only.
 initiated_by:
   type: ai
+archived: true
