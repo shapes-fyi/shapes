@@ -77,5 +77,5 @@ realization:
       - scheme: path
         value: src/commands/dag/validate.rs
         metadata:
-          summary: INV-019 reciprocity walk does not branch on `archived`; archived amendments participate in validation identically to unarchived ones
+          summary: INV-019 reciprocity walk loads every amendment and enforces reciprocal links regardless of archived state — archived amendments are validated identically to unarchived ones
     role: primary

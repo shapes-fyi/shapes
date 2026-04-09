@@ -57,11 +57,9 @@ fn emit_with_amendment_log<T: Serialize>(
 ) -> Result<()> {
     let archived_ids = collect_archived_ids(store, amendment_log);
 
-    // Short-circuit: nothing archived anywhere, render as today.
-    if archived_ids.is_empty() {
-        return output(node, format);
-    }
-
+    // Always go through the patching path when an amendment_log exists
+    // so that serialization format (key ordering) is consistent
+    // regardless of whether any amendment happens to be archived.
     match format {
         OutputFormat::Yaml => {
             let mut value = serde_yml::to_value(node)?;
