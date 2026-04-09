@@ -17,6 +17,8 @@ realization:
     metadata:
       summary: Archival pass skill — decision framework (when to / when not to archive), step-by-step procedure, mechanics (CI-003 carve-out), and CLI quick reference for archive/unarchive commands
   role: primary
+amendment_log:
+- 44
 parents:
 - id: 6
   role: feature

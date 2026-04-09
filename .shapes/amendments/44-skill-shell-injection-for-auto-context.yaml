@@ -1,0 +1,27 @@
+id: 44
+name: Skill shell injection for auto-context
+description: >
+  Added shell injection blocks (```! fenced code blocks) to shapes-context,
+  shapes-maintain, and shapes-archive SKILL.md files. When any of these skills
+  loads, Claude Code's preprocessing executes the block before the agent sees
+  the skill content. The block checks three states: (1) CLI not installed —
+  prints install instructions, (2) no .shapes/ directory — recommends running
+  /shapes:shapes-init, (3) healthy — shows CLI version, checks crates.io for
+  updates, and runs shapes tree shape to inject the full project hierarchy.
+targets:
+  shape_ids:
+    - 6
+    - 14
+    - 16
+    - 35
+status: proposed
+intent:
+  kind: amendment
+  summary: >
+    Added shell injection blocks to shapes-context, shapes-maintain, and
+    shapes-archive skills that auto-execute version check, crates.io update
+    check, and shapes tree on skill load — with guards for missing CLI and
+    missing .shapes/ directory
+  source: ai
+initiated_by:
+  type: ai
