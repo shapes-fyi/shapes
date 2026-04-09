@@ -21,7 +21,6 @@ framework for how to evolve the graph.
 
 - Decision Framework
 - Amendment Rules
-- Archiving Stale Amendments
 - Updating Realizations
 - Before Every Commit
 - Deep Audit (periodic)
@@ -97,55 +96,6 @@ bindings pointing to the changed files.
 
 **Multiple targets:** use `--target-shape` and `--target-constraint` flags
 repeatedly to target multiple nodes in one amendment.
-
-## Archiving Stale Amendments
-
-Amendments are kept forever for audit, so the log grows with entries
-whose insight value has decayed. As part of routine maintenance,
-walk every unarchived amendment and judge whether it still provides
-context a future reader would actually use. If it does not, archive
-it with `shapes amendment archive <id>`. Archiving is never deletion:
-the YAML file stays on disk, validation and CI still see it, and
-`shapes list --archived` / `shapes get <parent> --archived` bring it
-back into view on demand.
-
-### When to archive
-
-Archive an amendment when reading it would provide no real
-understanding a caller could not already get from the current state
-of the shape, constraint, or code. Concrete examples of "no longer
-valuable":
-
-- It documents a decision that has since been fully superseded by a
-  later amendment (and the later amendment captures the rationale).
-- It describes a transient migration step that completed long ago and
-  whose intermediate state no longer exists anywhere in the repo.
-- It records a renaming or trivial refactor whose "why" is obvious
-  from the current code and leaves no cross-cutting consequences.
-- Its rationale is now fully inlined into the target shape's intent
-  (goals / non-goals / rationale), making the amendment redundant as
-  context.
-
-### When NOT to archive
-
-- Recent amendments on untouched canonical nodes — their "why" is
-  still load-bearing for agents planning the next change.
-- Amendments that encode a non-obvious invariant, trade-off, or
-  constraint decision that is not otherwise captured in code or
-  constraint text.
-- Anything you are uncertain about. Archival is a cleanup pass, not
-  a judgement call to make under pressure — when in doubt, leave it.
-
-### Mechanics
-
-```bash
-shapes amendment archive <id>     # hide from default listings
-shapes amendment unarchive <id>   # restore to default listings
-```
-
-Toggling `archived` is the sole permitted mutation of a canonical
-amendment; CI-003 explicitly allows archive-only diffs. Every other
-field remains strictly immutable.
 
 ## Updating Realizations
 
@@ -236,14 +186,9 @@ the graph feels stale), run the full audit process described in
 [DEEP-AUDIT.md](DEEP-AUDIT.md). This covers duplicate detection, coverage
 gaps, shallow node enrichment, and structural organization.
 
-A deep audit SHOULD also include an **amendment archival pass**: walk
-every unarchived amendment (`shapes list amendment --archived` gives
-the full picture), judge whether each still provides valuable
-context per the "When to archive" / "When NOT to archive" rules in
-§Archiving Stale Amendments, and archive the ones that do not. This
-keeps routine `shapes list amendment` and `shapes get <parent>`
-output focused on entries that still carry insight, without ever
-losing the audit trail.
+A deep audit SHOULD also include an **amendment archival pass**. Invoke
+`/shapes:shapes-archive` to walk every unarchived amendment and decide
+which ones to archive per its decision framework.
 
 Invoke with `/shapes:shapes-maintain` and request a deep audit explicitly.
 
@@ -267,10 +212,6 @@ shapes create shape --name "X" --kind feature --summary "Y"
 shapes create constraint --name "X" --kind invariant --rule "Y" --enforcement machine
 shapes create amendment --name "X" --target-shape <id> --summary "Y"
 shapes create profile --name "X" --summary "Y"
-
-# Archive stale amendments (display-only; CI-003-safe)
-shapes amendment archive <id>
-shapes amendment unarchive <id>
 ```
 
 There is no `shapes edit` command. Edit YAML files directly at

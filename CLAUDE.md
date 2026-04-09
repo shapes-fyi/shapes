@@ -8,6 +8,8 @@ auto-trigger based on what you're doing — no manual invocation needed.
 - `shapes-maintain` activates when editing code, creating files, preparing
   commits, or finishing tasks — provides the decision framework for keeping
   the graph in sync
+- `shapes-archive` activates when performing archival passes on stale
+  amendments or when a deep audit includes archival
 
 ## CLI Reference
 

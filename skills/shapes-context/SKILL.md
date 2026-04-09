@@ -23,6 +23,7 @@ user-invocable: true
 ## Related Skills
 
 - `/shapes:shapes-init` — bootstrap a new project with shapes, profiles, and constraints
+- `/shapes:shapes-archive` — walk amendments and archive stale ones
 - `/shapes:shapes-maintain` — keep the shapes graph in sync with code changes;
   includes the decision framework for amendments vs new shapes vs direct edits
 
