@@ -18,7 +18,7 @@ use std::collections::BTreeMap;
 use serde::de::DeserializeOwned;
 
 use super::bindings::{Evidence, Provenance, Realization};
-use super::ids::{AmendmentId, ConstraintId, NodeId, ProfileId};
+use super::ids::{ConstraintId, NodeId, ProfileId};
 use super::intent::Intent;
 use super::status::Status;
 
@@ -44,15 +44,6 @@ pub trait GraphNode {
 
     /// Returns a reference to the intent payload.
     fn intent(&self) -> &Intent;
-
-    /// Returns the amendment log, if any.
-    ///
-    /// Shape, Constraint, and Profile override this to return their
-    /// `amendment_log` field. Amendment returns the default empty slice
-    /// because amendments do not track other amendments.
-    fn amendment_log(&self) -> &[AmendmentId] {
-        &[]
-    }
 }
 
 /// A node that participates in one of the two DAGs (shape or

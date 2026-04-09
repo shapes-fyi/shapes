@@ -63,10 +63,6 @@ impl super::traits::GraphNode for Profile {
     fn intent(&self) -> &Intent {
         &self.intent
     }
-
-    fn amendment_log(&self) -> &[AmendmentId] {
-        &self.amendment_log
-    }
 }
 
 /// Lifecycle definition: the named statuses a node may take and the

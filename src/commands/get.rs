@@ -11,7 +11,7 @@ use serde::Serialize;
 
 use crate::OutputFormat;
 use crate::commands::shared::{open_store, output};
-use crate::model::{Amendment, AmendmentId, GraphNode, NodeType};
+use crate::model::{Amendment, AmendmentId, NodeType};
 use crate::store::{FileStore, NodeStore};
 
 /// Loads a single node and prints it. When `archived` is `false` (the
@@ -25,15 +25,15 @@ pub fn get(node_type: NodeType, id: u64, archived: bool, format: OutputFormat) -
     match node_type {
         NodeType::Shape => {
             let node = store.load_shape(ShapeId::new(id))?;
-            emit_with_amendment_log(&node, node.amendment_log(), &store, archived, format)
+            emit_with_amendment_log(&node, &node.amendment_log, &store, archived, format)
         }
         NodeType::Constraint => {
             let node = store.load_constraint(ConstraintId::new(id))?;
-            emit_with_amendment_log(&node, node.amendment_log(), &store, archived, format)
+            emit_with_amendment_log(&node, &node.amendment_log, &store, archived, format)
         }
         NodeType::Profile => {
             let node = store.load_profile(ProfileId::new(id))?;
-            emit_with_amendment_log(&node, node.amendment_log(), &store, archived, format)
+            emit_with_amendment_log(&node, &node.amendment_log, &store, archived, format)
         }
         NodeType::Amendment => {
             // Direct fetch by id is an explicit request: always return

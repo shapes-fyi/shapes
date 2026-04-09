@@ -125,10 +125,6 @@ impl super::traits::GraphNode for Constraint {
     fn intent(&self) -> &Intent {
         &self.intent
     }
-
-    fn amendment_log(&self) -> &[super::AmendmentId] {
-        &self.amendment_log
-    }
 }
 
 impl super::traits::DagNode for Constraint {
