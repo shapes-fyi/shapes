@@ -1,5 +1,6 @@
 //! `shapes list` — lists nodes across one or more node types with
-//! optional `--status` and `--kind` filters.
+//! optional `--status`, `--kind`, and `--archived` filters. Archived
+//! amendments are hidden by default; pass `--archived` to include them.
 
 use anyhow::Result;
 use serde::Serialize;
@@ -20,11 +21,15 @@ struct ListEntry {
     kind: String,
 }
 
-/// Lists nodes filtered by type, status, and kind.
+/// Lists nodes filtered by type, status, kind, and archived state.
+/// When `include_archived` is `false` (the default), amendments whose
+/// `archived` flag is true are skipped — they stay on disk for audit
+/// but do not clutter routine listings.
 pub fn list(
     node_type: Option<NodeType>,
     status_filter: Option<String>,
     kind_filter: Option<String>,
+    include_archived: bool,
     format: OutputFormat,
 ) -> Result<()> {
     let store = open_store()?;
@@ -54,6 +59,9 @@ pub fn list(
                 }
                 NodeType::Amendment => {
                     let a: Amendment = store.load(t, id)?;
+                    if a.is_archived() && !include_archived {
+                        continue;
+                    }
                     (a.name, a.status.name().to_owned(), a.intent.kind)
                 }
                 NodeType::Profile => {

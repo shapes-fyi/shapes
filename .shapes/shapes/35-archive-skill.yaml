@@ -1,0 +1,47 @@
+id: 35
+name: Archive Skill
+description: >-
+  Standalone Claude Code skill for walking every unarchived amendment and
+  deciding whether to archive it. Provides the full decision framework
+  (when to archive, when not to), a step-by-step archival pass procedure,
+  and the mechanics of toggling the display-only archived flag. Invoked
+  explicitly via /shapes:shapes-archive or as part of a deep audit.
+  Separated from the maintain skill so that routine graph maintenance
+  and archival passes are independent concerns.
+profile: 1
+status: proposed
+intent:
+  kind: feature
+  summary: Standalone skill for walking amendments and archiving stale ones
+  source: ai
+  goals: >-
+    Give agents a self-contained skill for performing archival passes
+    without loading the full maintain skill. The skill should include
+    all criteria for when to archive and when not to, a step-by-step
+    procedure, and CLI commands — an agent loading only this skill has
+    everything needed to do a complete pass.
+  non_goals: >-
+    Does not handle routine graph maintenance (realizations, constraint
+    verification, validation) — that stays in shapes-maintain. Does not
+    auto-archive based on age or heuristics — archival is an explicit
+    per-amendment judgement call.
+  rationale: >-
+    Archival passes are infrequent maintenance tasks with their own
+    decision framework, separate from the daily maintain workflow of
+    binding realizations and verifying constraints. Bundling both in
+    one skill forced agents to load archival context they rarely need.
+    Extracting it keeps maintain focused and gives archival passes a
+    dedicated, comprehensive skill.
+parents:
+  - id: 6
+    role: feature
+realization:
+  - bindings:
+      - scheme: path
+        value: skills/shapes-archive/SKILL.md
+        metadata:
+          summary: >-
+            Archival pass skill — decision framework (when to / when not to
+            archive), step-by-step procedure, mechanics (CI-003 carve-out),
+            and CLI quick reference for archive/unarchive commands
+    role: primary

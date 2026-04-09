@@ -143,6 +143,13 @@ fn yaml_path(dir: &TempDir, subdir: &str, id: u64) -> std::path::PathBuf {
     );
 }
 
+/// Appends `archived: true` to an amendment yaml.
+fn set_archived(path: &std::path::Path) {
+    let text = fs::read_to_string(path).unwrap();
+    let updated = format!("{text}archived: true\n");
+    fs::write(path, updated).unwrap();
+}
+
 /// Replaces the `status: ...` line of a node yaml with `status: <new>`.
 fn set_status(path: &std::path::Path, new_status: &str) {
     let text = fs::read_to_string(path).unwrap();
@@ -602,6 +609,79 @@ fn ci_003_deleted_amendment_fires() {
     assert!(
         stderr.contains("CI-003") && stderr.contains("deleted") && stderr.contains("amendment 1"),
         "expected CI-003 for deleted amendment: {stderr}"
+    );
+}
+
+/// CI-003 carve-out: toggling ONLY the `archived` field on an existing
+/// amendment is the sole permitted mutation. CI-003 must not fire.
+#[test]
+fn ci_003_archive_only_change_passes() {
+    let (dir, _base0) = init_git_store("software");
+    let (id, _) = promoted_shape_on_base(&dir, "Promoted");
+    // Create and commit an amendment targeting the promoted shape.
+    shapes_in(&dir)
+        .args([
+            "create",
+            "amendment",
+            "--name",
+            "PriorFix",
+            "--target-shape",
+            &id.to_string(),
+            "--summary",
+            "fixed yesterday",
+        ])
+        .assert()
+        .success();
+    git(dir.path(), &["add", "."]);
+    git(
+        dir.path(),
+        &["commit", "--quiet", "-m", "ship prior amendment"],
+    );
+    let base = git_capture(dir.path(), &["rev-parse", "HEAD"]);
+    // Toggle only the archived flag — this is the sole permitted mutation.
+    set_archived(&yaml_path(&dir, "amendments", 1));
+    shapes_in(&dir)
+        .args(["ci-check", "--base", &base])
+        .assert()
+        .success();
+}
+
+/// CI-003 carve-out boundary: toggling `archived` AND changing another
+/// field (e.g. name) must still fire CI-003 — the carve-out only
+/// applies when the archived field is the sole delta.
+#[test]
+fn ci_003_archive_plus_other_field_change_fires() {
+    let (dir, _base0) = init_git_store("software");
+    let (id, _) = promoted_shape_on_base(&dir, "Promoted");
+    shapes_in(&dir)
+        .args([
+            "create",
+            "amendment",
+            "--name",
+            "PriorFix",
+            "--target-shape",
+            &id.to_string(),
+            "--summary",
+            "fixed yesterday",
+        ])
+        .assert()
+        .success();
+    git(dir.path(), &["add", "."]);
+    git(
+        dir.path(),
+        &["commit", "--quiet", "-m", "ship prior amendment"],
+    );
+    let base = git_capture(dir.path(), &["rev-parse", "HEAD"]);
+    // Toggle archived AND tamper with the name — should trip CI-003.
+    let amend_path = yaml_path(&dir, "amendments", 1);
+    set_archived(&amend_path);
+    let text = fs::read_to_string(&amend_path).unwrap();
+    let tampered = text.replacen("PriorFix", "TamperedName", 1);
+    fs::write(&amend_path, tampered).unwrap();
+    let stderr = ci_check_fails(&dir, &base);
+    assert!(
+        stderr.contains("CI-003"),
+        "expected CI-003 when archived + other field changed: {stderr}"
     );
 }
 

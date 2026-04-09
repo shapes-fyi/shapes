@@ -503,6 +503,28 @@ export const AMENDMENT_SCHEMA: SchemaDefinition = {
     provenance: string?`,
     },
     {
+      key: "archived",
+      label: "archived",
+      description: (
+        <p>
+          Display-only flag. When{" "}
+          <code className="text-foreground">true</code>, this Amendment is
+          hidden from default listing output &mdash;{" "}
+          <code className="text-foreground">shapes list amendment</code> drops
+          it, and <code className="text-foreground">shapes get &lt;parent&gt;</code>{" "}
+          omits it from the rendered{" "}
+          <code className="text-foreground">amendment_log</code> unless{" "}
+          <code className="text-foreground">--archived</code> is passed.
+          Archiving is not deletion: the record stays on disk, reciprocity
+          (INV-019) still applies, and CI-002 continues to count the
+          amendment toward satisfying changes on promoted or canonical
+          targets. Toggling this field is the sole permitted mutation of a
+          canonical amendment under CI-003.
+        </p>
+      ),
+      lines: "  archived: boolean?",
+    },
+    {
       key: "metadata",
       label: "metadata",
       description: (

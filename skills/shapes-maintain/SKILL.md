@@ -186,6 +186,10 @@ the graph feels stale), run the full audit process described in
 [DEEP-AUDIT.md](DEEP-AUDIT.md). This covers duplicate detection, coverage
 gaps, shallow node enrichment, and structural organization.
 
+A deep audit SHOULD also include an **amendment archival pass**. Invoke
+`/shapes:shapes-archive` to walk every unarchived amendment and decide
+which ones to archive per its decision framework.
+
 Invoke with `/shapes:shapes-maintain` and request a deep audit explicitly.
 
 ## CLI Quick Reference
@@ -197,7 +201,10 @@ shapes tree constraint                   # Full constraint hierarchy
 shapes get shape <id>                    # Read shape definition
 shapes get constraint <id>               # Read constraint definition
 shapes query constraints <shape-id>      # Constraints that apply (inherited)
-shapes list amendment                    # All amendments (change history)
+shapes list amendment                    # Unarchived amendments (change history)
+shapes list amendment --archived         # Include archived amendments too
+shapes get shape <id>                    # Shape with archived amendments hidden
+shapes get shape <id> --archived         # Shape with archived amendments annotated
 shapes validate                          # Check integrity (exit 0 = clean)
 
 # Create (exact required flags)

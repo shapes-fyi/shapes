@@ -79,17 +79,25 @@ enum Command {
 
     /// Read and display a single node by type and ID.
     /// Use this to see full intent, constraints, realizations, and metadata.
+    /// Archived amendments are hidden from the rendered `amendment_log` by
+    /// default — pass `--archived` to surface them with an annotation.
     Get {
         /// Node type to retrieve
         #[arg(value_enum)]
         node_type: NodeType,
         /// Numeric node ID
         id: u64,
+        /// Include archived amendments in `amendment_log` output, annotated
+        /// with `archived: true`. By default they are filtered out.
+        #[arg(long)]
+        archived: bool,
     },
 
     /// List nodes with optional filters.
     /// Shows a summary table: type, id, name, status, and kind for each node.
     /// Without arguments, lists all nodes across all types.
+    /// Archived amendments are hidden by default — pass `--archived` to
+    /// include them.
     List {
         /// Filter to a specific node type
         #[arg(value_enum)]
@@ -102,6 +110,11 @@ enum Command {
         /// Filter by intent kind (system, service, feature, module, interface, pattern, etc.)
         #[arg(long)]
         kind: Option<String>,
+
+        /// Include archived amendments in the listing. By default they are
+        /// hidden since their insight value has decayed.
+        #[arg(long)]
+        archived: bool,
     },
 
     /// Display the DAG as an ASCII tree.
@@ -162,6 +175,36 @@ enum Command {
         /// Fail when the PR does not touch the shapes directory
         #[arg(long)]
         require_shapes_changes: bool,
+    },
+
+    /// Amendment-specific operations.
+    ///
+    /// Currently supports toggling the display-only `archived` flag.
+    /// Archiving hides an amendment from default listings and from
+    /// `amendment_log` in `get <parent>` output, without deleting it.
+    /// Validation and CI checks always see the full set regardless.
+    Amendment {
+        #[command(subcommand)]
+        operation: AmendmentCommand,
+    },
+}
+
+#[derive(Subcommand)]
+enum AmendmentCommand {
+    /// Mark an amendment as archived.
+    /// Archived amendments stay on disk but are hidden from default
+    /// listing output — use `shapes list --archived` or `shapes get
+    /// <parent> --archived` to surface them again. This is the sole
+    /// permitted mutation of a canonical amendment under CI-003.
+    Archive {
+        /// Numeric amendment ID
+        id: u64,
+    },
+    /// Clear the archived flag on an amendment, bringing it back into
+    /// default listings.
+    Unarchive {
+        /// Numeric amendment ID
+        id: u64,
     },
 }
 
@@ -353,13 +396,18 @@ fn run(cli: Cli) -> Result<(), CliError> {
 
         Command::Create { node, id_only } => commands::create(node, id_only, cli.format)?,
 
-        Command::Get { node_type, id } => commands::get(node_type, id, cli.format)?,
+        Command::Get {
+            node_type,
+            id,
+            archived,
+        } => commands::get(node_type, id, archived, cli.format)?,
 
         Command::List {
             node_type,
             status,
             kind,
-        } => commands::list(node_type, status, kind, cli.format)?,
+            archived,
+        } => commands::list(node_type, status, kind, archived, cli.format)?,
 
         Command::Tree {
             node_type,
@@ -375,6 +423,11 @@ fn run(cli: Cli) -> Result<(), CliError> {
             shapes_dir,
             require_shapes_changes,
         } => commands::ci_check(&base, &shapes_dir, require_shapes_changes, cli.format)?,
+
+        Command::Amendment { operation } => match operation {
+            AmendmentCommand::Archive { id } => commands::amendment_archive(id, cli.format)?,
+            AmendmentCommand::Unarchive { id } => commands::amendment_unarchive(id, cli.format)?,
+        },
     }
 
     Ok(())

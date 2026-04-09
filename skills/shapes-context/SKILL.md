@@ -23,6 +23,7 @@ user-invocable: true
 ## Related Skills
 
 - `/shapes:shapes-init` — bootstrap a new project with shapes, profiles, and constraints
+- `/shapes:shapes-archive` — walk amendments and archive stale ones
 - `/shapes:shapes-maintain` — keep the shapes graph in sync with code changes;
   includes the decision framework for amendments vs new shapes vs direct edits
 
@@ -68,7 +69,7 @@ change between domains.
 |------|---------|
 | **Shape** | What to build and why — the primary work node |
 | **Constraint** | Rules that must be satisfied — strict invariants |
-| **Amendment** | Immutable change record — evolves the graph over time |
+| **Amendment** | Immutable change record — evolves the graph over time. Carries a display-only `archived` flag to hide decayed entries from default listings without losing the audit trail. |
 | **Profile** | Governance configuration — defines lifecycle, custom fields, amendment rules |
 
 ### Two DAGs
@@ -161,6 +162,13 @@ happen until the graph reflects what you intend to do.
    to see the change history. On continuation sessions this is mandatory —
    amendments tell you *what changed and why* in prior iterations. Skip
    only on the initial bootstrap when no amendments exist yet.
+   By default, `shapes list amendment` and `shapes get <parent>` hide
+   archived amendments (entries whose insight value has decayed). They
+   stay on disk for audit — pass `--archived` if you suspect the answer
+   to a question lives in an archived entry. When reading a shape with
+   `shapes get <parent> --archived`, archived entries in
+   `amendment_log` are annotated with `archived: true` so you can
+   recognize them and decide whether to read them.
 
 ### Step 2: Plan in the Graph
 

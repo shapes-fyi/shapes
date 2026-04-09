@@ -1,0 +1,9 @@
+---
+source: tests/cli_snapshots.rs
+expression: out
+---
+- type: amendment
+  id: 1
+  name: fixture-edit
+  status: proposed
+  kind: amendment

@@ -46,13 +46,17 @@ fn create_from_stdin(dir: &TempDir, node_type: &str, yaml: &str) {
 }
 
 /// Seed a tempdir with a deterministic clean graph:
-///   shape:1 Parent  <-- constraint:1, constraint:2; child shape:2; amendment_log:[1]
+///   shape:1 Parent  <-- constraint:1, constraint:2; child shape:2; amendment_log:[1,2]
 ///   shape:2 Child   <-- parent shape:1
-///   constraint:1 ParentRule  <-- child constraint:2; amendment_log:[1]
+///   constraint:1 ParentRule  <-- child constraint:2; amendment_log:[1,2]
 ///   constraint:2 ChildRule   <-- parent constraint:1
-///   amendment:1 fixture-edit --> targets shape:1 + constraint:1
+///   amendment:1 fixture-edit         --> targets shape:1 + constraint:1
+///   amendment:2 fixture-edit-archived --> targets shape:1 + constraint:1 (archived: true)
 ///
-/// Final state passes `shapes validate` clean.
+/// Final state passes `shapes validate` clean. The archived amendment
+/// exercises the display-only `archived` flag — it is present in
+/// every `amendment_log` for reciprocity purposes but is hidden from
+/// default `list` / `get` output.
 fn seed_rich_fixture() -> TempDir {
     let dir = fresh_store("software");
 
@@ -78,6 +82,7 @@ children:
     role: feature
 amendment_log:
   - 1
+  - 2
 "#,
     );
 
@@ -121,6 +126,7 @@ children:
   - constraint: 2
 amendment_log:
   - 1
+  - 2
 "#,
     );
 
@@ -160,6 +166,28 @@ status: proposed
 intent:
   kind: amendment
   summary: fixture amendment targeting shape 1 and constraint 1
+  source: ai
+initiated_by:
+  type: ai
+"#,
+    );
+
+    create_from_stdin(
+        &dir,
+        "amendment",
+        r#"id: 0
+name: fixture-edit-archived
+description: Archived fixture amendment used to exercise the display-only archived flag.
+targets:
+  shape_ids:
+    - 1
+  constraint_ids:
+    - 1
+status: proposed
+archived: true
+intent:
+  kind: amendment
+  summary: archived fixture amendment targeting shape 1 and constraint 1
   source: ai
 initiated_by:
   type: ai
@@ -318,6 +346,62 @@ mod get_snapshots {
         let yaml = stdout_of(shapes_in(&dir).args(["get", "profile", "1"]));
         insta::assert_snapshot!(yaml);
     }
+
+    /// Default `get shape` output drops the archived amendment id
+    /// from `amendment_log` — the rendered log contains only [1],
+    /// not [1, 2], even though both IDs are in the on-disk YAML.
+    #[test]
+    fn get_shape_filters_archived_amendment_log() {
+        let dir = seed_rich_fixture();
+        let yaml = stdout_of(shapes_in(&dir).args(["get", "shape", "1"]));
+        insta::assert_snapshot!(yaml);
+    }
+
+    /// `get shape --archived` renders both IDs in `amendment_log`,
+    /// with the archived entry annotated as `{id: 2, archived: true}`
+    /// so readers can distinguish the archived one.
+    #[test]
+    fn get_shape_annotates_archived_amendment_log() {
+        let dir = seed_rich_fixture();
+        let yaml = stdout_of(shapes_in(&dir).args(["get", "shape", "1", "--archived"]));
+        insta::assert_snapshot!(yaml);
+    }
+
+    /// Archiving and unarchiving round-trips the archived field: the
+    /// amendment comes back with the flag cleared after unarchive.
+    #[test]
+    fn amendment_archive_unarchive_roundtrip() {
+        let dir = seed_rich_fixture();
+
+        // Sanity check: amendment 1 starts unarchived.
+        let before = stdout_of(shapes_in(&dir).args(["get", "amendment", "1"]));
+        assert!(
+            !before.contains("archived: true"),
+            "amendment 1 should start unarchived"
+        );
+
+        // Archive amendment 1, then verify it now reports archived: true.
+        shapes_in(&dir)
+            .args(["amendment", "archive", "1"])
+            .assert()
+            .success();
+        let after_archive = stdout_of(shapes_in(&dir).args(["get", "amendment", "1"]));
+        assert!(
+            after_archive.contains("archived: true"),
+            "amendment 1 should be archived after `amendment archive 1`"
+        );
+
+        // Unarchive and verify the flag is cleared (serialized as absent).
+        shapes_in(&dir)
+            .args(["amendment", "unarchive", "1"])
+            .assert()
+            .success();
+        let after_unarchive = stdout_of(shapes_in(&dir).args(["get", "amendment", "1"]));
+        assert!(
+            !after_unarchive.contains("archived: true"),
+            "amendment 1 should be unarchived after `amendment unarchive 1`"
+        );
+    }
 }
 
 mod list_snapshots {
@@ -355,6 +439,25 @@ mod list_snapshots {
     fn list_by_status() {
         let dir = seed_rich_fixture();
         let out = stdout_of(shapes_in(&dir).args(["list", "--status", "proposed"]));
+        insta::assert_snapshot!(out);
+    }
+
+    /// Default `list amendment` hides the archived fixture amendment —
+    /// only amendment:1 (fixture-edit) appears in the output, never
+    /// amendment:2 (fixture-edit-archived).
+    #[test]
+    fn list_amendment_hides_archived() {
+        let dir = seed_rich_fixture();
+        let out = stdout_of(shapes_in(&dir).args(["list", "amendment"]));
+        insta::assert_snapshot!(out);
+    }
+
+    /// `list amendment --archived` surfaces the archived fixture
+    /// amendment alongside the unarchived one — both rows appear.
+    #[test]
+    fn list_amendment_include_archived() {
+        let dir = seed_rich_fixture();
+        let out = stdout_of(shapes_in(&dir).args(["list", "amendment", "--archived"]));
         insta::assert_snapshot!(out);
     }
 }
