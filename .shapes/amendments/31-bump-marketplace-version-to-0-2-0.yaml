@@ -1,0 +1,13 @@
+id: 31
+name: Bump marketplace version to 0.2.0
+description: Bump marketplace version to 0.2.0
+targets:
+  shape_ids:
+  - 6
+status: proposed
+intent:
+  kind: amendment
+  summary: Update plugin.json version from 0.1.0 to 0.2.0 for the Claude Code marketplace release
+  source: ai
+initiated_by:
+  type: ai
