@@ -10,6 +10,7 @@
 use std::fs;
 
 use anyhow::Result;
+use similar::{ChangeTag, TextDiff};
 
 use crate::model::{Amendment, Constraint, NodeType, Profile, Shape};
 use crate::store::NodeStore;
@@ -53,19 +54,13 @@ pub fn fmt(check: bool) -> Result<()> {
                     .strip_prefix(std::env::current_dir().unwrap_or_default())
                     .unwrap_or(&path);
                 if check {
+                    let diff = TextDiff::from_lines(&original, &canonical);
                     eprintln!("Diff in {}:", rel.display());
-                    let orig_lines: Vec<&str> = original.lines().collect();
-                    let canon_lines: Vec<&str> = canonical.lines().collect();
-                    let max = orig_lines.len().max(canon_lines.len());
-                    for i in 0..max {
-                        match (orig_lines.get(i), canon_lines.get(i)) {
-                            (Some(o), Some(c)) if o != c => {
-                                eprintln!("-{o}");
-                                eprintln!("+{c}");
-                            }
-                            (Some(o), None) => eprintln!("-{o}"),
-                            (None, Some(c)) => eprintln!("+{c}"),
-                            _ => {}
+                    for change in diff.iter_all_changes() {
+                        match change.tag() {
+                            ChangeTag::Delete => eprint!("-{change}"),
+                            ChangeTag::Insert => eprint!("+{change}"),
+                            ChangeTag::Equal => {}
                         }
                     }
                     eprintln!();
