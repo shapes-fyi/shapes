@@ -111,25 +111,18 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Check if version already published
-        id: check
+      - name: Publish to crates.io (idempotent)
         shell: bash
-        run: |
-          VERSION=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')
-          STATUS=$(curl -sL -o /dev/null -w '%{http_code}' "https://crates.io/api/v1/crates/shapes-cli/$VERSION")
-          if [ "$STATUS" = "200" ]; then
-            echo "Version $VERSION already published to crates.io, skipping"
-            echo "skip=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "Version $VERSION not yet published, proceeding"
-            echo "skip=false" >> "$GITHUB_OUTPUT"
-          fi
-
-      - name: Publish to crates.io
-        if: steps.check.outputs.skip != 'true'
-        run: cargo publish --locked
         env:
           CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          OUTPUT=$(cargo publish --locked 2>&1) && exit 0
+          if echo "$OUTPUT" | grep -q "already exists"; then
+            echo "Version already published to crates.io, skipping"
+          else
+            echo "$OUTPUT" >&2
+            exit 1
+          fi
 
   # ── Create GitHub Release with Claude-drafted notes ───────────────
   create-release:
