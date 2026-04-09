@@ -1,53 +1,35 @@
 id: 18
 name: Schema Explorer
-description: >-
-  Interactive split-pane component displaying YAML schema definitions on the
-  left with clickable field regions, and field descriptions with type
-  information on the right. Supports hover highlighting via CSS data attributes
-  to avoid React re-renders, animated field transitions, and responsive layout.
-  Covers all four node types (Shape, Constraint, Amendment, Profile) with
-  complete field documentation.
+description: Interactive split-pane component displaying YAML schema definitions on the left with clickable field regions, and field descriptions with type information on the right. Supports hover highlighting via CSS data attributes to avoid React re-renders, animated field transitions, and responsive layout. Covers all four node types (Shape, Constraint, Amendment, Profile) with complete field documentation.
 profile: 1
 status: canonical
 intent:
   kind: feature
-  summary: >-
-    Interactive YAML schema viewer with clickable regions and field descriptions
+  summary: Interactive YAML schema viewer with clickable regions and field descriptions
   source: human
-  goals: >-
-    Let readers explore the spec's data model interactively by clicking
-    fields in a YAML schema view and seeing descriptions, types, and
-    constraints for each field. Make the schema self-documenting without
-    requiring readers to open source code.
-  rationale: >-
-    Static YAML examples are hard to navigate — readers don't know which fields
-    are required, what types they accept, or what they mean. A split-pane
-    explorer with hover highlighting bridges the gap between raw schema and
-    documentation. CSS-based highlighting avoids re-render cost for frequent
-    hover events.
-  non_goals: >-
-    Not a YAML editor — users cannot modify schema content. Does not validate
-    user-provided YAML against the schema.
+  goals: Let readers explore the spec's data model interactively by clicking fields in a YAML schema view and seeing descriptions, types, and constraints for each field. Make the schema self-documenting without requiring readers to open source code.
+  non_goals: Not a YAML editor — users cannot modify schema content. Does not validate user-provided YAML against the schema.
+  rationale: Static YAML examples are hard to navigate — readers don't know which fields are required, what types they accept, or what they mean. A split-pane explorer with hover highlighting bridges the gap between raw schema and documentation. CSS-based highlighting avoids re-render cost for frequent hover events.
   spec_section: Schema definitions
-parents:
-  - id: 17
-    role: feature
 realization:
-  - bindings:
-      - scheme: path
-        value: apps/web/src/components/spec/schema-explorer.tsx
-        metadata:
-          summary: SchemaExplorer component — buildYaml, buildRegions, CSS hover generation, split-pane layout
-    role: primary
-  - bindings:
-      - scheme: path
-        value: apps/web/src/components/spec/schema-data.tsx
-        metadata:
-          summary: Schema definitions — SHAPE_SCHEMA, CONSTRAINT_SCHEMA, AMENDMENT_SCHEMA, PROFILE_SCHEMA with field metadata
-    role: primary
-  - bindings:
-      - scheme: path
-        value: apps/web/src/components/spec/code-block.tsx
-        metadata:
-          summary: YAML tokenizer and syntax highlighting — TokenSpan, HighlightedCode components
-    role: supporting
+- bindings:
+  - scheme: path
+    value: apps/web/src/components/spec/schema-explorer.tsx
+    metadata:
+      summary: SchemaExplorer component — buildYaml, buildRegions, CSS hover generation, split-pane layout
+  role: primary
+- bindings:
+  - scheme: path
+    value: apps/web/src/components/spec/schema-data.tsx
+    metadata:
+      summary: Schema definitions — SHAPE_SCHEMA, CONSTRAINT_SCHEMA, AMENDMENT_SCHEMA, PROFILE_SCHEMA with field metadata
+  role: primary
+- bindings:
+  - scheme: path
+    value: apps/web/src/components/spec/code-block.tsx
+    metadata:
+      summary: YAML tokenizer and syntax highlighting — TokenSpan, HighlightedCode components
+  role: supporting
+parents:
+- id: 17
+  role: feature

@@ -1,81 +1,45 @@
 id: 28
 name: Profile-Aware Create
-description: >-
-  Every `shapes create shape/constraint` call resolves a governing Profile
-  and uses it for default kind, kind allow-list enforcement, and intent
-  field hints. The active profile (recorded as
-  meta.yaml::active_profile) is the default; --profile <id> overrides it
-  for one call. There is no "create without a profile" path — see
-  constraint:17 (Profiles Automatic in Create).
-status: canonical
+description: Every `shapes create shape/constraint` call resolves a governing Profile and uses it for default kind, kind allow-list enforcement, and intent field hints. The active profile (recorded as meta.yaml::active_profile) is the default; --profile <id> overrides it for one call. There is no "create without a profile" path — see constraint:17 (Profiles Automatic in Create).
 profile: 1
-amendment_log:
-  - 23
-  - 26
+status: canonical
 intent:
   kind: feature
-  summary: >-
-    shapes create shape/constraint always reads from a Profile — the
-    active one by default, or a per-call override via --profile <id>.
+  summary: shapes create shape/constraint always reads from a Profile — the active one by default, or a per-call override via --profile <id>.
   source: human
-  goals: >-
-    Make the Profile the operative source of scaffold hints, default
-    kinds, and kind allow-list enforcement on every create. Allow
-    per-call override for stores that carry multiple Profiles.
-  rationale: >-
-    Before the consolidation (constraint:34), kind validation was opt-in
-    via --profile, scaffold hints came from a parallel hardcoded Template
-    layer, and "shapes create without --profile" was a distinct code
-    path. After the consolidation, those three paths collapse: the
-    active profile is always present (constraint:17), so every create
-    call has a profile to consult, the Template layer is gone, and
-    --profile is a per-call override of the same mechanism instead of an
-    opt-in for a different mechanism.
-parents:
-  - id: 4
-    role: feature
+  goals: Make the Profile the operative source of scaffold hints, default kinds, and kind allow-list enforcement on every create. Allow per-call override for stores that carry multiple Profiles.
+  rationale: 'Before the consolidation (constraint:34), kind validation was opt-in via --profile, scaffold hints came from a parallel hardcoded Template layer, and "shapes create without --profile" was a distinct code path. After the consolidation, those three paths collapse: the active profile is always present (constraint:17), so every create call has a profile to consult, the Template layer is gone, and --profile is a per-call override of the same mechanism instead of an opt-in for a different mechanism.'
 constraints:
-  - 17
-  - 34
+- 17
+- 34
 realization:
-  - bindings:
-      - scheme: path
-        value: src/commands/create/shape.rs
-        metadata:
-          summary: >-
-            create_shape resolves the active profile (or --profile
-            override), pulls default kind from
-            profile.fields.shape.default_kind, runs
-            validate_kind_against_profile, then scaffolds via
-            scaffold_shape with the resolved profile.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/commands/create/constraint.rs
-        metadata:
-          summary: >-
-            create_constraint mirrors create_shape — resolves the
-            active profile (or override), pulls default kind from
-            profile.fields.constraint.default_kind, runs
-            validate_kind_against_profile, then scaffolds via
-            scaffold_constraint with the resolved profile.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/commands/create/profile_helpers.rs
-        metadata:
-          summary: >-
-            resolve_active_profile, validate_kind_against_profile,
-            shape_default_kind, constraint_default_kind helpers — the
-            single funnel for every profile-aware operation in the
-            create path.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/main.rs
-        metadata:
-          summary: >-
-            --profile <id> arg on CreateCommand::Shape and
-            CreateCommand::Constraint, kept as a per-call override of
-            the store's active profile (resolved at meta.yaml time).
-    role: supporting
+- bindings:
+  - scheme: path
+    value: src/commands/create/shape.rs
+    metadata:
+      summary: create_shape resolves the active profile (or --profile override), pulls default kind from profile.fields.shape.default_kind, runs validate_kind_against_profile, then scaffolds via scaffold_shape with the resolved profile.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/create/constraint.rs
+    metadata:
+      summary: create_constraint mirrors create_shape — resolves the active profile (or override), pulls default kind from profile.fields.constraint.default_kind, runs validate_kind_against_profile, then scaffolds via scaffold_constraint with the resolved profile.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/create/profile_helpers.rs
+    metadata:
+      summary: resolve_active_profile, validate_kind_against_profile, shape_default_kind, constraint_default_kind helpers — the single funnel for every profile-aware operation in the create path.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/main.rs
+    metadata:
+      summary: '--profile <id> arg on CreateCommand::Shape and CreateCommand::Constraint, kept as a per-call override of the store''s active profile (resolved at meta.yaml time).'
+  role: supporting
+amendment_log:
+- 23
+- 26
+parents:
+- id: 4
+  role: feature

@@ -13,6 +13,7 @@
 //! - [`mod@validate`] — `shapes validate`
 //! - [`mod@ci_check`] — `shapes ci-check`
 //! - [`mod@amendment`] — `shapes amendment {archive, unarchive}`
+//! - [`mod@fmt`] — `shapes fmt`
 //!
 //! Plus the verb-internal helper modules [`scaffold`] (YAML scaffold
 //! writers), [`shared`] (output helpers, store opening), and [`dag`]
@@ -22,6 +23,7 @@ mod amendment;
 mod ci_check;
 mod create;
 mod dag;
+mod fmt;
 mod get;
 mod init;
 mod list;
@@ -34,6 +36,7 @@ mod validate;
 pub use amendment::{archive as amendment_archive, unarchive as amendment_unarchive};
 pub use ci_check::ci_check;
 pub use create::create;
+pub use fmt::fmt;
 pub use get::get;
 pub use init::init;
 pub use list::list;

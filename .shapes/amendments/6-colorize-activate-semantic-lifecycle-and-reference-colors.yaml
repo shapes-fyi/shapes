@@ -10,80 +10,11 @@ intent:
   kind: amendment
   summary: Activates the unused --water token and introduces semantic color for the Shapes lifecycle vocabulary (canonical, promoted, proposed) plus cross-DAG references on the Two Graphs demonstration. Deletes the unused --earth token. Colors numbered section labels and adds route-aware nav active state. Strategic, meaning-carrying color rather than decorative.
   source: ai
-  rationale: >-
-    Audit of the palette after /bolder and /typeset found two dormant
-    tokens — --water (oklch 0.58 0.10 235, a cool blue) and --earth
-    (oklch 0.48 0.06 55, a desaturated warm brown) — defined in
-    globals.css and wired into @theme inline as --color-water and
-    --color-earth, but referenced by zero call sites across the entire
-    web app. Dead tokens violate constraint 9 (Minimal Complexity) and
-    waste a real opportunity: the spec already has a rich status
-    lifecycle (proposed / promoted / canonical plus rejected /
-    superseded / abandoned / reverted) that the home page shows in
-    plain text. Giving those states actual color is the single highest
-    leverage colorization move on the site, because it turns flat
-    text into a visible category system that teaches the vocabulary
-    without requiring the reader to parse the spec first. The brand
-    brief explicitly asks for strategic color with meaning, not
-    decoration. This amendment activates --water (blue) for the
-    "cool outsider" role (proposed states and cross-DAG constraint
-    references), keeps --primary (warm amber-brown) for "commitment"
-    states (canonical and promoted), and deletes --earth entirely
-    because it is (a) unused, (b) visually redundant with --primary
-    at chroma 0.06 — basically a warm gray — and (c) does not carry
-    any meaning in the Shapes vocabulary. Lifecycle states get
-    differentiated by weight and opacity within the primary hue
-    rather than inventing a new color for each state. Small additional
-    moves: color the §NN numeric prefix on SectionLabel in primary/80
-    (foreshadows section identity at a glance), and add a route-aware
-    active state on the nav Specification link so readers on the spec
-    page can see where they are.
-  goals: >-
-    Every lifecycle tag on the home page ([canonical], [promoted],
-    [proposed]) reads with semantic color that teaches the vocabulary
-    at a glance. Cross-DAG references (arrows from constraint into
-    shape) render in the cool blue that signals "reference" rather
-    than "content." The dead --earth token is deleted. The nav
-    Specification link gets an active state when the user is on
-    /specification. The numbered section eyebrow reads with a subtle
-    primary tint on the §NN so numbers feel like structure, not
-    decoration. No new color tokens are introduced beyond what the
-    palette already defines.
-  non_goals: >-
-    Does not add new color tokens, does not touch --primary /
-    --foreground / --background / --muted / --border semantics, does
-    not rebalance light or dark mode overall, does not add gradients
-    or colorize backgrounds, does not colorize body prose, does not
-    use color to encode status in any place where accessibility would
-    suffer (every colored lifecycle tag remains readable at WCAG AA
-    against the surrounding background and is also marked with
-    bracketed text so color is never the sole indicator).
+  affected_files: packages/ui/src/styles/globals.css — delete --earth from :root and .dark, delete --color-earth from @theme inline. Keep --water and --color-water. packages/ui/src/components/section-label.tsx — render the §NN numeric prefix in a colored span at text-primary/80 while leaving the label text muted. apps/web/src/components/nav.tsx — use TanStack Router useMatchRoute (or equivalent) to apply text-foreground and a subtle underline to the Specification link when the current route matches /specification. apps/web/src/routes/index.tsx — add an inline renderShapesTree helper that walks the ASCII tree line by line and wraps [canonical|promoted|proposed] tags and constraint/shape cross-references in colored spans. Use it in both Two Graphs columns so the dual-DAG demonstration actually demonstrates the lifecycle and reference model.
+  goals: Every lifecycle tag on the home page ([canonical], [promoted], [proposed]) reads with semantic color that teaches the vocabulary at a glance. Cross-DAG references (arrows from constraint into shape) render in the cool blue that signals "reference" rather than "content." The dead --earth token is deleted. The nav Specification link gets an active state when the user is on /specification. The numbered section eyebrow reads with a subtle primary tint on the §NN so numbers feel like structure, not decoration. No new color tokens are introduced beyond what the palette already defines.
+  non_goals: Does not add new color tokens, does not touch --primary / --foreground / --background / --muted / --border semantics, does not rebalance light or dark mode overall, does not add gradients or colorize backgrounds, does not colorize body prose, does not use color to encode status in any place where accessibility would suffer (every colored lifecycle tag remains readable at WCAG AA against the surrounding background and is also marked with bracketed text so color is never the sole indicator).
+  rationale: 'Audit of the palette after /bolder and /typeset found two dormant tokens — --water (oklch 0.58 0.10 235, a cool blue) and --earth (oklch 0.48 0.06 55, a desaturated warm brown) — defined in globals.css and wired into @theme inline as --color-water and --color-earth, but referenced by zero call sites across the entire web app. Dead tokens violate constraint 9 (Minimal Complexity) and waste a real opportunity: the spec already has a rich status lifecycle (proposed / promoted / canonical plus rejected / superseded / abandoned / reverted) that the home page shows in plain text. Giving those states actual color is the single highest leverage colorization move on the site, because it turns flat text into a visible category system that teaches the vocabulary without requiring the reader to parse the spec first. The brand brief explicitly asks for strategic color with meaning, not decoration. This amendment activates --water (blue) for the "cool outsider" role (proposed states and cross-DAG constraint references), keeps --primary (warm amber-brown) for "commitment" states (canonical and promoted), and deletes --earth entirely because it is (a) unused, (b) visually redundant with --primary at chroma 0.06 — basically a warm gray — and (c) does not carry any meaning in the Shapes vocabulary. Lifecycle states get differentiated by weight and opacity within the primary hue rather than inventing a new color for each state. Small additional moves: color the §NN numeric prefix on SectionLabel in primary/80 (foreshadows section identity at a glance), and add a route-aware active state on the nav Specification link so readers on the spec page can see where they are.'
   spec_section: N/A — presentational refinement
-  affected_files: >-
-    packages/ui/src/styles/globals.css — delete --earth from :root
-    and .dark, delete --color-earth from @theme inline. Keep --water
-    and --color-water. packages/ui/src/components/section-label.tsx
-    — render the §NN numeric prefix in a colored span at
-    text-primary/80 while leaving the label text muted.
-    apps/web/src/components/nav.tsx — use TanStack Router useMatchRoute
-    (or equivalent) to apply text-foreground and a subtle underline
-    to the Specification link when the current route matches
-    /specification. apps/web/src/routes/index.tsx — add an inline
-    renderShapesTree helper that walks the ASCII tree line by line
-    and wraps [canonical|promoted|proposed] tags and constraint/shape
-    cross-references in colored spans. Use it in both Two Graphs
-    columns so the dual-DAG demonstration actually demonstrates the
-    lifecycle and reference model.
-  verification: >-
-    bun run format clean. bun run typecheck clean. shapes validate
-    clean. Manual check in light and dark modes: lifecycle tags read
-    as distinct categories, cross-references read as clearly
-    secondary, nav Specification link shows active state on the
-    /specification route, §NN prefixes pick up a subtle primary tint
-    without making the label look garish. No new AI slop
-    introduced — no gradients, no glows, no pure saturation bumps.
-    Every colored element also has a non-color cue (bracketed text,
-    arrow glyph, or position) so the site remains legible without
-    color.
+  verification: 'bun run format clean. bun run typecheck clean. shapes validate clean. Manual check in light and dark modes: lifecycle tags read as distinct categories, cross-references read as clearly secondary, nav Specification link shows active state on the /specification route, §NN prefixes pick up a subtle primary tint without making the label look garish. No new AI slop introduced — no gradients, no glows, no pure saturation bumps. Every colored element also has a non-color cue (bracketed text, arrow glyph, or position) so the site remains legible without color.'
 initiated_by:
   type: ai

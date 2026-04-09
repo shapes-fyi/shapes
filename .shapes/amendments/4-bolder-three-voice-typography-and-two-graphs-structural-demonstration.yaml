@@ -10,72 +10,11 @@ intent:
   kind: amendment
   summary: Amplifies the home page with dramatic type scale, numbered section labels, and a new Two Graphs section that replaces the removed 2x2 primitives grid with an actual dual-DAG structural demonstration. Introduces Geist as the third typographic voice (UI sans) alongside the existing Cormorant display serif and Crimson reading serif.
   source: ai
-  rationale: >-
-    After /distill the home page was structurally honest but typographically
-    timid — everything in the same weight range, the hero wordmark capped at
-    text-7xl, section labels all reading with identical visual weight, and
-    the entire primitives explanation missing. The brand brief calls for
-    "quiet authority" with Linear/Vercel production-value and explicitly
-    asks for three typographic voices (Cormorant Garamond display serif,
-    Crimson Pro reading serif, Geist UI sans). Geist is already loaded via
-    @fontsource-variable/geist but was only used inside Mermaid diagrams —
-    the design system never exposed it as a token. This amendment activates
-    the third voice by adding a --font-ui token in the shared theme,
-    rewires SectionLabel to consume it, and turns on the numbered §NN
-    treatment the SectionLabel primitive already supports. On the home
-    page the hero wordmark pushes up to the dramatic display range the
-    brand can afford (Cormorant at text-8xl/9xl, tighter tracking, tighter
-    leading), and the removed 2x2 primitives grid is replaced by a
-    full-width "Two Graphs" section that shows — rather than describes —
-    the central claim of the spec: Shapes and Constraints each form their
-    own DAG, Amendments record evolution, Profiles frame the domain. The
-    demonstration uses the same monospace tree-art vocabulary as the hero
-    example, so the page has one visual language for the graph, not a
-    different metaphor per section.
-  goals: >-
-    Establish the three-voice typographic system (display serif / reading
-    serif / UI sans) as a tokenized, reusable layer of the design system.
-    Amplify the hero scale so the Shapes wordmark earns its role as the
-    page's focal point. Replace the descriptive primitives cards with a
-    structural demonstration that makes "two graphs" legible at a glance.
-    Number the home page's section labels (§01 · OPEN SPECIFICATION,
-    §02 · TWO GRAPHS, §03 · IN PRACTICE, §04 · INSTALL) to reinforce the
-    spec identity the brand leans on. Keep copy unchanged — that is
-    /clarify's job — but push every typographic decision that amplifies
-    hierarchy without adding decoration.
-  non_goals: >-
-    Does not add gradients, glows, glassmorphism, neon, or any of the
-    anti-references called out in .impeccable.md. Does not add new
-    colors (that is /colorize). Does not add motion (that is /animate).
-    Does not rewrite copy (that is /clarify). Does not touch the
-    specification page — this amendment is scoped to the homepage and
-    the shared design tokens. Does not ship the Amendment time axis
-    or a live profile switcher — the Two Graphs demonstration stays
-    static and annotates Amendment and Profile in the frame only.
+  affected_files: packages/ui/src/styles/globals.css — add --font-ui token in the @theme block pointing at Geist Variable so the third voice is tokenized and Tailwind auto-generates a font-ui utility. packages/ui/src/components/section-label.tsx — consume the new font-ui utility so every SectionLabel across the design system reads in the UI sans voice, not the body serif. apps/web/src/routes/index.tsx — hero wordmark pushed to the dramatic display range (Cormorant 8xl/9xl, leading 0.82, tighter tracking), numbered section labels via the number prop on SectionLabel, and a new inline TwoGraphs section replacing the deleted primitives cards with a dual-DAG monospace demonstration framed by Profile and annotated with Amendment. In Practice and Install headers bumped to match the new scale hierarchy.
+  goals: Establish the three-voice typographic system (display serif / reading serif / UI sans) as a tokenized, reusable layer of the design system. Amplify the hero scale so the Shapes wordmark earns its role as the page's focal point. Replace the descriptive primitives cards with a structural demonstration that makes "two graphs" legible at a glance. Number the home page's section labels (§01 · OPEN SPECIFICATION, §02 · TWO GRAPHS, §03 · IN PRACTICE, §04 · INSTALL) to reinforce the spec identity the brand leans on. Keep copy unchanged — that is /clarify's job — but push every typographic decision that amplifies hierarchy without adding decoration.
+  non_goals: Does not add gradients, glows, glassmorphism, neon, or any of the anti-references called out in .impeccable.md. Does not add new colors (that is /colorize). Does not add motion (that is /animate). Does not rewrite copy (that is /clarify). Does not touch the specification page — this amendment is scoped to the homepage and the shared design tokens. Does not ship the Amendment time axis or a live profile switcher — the Two Graphs demonstration stays static and annotates Amendment and Profile in the frame only.
+  rationale: 'After /distill the home page was structurally honest but typographically timid — everything in the same weight range, the hero wordmark capped at text-7xl, section labels all reading with identical visual weight, and the entire primitives explanation missing. The brand brief calls for "quiet authority" with Linear/Vercel production-value and explicitly asks for three typographic voices (Cormorant Garamond display serif, Crimson Pro reading serif, Geist UI sans). Geist is already loaded via @fontsource-variable/geist but was only used inside Mermaid diagrams — the design system never exposed it as a token. This amendment activates the third voice by adding a --font-ui token in the shared theme, rewires SectionLabel to consume it, and turns on the numbered §NN treatment the SectionLabel primitive already supports. On the home page the hero wordmark pushes up to the dramatic display range the brand can afford (Cormorant at text-8xl/9xl, tighter tracking, tighter leading), and the removed 2x2 primitives grid is replaced by a full-width "Two Graphs" section that shows — rather than describes — the central claim of the spec: Shapes and Constraints each form their own DAG, Amendments record evolution, Profiles frame the domain. The demonstration uses the same monospace tree-art vocabulary as the hero example, so the page has one visual language for the graph, not a different metaphor per section.'
   spec_section: N/A — homepage amplification plus shared theme tokens
-  affected_files: >-
-    packages/ui/src/styles/globals.css — add --font-ui token in the
-    @theme block pointing at Geist Variable so the third voice is
-    tokenized and Tailwind auto-generates a font-ui utility.
-    packages/ui/src/components/section-label.tsx — consume the new
-    font-ui utility so every SectionLabel across the design system
-    reads in the UI sans voice, not the body serif.
-    apps/web/src/routes/index.tsx — hero wordmark pushed to the
-    dramatic display range (Cormorant 8xl/9xl, leading 0.82, tighter
-    tracking), numbered section labels via the number prop on
-    SectionLabel, and a new inline TwoGraphs section replacing the
-    deleted primitives cards with a dual-DAG monospace demonstration
-    framed by Profile and annotated with Amendment. In Practice and
-    Install headers bumped to match the new scale hierarchy.
-  verification: >-
-    bun run format clean. bun run typecheck clean. shapes validate
-    clean. Manual check in light and dark modes: wordmark does not
-    clip, Two Graphs columns align, Geist renders in SectionLabel
-    without a font-load flash (Geist Variable is already in the
-    app bundle via packages/ui dependency), numbered labels read
-    correctly in both serif body and sans label voices. Slop check
-    from /impeccable:critique: no new gradients, no glassmorphism,
-    no pill-card grid, no symmetric 2x2 — verify the redesigned
-    primitives section is asymmetric and information-carrying.
+  verification: 'bun run format clean. bun run typecheck clean. shapes validate clean. Manual check in light and dark modes: wordmark does not clip, Two Graphs columns align, Geist renders in SectionLabel without a font-load flash (Geist Variable is already in the app bundle via packages/ui dependency), numbered labels read correctly in both serif body and sans label voices. Slop check from /impeccable:critique: no new gradients, no glassmorphism, no pill-card grid, no symmetric 2x2 — verify the redesigned primitives section is asymmetric and information-carrying.'
 initiated_by:
   type: ai

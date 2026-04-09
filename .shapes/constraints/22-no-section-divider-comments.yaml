@@ -1,31 +1,15 @@
 id: 22
 name: No Section Divider Comments
-description: >-
-  Visual section dividers (// ----, // ====, // ###) are not allowed inside
-  source files. A file that needs sections must be split into submodules or
-  use /// docs on the items themselves.
+description: 'Visual section dividers (// ----, // ====, // ###) are not allowed inside source files. A file that needs sections must be split into submodules or use /// docs on the items themselves.'
 kind: invariant
-rule: >-
-  Block comments used as visual section dividers inside a file are prohibited.
-  A file that needs sections must be split into submodules, or use /// docs
-  on the items themselves. Specifically forbidden: runs of // ---, // ===,
-  or // ### lines that are not attached to a single item as documentation.
+rule: 'Block comments used as visual section dividers inside a file are prohibited. A file that needs sections must be split into submodules, or use /// docs on the items themselves. Specifically forbidden: runs of // ---, // ===, or // ### lines that are not attached to a single item as documentation.'
 enforcement: manual
-status: proposed
 profile: 1
+status: proposed
 intent:
   kind: invariant
   summary: No ASCII-art section dividers — split into submodules instead
   source: ai
-  rationale: >-
-    Section dividers are a code smell signaling that a file is doing too
-    many things. They also fragment rustdoc output and substitute for real
-    /// item docs. The current crate uses them heavily (src/error.rs:7-9,
-    src/model/common.rs:22-24, src/store.rs:13-15, src/commands/mod.rs:19-21,
-    among others) which masks the lack of true module decomposition.
-  impact_if_violated: >-
-    Files keep growing past their natural decomposition boundary; readers
-    treat dividers as a substitute for the modules and item docs that should
-    exist; the section "headings" never make it into rustdoc.
-  verification_method: >-
-    grep -rnE '^\s*//\s*[-=#]{3,}' src/ should return zero hits.
+  impact_if_violated: Files keep growing past their natural decomposition boundary; readers treat dividers as a substitute for the modules and item docs that should exist; the section "headings" never make it into rustdoc.
+  rationale: Section dividers are a code smell signaling that a file is doing too many things. They also fragment rustdoc output and substitute for real /// item docs. The current crate uses them heavily (src/error.rs:7-9, src/model/common.rs:22-24, src/store.rs:13-15, src/commands/mod.rs:19-21, among others) which masks the lack of true module decomposition.
+  verification_method: grep -rnE '^\s*//\s*[-=#]{3,}' src/ should return zero hits.

@@ -1,49 +1,28 @@
 id: 10
 name: Amendment Immutability
-description: >-
-  Amendment nodes are immutable records of changes to shapes, constraints, or
-  profiles. Once created, an amendment's semantic content must not be modified.
-  The sole exception is the display-only `archived` boolean: toggling it is
-  permitted so stale entries can be hidden from default listing output without
-  losing the audit trail. Every other field remains strictly append-only.
-profile: 1
+description: 'Amendment nodes are immutable records of changes to shapes, constraints, or profiles. Once created, an amendment''s semantic content must not be modified. The sole exception is the display-only `archived` boolean: toggling it is permitted so stale entries can be hidden from default listing output without losing the audit trail. Every other field remains strictly append-only.'
 kind: invariant
-rule: >-
-  Amendment nodes are append-only — once created, their content must not be
-  modified. The only permitted mutation is toggling the display-only `archived`
-  boolean via `shapes amendment archive` / `shapes amendment unarchive`; every
-  other field delta trips CI-003.
+rule: Amendment nodes are append-only — once created, their content must not be modified. The only permitted mutation is toggling the display-only `archived` boolean via `shapes amendment archive` / `shapes amendment unarchive`; every other field delta trips CI-003.
 enforcement: manual
+profile: 1
 status: canonical
-amendment_log:
-  - 29
 intent:
   kind: requirement
   summary: Amendment Immutability
   source: human
-  rationale: >-
-    Amendments exist to provide a trustworthy change history. If amendments
-    could be edited after creation, the audit trail would be unreliable.
-    The append-only model ensures every change is recorded permanently.
-    The narrow `archived` carve-out does not break this: `archived` is
-    display metadata, not part of the semantic record, and archiving never
-    deletes or alters the historical content — it only affects how listing
-    output is rendered.
-  impact_if_violated: >-
-    The amendment log becomes untrustworthy. It would be impossible to
-    reconstruct the history of a shape's evolution. Provenance chains
-    would be broken.
-  verification_method: >-
-    Currently enforced by convention. Future versions may add a hash or
-    signature to detect tampering.
+  impact_if_violated: The amendment log becomes untrustworthy. It would be impossible to reconstruct the history of a shape's evolution. Provenance chains would be broken.
+  rationale: 'Amendments exist to provide a trustworthy change history. If amendments could be edited after creation, the audit trail would be unreliable. The append-only model ensures every change is recorded permanently. The narrow `archived` carve-out does not break this: `archived` is display metadata, not part of the semantic record, and archiving never deletes or alters the historical content — it only affects how listing output is rendered.'
   spec_section: Amendment semantics and immutability guarantees
+  verification_method: Currently enforced by convention. Future versions may add a hash or signature to detect tampering.
 evidence:
-  - id: no-amendment-mutation-path
-    type: structural
-    bindings:
-      - scheme: path
-        value: src/commands/mod.rs
-        metadata:
-          summary: create command can create amendments; no update/edit/patch command exists for amendments — immutability enforced by absence of mutation API
+- id: no-amendment-mutation-path
+  type: structural
+  bindings:
+  - scheme: path
+    value: src/commands/mod.rs
     metadata:
-      note: Enforced by convention — no technical mechanism prevents direct YAML file editing; future versions may add hash-based tamper detection
+      summary: create command can create amendments; no update/edit/patch command exists for amendments — immutability enforced by absence of mutation API
+  metadata:
+    note: Enforced by convention — no technical mechanism prevents direct YAML file editing; future versions may add hash-based tamper detection
+amendment_log:
+- 29

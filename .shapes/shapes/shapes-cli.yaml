@@ -1,110 +1,88 @@
 id: 1
 name: Shapes CLI
-description: >-
-  Monorepo implementing the Shapes Specification. Contains a Rust CLI that
-  provides AI coding agents with structured, queryable access to project intent,
-  constraints, and boundaries stored as two directed acyclic graphs, plus a web
-  specification site (shapes.fyi) with interactive schema exploration, and a
-  shared UI component library. Designed for zero-dependency, file-based
-  operation so agents can discover context via CLI commands on demand without
-  needing a running server or pre-loaded prompts.
+description: Monorepo implementing the Shapes Specification. Contains a Rust CLI that provides AI coding agents with structured, queryable access to project intent, constraints, and boundaries stored as two directed acyclic graphs, plus a web specification site (shapes.fyi) with interactive schema exploration, and a shared UI component library. Designed for zero-dependency, file-based operation so agents can discover context via CLI commands on demand without needing a running server or pre-loaded prompts.
 profile: 1
 status: canonical
 intent:
   kind: system
-  summary: >-
-    Rust CLI implementing the Shapes Specification — gives AI agents
-    structured access to project intent, constraints, and boundaries
+  summary: Rust CLI implementing the Shapes Specification — gives AI agents structured access to project intent, constraints, and boundaries
   source: human
-  goals: >-
-    Give AI agents a complete discovery toolkit for project context. Agents
-    should be able to understand the full project map, find relevant constraints,
-    trace design rationale, and discover what rules apply to any piece of work —
-    all through CLI commands.
-  rationale: >-
-    AI agents working on codebases lack access to the unwritten knowledge that
-    engineers carry — why architectural decisions were made, what invariants must
-    hold, what's in scope vs out of scope. Code tells you what exists; shapes
-    capture why. A CLI tool was chosen because agents can invoke it directly,
-    YAML files are git-friendly and human-readable, and zero runtime dependencies
-    mean it works anywhere without setup.
-  non_goals: >-
-    Not a runtime enforcement tool — shapes describe intent but don't block
-    compilation or deployment. Not a replacement for documentation — shapes
-    capture structured intent that documentation often lacks.
+  goals: Give AI agents a complete discovery toolkit for project context. Agents should be able to understand the full project map, find relevant constraints, trace design rationale, and discover what rules apply to any piece of work — all through CLI commands.
+  non_goals: Not a runtime enforcement tool — shapes describe intent but don't block compilation or deployment. Not a replacement for documentation — shapes capture structured intent that documentation often lacks.
+  rationale: AI agents working on codebases lack access to the unwritten knowledge that engineers carry — why architectural decisions were made, what invariants must hold, what's in scope vs out of scope. Code tells you what exists; shapes capture why. A CLI tool was chosen because agents can invoke it directly, YAML files are git-friendly and human-readable, and zero runtime dependencies mean it works anywhere without setup.
 constraints:
-  - 6
-  - 7
-  - 8
-  - 9
-  - 11
-  - 14
-  - 19
-  - 20
-  - 21
-  - 22
-  - 23
-  - 24
-  - 25
-  - 26
-  - 27
-  - 28
-  - 29
-  - 30
-  - 31
-  - 32
-  - 33
-  - 34
-  - 35
-children:
-  - shape: 2
-    role: component
-  - shape: 3
-    role: component
-  - shape: 4
-    role: component
-  - shape: 5
-    role: component
-  - shape: 6
-    role: component
-  - shape: 7
-    role: pattern
-  - shape: 8
-    role: pattern
-  - shape: 9
-    role: pattern
-  - shape: 10
-    role: interface
-  - shape: 11
-    role: data-flow
-  - shape: 17
-    role: component
-  - shape: 21
-    role: component
-  - shape: 23
-    role: component
-  - shape: 27
-    role: component
-  - shape: 33
-    role: component
+- 6
+- 7
+- 8
+- 9
+- 11
+- 14
+- 19
+- 20
+- 21
+- 22
+- 23
+- 24
+- 25
+- 26
+- 27
+- 28
+- 29
+- 30
+- 31
+- 32
+- 33
+- 34
+- 35
 realization:
-  - bindings:
-      - scheme: path
-        value: src/main.rs
-        metadata:
-          summary: CLI entry point — Cli struct, Command enum, clap parsing, command dispatch, OutputFormat
-    role: primary
-  - bindings:
-      - scheme: path
-        value: Cargo.toml
-        metadata:
-          summary: Package manifest — dependencies (clap, serde, serde_yaml, serde_json, anyhow), binary name
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: README.md
-        metadata:
-          summary: Project overview, installation instructions, plugin setup, usage examples
-    role: supporting
+- bindings:
+  - scheme: path
+    value: src/main.rs
+    metadata:
+      summary: CLI entry point — Cli struct, Command enum, clap parsing, command dispatch, OutputFormat
+  role: primary
+- bindings:
+  - scheme: path
+    value: Cargo.toml
+    metadata:
+      summary: Package manifest — dependencies (clap, serde, serde_yaml, serde_json, anyhow), binary name
+  role: supporting
+- bindings:
+  - scheme: path
+    value: README.md
+    metadata:
+      summary: Project overview, installation instructions, plugin setup, usage examples
+  role: supporting
 amendment_log:
-  - 24
+- 24
+children:
+- shape: 2
+  role: component
+- shape: 3
+  role: component
+- shape: 4
+  role: component
+- shape: 5
+  role: component
+- shape: 6
+  role: component
+- shape: 7
+  role: pattern
+- shape: 8
+  role: pattern
+- shape: 9
+  role: pattern
+- shape: 10
+  role: interface
+- shape: 11
+  role: data-flow
+- shape: 17
+  role: component
+- shape: 21
+  role: component
+- shape: 23
+  role: component
+- shape: 27
+  role: component
+- shape: 33
+  role: component

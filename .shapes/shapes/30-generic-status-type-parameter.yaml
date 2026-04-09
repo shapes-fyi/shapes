@@ -1,24 +1,14 @@
 id: 30
 name: Generic Status Type Parameter
-description: >-
-  Make Status and TerminalDetail generic over ID type (Status<Id>) so that
-  TerminalDetail.successors becomes Vec<Id> instead of Vec<u64>. This
-  requires parameterizing the custom Serialize/Deserialize impls and
-  ripples through every struct that contains a Status field.
-status: canonical
+description: Make Status and TerminalDetail generic over ID type (Status<Id>) so that TerminalDetail.successors becomes Vec<Id> instead of Vec<u64>. This requires parameterizing the custom Serialize/Deserialize impls and ripples through every struct that contains a Status field.
 profile: 1
+status: canonical
 intent:
   kind: feature
   summary: Make Status/TerminalDetail generic over ID type so successors are typed
   source: human
-  goals: >-
-    Make TerminalDetail.successors type-safe by parameterizing Status over
-    the node ID type
-  rationale: >-
-    Currently TerminalDetail.successors is Vec<u64> which is ambiguous —
-    when a Shape is superseded the successors are ShapeIds, when a
-    Constraint is superseded they are ConstraintIds. Requires Status<Id>
-    which is a large ripple through the codebase.
+  goals: Make TerminalDetail.successors type-safe by parameterizing Status over the node ID type
+  rationale: Currently TerminalDetail.successors is Vec<u64> which is ambiguous — when a Shape is superseded the successors are ShapeIds, when a Constraint is superseded they are ConstraintIds. Requires Status<Id> which is a large ripple through the codebase.
 parents:
-  - id: 8
-    role: feature
+- id: 8
+  role: feature

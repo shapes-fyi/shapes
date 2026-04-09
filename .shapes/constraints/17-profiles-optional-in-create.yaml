@@ -1,65 +1,41 @@
 id: 17
 name: Profiles Automatic in Create
-description: >-
-  `shapes init` always seeds an active Profile in the store from a built-in
-  starter kit, and every subsequent `shapes create` reads from it. Users
-  never have to manually author a Profile for basic use, and the active
-  Profile is always present at the store level. The `--profile <id>` flag
-  on `shapes create shape/constraint` is a per-call override for attaching
-  a node to a non-default Profile.
+description: '`shapes init` always seeds an active Profile in the store from a built-in starter kit, and every subsequent `shapes create` reads from it. Users never have to manually author a Profile for basic use, and the active Profile is always present at the store level. The `--profile <id>` flag on `shapes create shape/constraint` is a per-call override for attaching a node to a non-default Profile.'
 kind: invariant
-rule: >-
-  Every `shapes init` writes both `meta.yaml` (with `active_profile: <id>`)
-  and a starter Profile under `.shapes/profiles/`. Every subsequent
-  `shapes create shape/constraint` succeeds end-to-end without `--profile`
-  by reading scaffold hints, kind allow-lists, and default kinds from the
-  active Profile, producing a node that passes `shapes validate`.
+rule: 'Every `shapes init` writes both `meta.yaml` (with `active_profile: <id>`) and a starter Profile under `.shapes/profiles/`. Every subsequent `shapes create shape/constraint` succeeds end-to-end without `--profile` by reading scaffold hints, kind allow-lists, and default kinds from the active Profile, producing a node that passes `shapes validate`.'
 enforcement: machine
 profile: 1
 status: canonical
-amendment_log:
-  - 25
 intent:
   kind: invariant
-  summary: >-
-    `shapes init` seeds an active Profile; `shapes create` reads from it
-    automatically. Users never manually author a Profile for basic use.
+  summary: '`shapes init` seeds an active Profile; `shapes create` reads from it automatically. Users never manually author a Profile for basic use.'
   source: ai
-  rationale: >-
-    The original constraint protected against forcing users to author a
-    Profile before creating any node. After the Template→Profile
-    consolidation, the same UX guarantee is honored differently: the
-    starter kits previously embodied as `Template` data become factories
-    that `shapes init` runs once to seed an active Profile. The user-facing
-    experience is identical (`shapes init && shapes create shape ...` still
-    works) but the architecture is simplified — the Profile is now the
-    sole source of truth for field hints, kind allow-lists, default kinds,
-    and required-field enforcement.
-  impact_if_violated: >-
-    Bootstrapping a fresh store requires manual Profile authoring, breaking
-    the `init && create` flow the init skill relies on.
+  impact_if_violated: Bootstrapping a fresh store requires manual Profile authoring, breaking the `init && create` flow the init skill relies on.
+  rationale: 'The original constraint protected against forcing users to author a Profile before creating any node. After the Template→Profile consolidation, the same UX guarantee is honored differently: the starter kits previously embodied as `Template` data become factories that `shapes init` runs once to seed an active Profile. The user-facing experience is identical (`shapes init && shapes create shape ...` still works) but the architecture is simplified — the Profile is now the sole source of truth for field hints, kind allow-lists, default kinds, and required-field enforcement.'
 realization:
-  - bindings:
-      - scheme: path
-        value: src/commands/init.rs
-        metadata:
-          summary: shapes init invokes FileStore::init which seeds the starter profile and writes active_profile to meta.yaml
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/store.rs
-        metadata:
-          summary: FileStore::init writes both the starter profile YAML and meta.yaml in the same call
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/commands/create/profile_helpers.rs
-        metadata:
-          summary: resolve_active_profile loads the active profile from meta.yaml (or a per-call override) for every shapes create shape/constraint call
-    role: primary
-  - bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: integration tests run `shapes init --kit X && shapes create ...` with no manual profile authoring required
-    role: supporting
+- bindings:
+  - scheme: path
+    value: src/commands/init.rs
+    metadata:
+      summary: shapes init invokes FileStore::init which seeds the starter profile and writes active_profile to meta.yaml
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/store.rs
+    metadata:
+      summary: FileStore::init writes both the starter profile YAML and meta.yaml in the same call
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/create/profile_helpers.rs
+    metadata:
+      summary: resolve_active_profile loads the active profile from meta.yaml (or a per-call override) for every shapes create shape/constraint call
+  role: primary
+- bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: integration tests run `shapes init --kit X && shapes create ...` with no manual profile authoring required
+  role: supporting
+amendment_log:
+- 25

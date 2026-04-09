@@ -1,43 +1,33 @@
 id: 24
 name: Conformance Suite
-description: >-
-  Machine-readable test fixtures covering all 11 invariants with
-  binding-specific runners. Proves implementation correctness via structured
-  test vectors — 3 valid graphs must pass, 11 invalid graphs must fail with
-  specific invariant IDs.
+description: Machine-readable test fixtures covering all 11 invariants with binding-specific runners. Proves implementation correctness via structured test vectors — 3 valid graphs must pass, 11 invalid graphs must fail with specific invariant IDs.
 profile: 1
 status: canonical
 intent:
   kind: feature
-  summary: >-
-    Machine-readable test fixtures covering all 11 invariants with
-    binding-specific runners
+  summary: Machine-readable test fixtures covering all 11 invariants with binding-specific runners
   source: human
-  goals: >-
-    Prove implementation correctness via test vectors. 3 valid graphs must
-    pass, 11 invalid graphs must fail with specific invariant IDs.
-  rationale: >-
-    Following JSON Schema and MCP conformance patterns — structured fixtures
-    with automated runners.
-parents:
-  - id: 23
-    role: component
+  goals: Prove implementation correctness via test vectors. 3 valid graphs must pass, 11 invalid graphs must fail with specific invariant IDs.
+  rationale: Following JSON Schema and MCP conformance patterns — structured fixtures with automated runners.
 realization:
-  - bindings:
-      - scheme: path
-        value: spec/conformance/conformance.md
-        metadata:
-          summary: Conformance suite specification — test structure, fixture format, pass/fail criteria
-    role: primary
-  - bindings:
-      - scheme: path
-        value: spec/conformance/runners/cli.sh
-        metadata:
-          summary: CLI binding runner — executes test vectors against the shapes CLI
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: spec/conformance/test-vectors/
-        metadata:
-          summary: Test vector directory — valid and invalid graph fixtures as YAML
-    role: supporting
+- bindings:
+  - scheme: path
+    value: spec/conformance/conformance.md
+    metadata:
+      summary: Conformance suite specification — test structure, fixture format, pass/fail criteria
+  role: primary
+- bindings:
+  - scheme: path
+    value: spec/conformance/runners/cli.sh
+    metadata:
+      summary: CLI binding runner — executes test vectors against the shapes CLI
+  role: supporting
+- bindings:
+  - scheme: path
+    value: spec/conformance/test-vectors/
+    metadata:
+      summary: Test vector directory — valid and invalid graph fixtures as YAML
+  role: supporting
+parents:
+- id: 23
+  role: component

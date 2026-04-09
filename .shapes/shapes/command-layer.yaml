@@ -1,100 +1,65 @@
 id: 4
 name: Command Layer
-description: >-
-  Implementation of all seven CLI commands: init (create .shapes/ directory
-  and seed the active profile), create (new nodes from flags or YAML files),
-  get (retrieve single node), list (filter and display nodes), tree (delegate
-  to DAG visualization), query (delegate to DAG traversal), and validate
-  (delegate to DAG validation). After the verb/noun split, every verb lives
-  in its own file under src/commands/, and create/ is itself a subdirectory
-  with one file per noun. Handles output serialization to YAML or JSON based
-  on the --format flag.
+description: 'Implementation of all seven CLI commands: init (create .shapes/ directory and seed the active profile), create (new nodes from flags or YAML files), get (retrieve single node), list (filter and display nodes), tree (delegate to DAG visualization), query (delegate to DAG traversal), and validate (delegate to DAG validation). After the verb/noun split, every verb lives in its own file under src/commands/, and create/ is itself a subdirectory with one file per noun. Handles output serialization to YAML or JSON based on the --format flag.'
 profile: 1
 status: canonical
-amendment_log:
-  - 20
-  - 26
 intent:
   kind: module
-  summary: >-
-    CLI command implementations: init, create (verb/noun split), get, list,
-    tree, query, validate. Pure wiring at the module root, all logic in
-    sibling files.
+  summary: 'CLI command implementations: init, create (verb/noun split), get, list, tree, query, validate. Pure wiring at the module root, all logic in sibling files.'
   source: human
-  goals: >-
-    Provide the complete set of CLI operations agents need to discover and
-    manage shapes context. Every command should have clear, predictable
-    output that agents can parse. Support both human-readable YAML and
-    machine-parseable JSON output.
-  rationale: >-
-    Commands are separated from DAG algorithms and the store layer so each
-    can evolve independently. The command layer acts as a thin orchestrator
-    — it parses flags, opens the store, delegates to the right function,
-    and serializes the result. The verb/noun split (create/{shape,
-    constraint,amendment,profile}.rs) enforces that one file holds one
-    command handler.
-  non_goals: >-
-    Not responsible for graph algorithm correctness — delegates to DAG
-    Engine. Not a shell or REPL — each invocation is stateless. Does not
-    define the data model or serialization format.
+  goals: Provide the complete set of CLI operations agents need to discover and manage shapes context. Every command should have clear, predictable output that agents can parse. Support both human-readable YAML and machine-parseable JSON output.
+  non_goals: Not responsible for graph algorithm correctness — delegates to DAG Engine. Not a shell or REPL — each invocation is stateless. Does not define the data model or serialization format.
+  rationale: Commands are separated from DAG algorithms and the store layer so each can evolve independently. The command layer acts as a thin orchestrator — it parses flags, opens the store, delegates to the right function, and serializes the result. The verb/noun split (create/{shape, constraint,amendment,profile}.rs) enforces that one file holds one command handler.
   spec_section: CLI command semantics
 constraints:
-  - 6
-  - 9
-  - 16
-  - 17
-parents:
-  - id: 1
-    role: component
-children:
-  - shape: 12
-    role: feature
-  - shape: 13
-    role: feature
-  - shape: 28
-    role: feature
-  - shape: 32
-    role: feature
+- 6
+- 9
+- 16
+- 17
 realization:
-  - bindings:
-      - scheme: path
-        value: src/commands/mod.rs
-        metadata:
-          summary: >-
-            Pure wiring after the verb/noun split — declares the seven
-            verb modules (init/create/get/list/tree/query/validate) plus
-            the internal scaffold/dag/shared helpers, and re-exports
-            their handlers. Holds no logic of its own per constraint:19
-            (Lean mod.rs Files).
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/commands/create/mod.rs
-        metadata:
-          summary: >-
-            Verb-level dispatcher for create. Matches on CreateCommand
-            and routes to per-noun handlers in create/{shape,constraint,
-            amendment,profile}.rs. Each noun file has its own
-            CreateXxxArgs field bag and create_xxx function.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/commands/create/profile_helpers.rs
-        metadata:
-          summary: >-
-            resolve_active_profile loads the active profile from
-            meta.yaml::active_profile (or a per-call --profile override).
-            shape_default_kind / constraint_default_kind read
-            profile.fields.{shape,constraint}.default_kind.
-            validate_kind_against_profile enforces intent.kinds at create
-            time. The Profile is the sole source of scaffold hints per
-            constraint:34.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/commands/shared.rs
-        metadata:
-          summary: >-
-            Cross-verb helpers — output(yaml/json), read_from(stdin/path),
-            open_store, report_created.
-    role: supporting
+- bindings:
+  - scheme: path
+    value: src/commands/mod.rs
+    metadata:
+      summary: Pure wiring after the verb/noun split — declares the seven verb modules (init/create/get/list/tree/query/validate) plus the internal scaffold/dag/shared helpers, and re-exports their handlers. Holds no logic of its own per constraint:19 (Lean mod.rs Files).
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/create/mod.rs
+    metadata:
+      summary: Verb-level dispatcher for create. Matches on CreateCommand and routes to per-noun handlers in create/{shape,constraint, amendment,profile}.rs. Each noun file has its own CreateXxxArgs field bag and create_xxx function.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/create/profile_helpers.rs
+    metadata:
+      summary: resolve_active_profile loads the active profile from meta.yaml::active_profile (or a per-call --profile override). shape_default_kind / constraint_default_kind read profile.fields.{shape,constraint}.default_kind. validate_kind_against_profile enforces intent.kinds at create time. The Profile is the sole source of scaffold hints per constraint:34.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/shared.rs
+    metadata:
+      summary: Cross-verb helpers — output(yaml/json), read_from(stdin/path), open_store, report_created.
+  role: supporting
+- bindings:
+  - scheme: path
+    value: src/commands/fmt.rs
+    metadata:
+      summary: shapes fmt — normalizes all .shapes/ YAML files to serde canonical format. Walks all node types, deserializes each file, re-serializes through serde, writes back if different. Supports --check flag for CI enforcement.
+  role: primary
+amendment_log:
+- 20
+- 26
+- 32
+parents:
+- id: 1
+  role: component
+children:
+- shape: 12
+  role: feature
+- shape: 13
+  role: feature
+- shape: 28
+  role: feature
+- shape: 32
+  role: feature

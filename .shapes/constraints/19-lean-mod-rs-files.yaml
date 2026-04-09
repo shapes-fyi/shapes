@@ -1,31 +1,15 @@
 id: 19
 name: Lean mod.rs Files
-description: >-
-  mod.rs files exist purely as module-graph wiring. They declare submodules,
-  re-export their public surface, and carry a //! header. They contain no
-  types, functions, impls, or constants — those live in named sibling files.
+description: mod.rs files exist purely as module-graph wiring. They declare submodules, re-export their public surface, and carry a //! header. They contain no types, functions, impls, or constants — those live in named sibling files.
 kind: invariant
-rule: >-
-  Every mod.rs file contains only: (a) module declarations (mod x;, pub mod x;),
-  (b) re-exports (pub use), (c) a //! module-level doc comment, and (d) cfg/test
-  gates. No type definitions, no functions, no impl blocks, no constants.
+rule: 'Every mod.rs file contains only: (a) module declarations (mod x;, pub mod x;), (b) re-exports (pub use), (c) a //! module-level doc comment, and (d) cfg/test gates. No type definitions, no functions, no impl blocks, no constants.'
 enforcement: manual
-status: proposed
 profile: 1
+status: proposed
 intent:
   kind: invariant
   summary: mod.rs is wiring only — no logic, no type definitions
   source: ai
-  rationale: >-
-    Logic buried inside mod.rs is invisible from a file listing and forces
-    readers to open the directory's index file to find unrelated code. Keeping
-    mod.rs lean makes the module graph and the per-concept files self-evident
-    from the directory tree alone.
-  impact_if_violated: >-
-    mod.rs files grow into grab-bags (e.g. src/commands/mod.rs at 514 lines),
-    burying command implementations in a file whose name implies wiring. New
-    contributors and agents have to read every mod.rs to know what is where.
-  verification_method: >-
-    Grep each mod.rs for `fn `, `struct `, `enum `, `impl `, `trait `, `const `,
-    `static `; only `mod`, `pub mod`, `pub use`, `use`, `//!`, and `#[cfg(...)]`
-    lines (plus blank lines) should remain.
+  impact_if_violated: mod.rs files grow into grab-bags (e.g. src/commands/mod.rs at 514 lines), burying command implementations in a file whose name implies wiring. New contributors and agents have to read every mod.rs to know what is where.
+  rationale: Logic buried inside mod.rs is invisible from a file listing and forces readers to open the directory's index file to find unrelated code. Keeping mod.rs lean makes the module graph and the per-concept files self-evident from the directory tree alone.
+  verification_method: Grep each mod.rs for `fn `, `struct `, `enum `, `impl `, `trait `, `const `, `static `; only `mod`, `pub mod`, `pub use`, `use`, `//!`, and `#[cfg(...)]` lines (plus blank lines) should remain.

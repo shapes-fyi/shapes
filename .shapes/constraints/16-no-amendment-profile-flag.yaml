@@ -1,21 +1,14 @@
 id: 16
 name: No Amendment Profile Flag
-description: >-
-  The specification does not define a profile field on the Amendment schema.
-  Adding --profile to amendment create would create a CLI surface that
-  diverges from the spec.
+description: The specification does not define a profile field on the Amendment schema. Adding --profile to amendment create would create a CLI surface that diverges from the spec.
 kind: boundary
 rule: Amendments MUST NOT have a --profile flag unless the spec adds a profile field to the Amendment schema
 enforcement: manual
-status: canonical
 profile: 1
+status: canonical
 intent:
   kind: requirement
   summary: Prevent premature --profile on amendment create
   source: human
-  rationale: >-
-    Amendments are change records targeting existing nodes; they inherit
-    governance from their targets rather than declaring their own profile
-  impact_if_violated: >-
-    CLI would accept a flag that produces YAML with a field the spec does not
-    define, causing interoperability issues with other implementations
+  impact_if_violated: CLI would accept a flag that produces YAML with a field the spec does not define, causing interoperability issues with other implementations
+  rationale: Amendments are change records targeting existing nodes; they inherit governance from their targets rather than declaring their own profile

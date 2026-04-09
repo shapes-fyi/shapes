@@ -1,66 +1,32 @@
 id: 36
 name: Binding Target Existence
-description: >-
-  Realization, evidence, and provenance bindings on every Shape, Constraint,
-  and Amendment must point at things that actually exist. Path bindings must
-  resolve to a file or directory inside the workspace; URL bindings must
-  parse as well-formed absolute URLs with a recognized scheme. Without this
-  rule, file renames and refactors silently rot the graph: the old paths
-  pass `shapes validate` while pointing at deleted code, and future agents
-  follow the dead pointers thinking they describe current state.
+description: 'Realization, evidence, and provenance bindings on every Shape, Constraint, and Amendment must point at things that actually exist. Path bindings must resolve to a file or directory inside the workspace; URL bindings must parse as well-formed absolute URLs with a recognized scheme. Without this rule, file renames and refactors silently rot the graph: the old paths pass `shapes validate` while pointing at deleted code, and future agents follow the dead pointers thinking they describe current state.'
 kind: invariant
-rule: >-
-  Every `scheme: path` binding must be a non-empty repo-relative
-  slash-separated path that lexically stays under the workspace root and
-  resolves to an existing file or directory. Every `scheme: url` binding
-  must be a non-empty well-formed absolute URL with scheme in
-  `{http, https, git, ssh}`.
+rule: 'Every `scheme: path` binding must be a non-empty repo-relative slash-separated path that lexically stays under the workspace root and resolves to an existing file or directory. Every `scheme: url` binding must be a non-empty well-formed absolute URL with scheme in `{http, https, git, ssh}`.'
 enforcement: machine
 profile: 1
 status: proposed
 intent:
   kind: invariant
-  summary: >-
-    Every binding value must point at something real — paths must exist on
-    disk under the workspace root, URLs must be well-formed
+  summary: Every binding value must point at something real — paths must exist on disk under the workspace root, URLs must be well-formed
   source: ai
-  rationale: >-
-    Pre-INV-017, `shapes validate` only walked binding metadata for
-    INV-014 — it never inspected `binding.value`. That gap let two
-    full code refactors (the dag.rs split and the model/common.rs
-    decomposition) leave 15 stale realization bindings across 12
-    canonical nodes, all silently green. The mermaid-diagram.tsx
-    deletion in PR #36 was even older. Once paths are checked, the
-    graph's "this realizes that" promise becomes mechanically
-    enforceable instead of relying on agent diligence at refresh time.
-  impact_if_violated: >-
-    Realizations rot. Agents read summaries that describe deleted symbols
-    in deleted files and build wrong mental models. Reviewers can't trust
-    that a shape's bindings actually point at the code claimed to realize
-    it. Future refactors land without their corresponding graph refresh
-    because the validator never complains.
-  verification_method: >-
-    `shapes validate` runs `check_path_binding_exists` and
-    `check_url_binding_well_formed` against every shape, constraint, and
-    amendment binding. Path bindings are normalized lexically (no
-    canonicalize) and rejected if empty, absolute, escape via `..`,
-    contain `\`, or fail to resolve to a file/directory. URL bindings are
-    rejected if empty, contain whitespace, lack `scheme://`, use a
-    scheme outside the allow-list, or have an empty authority.
+  impact_if_violated: Realizations rot. Agents read summaries that describe deleted symbols in deleted files and build wrong mental models. Reviewers can't trust that a shape's bindings actually point at the code claimed to realize it. Future refactors land without their corresponding graph refresh because the validator never complains.
+  rationale: 'Pre-INV-017, `shapes validate` only walked binding metadata for INV-014 — it never inspected `binding.value`. That gap let two full code refactors (the dag.rs split and the model/common.rs decomposition) leave 15 stale realization bindings across 12 canonical nodes, all silently green. The mermaid-diagram.tsx deletion in PR #36 was even older. Once paths are checked, the graph''s "this realizes that" promise becomes mechanically enforceable instead of relying on agent diligence at refresh time.'
   spec_section: Binding integrity
+  verification_method: '`shapes validate` runs `check_path_binding_exists` and `check_url_binding_well_formed` against every shape, constraint, and amendment binding. Path bindings are normalized lexically (no canonicalize) and rejected if empty, absolute, escape via `..`, contain `\`, or fail to resolve to a file/directory. URL bindings are rejected if empty, contain whitespace, lack `scheme://`, use a scheme outside the allow-list, or have an empty authority.'
 realization:
-  - bindings:
-      - scheme: path
-        value: src/commands/dag/validate.rs
-        metadata:
-          summary: check_path_binding_exists() — INV-017 path resolution + existence check; check_url_binding_well_formed() — INV-018 hand-rolled URL sanity check; check_node_bindings() funnel that walks every realization/evidence/provenance array on shapes, constraints, and amendments
-    role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/dag/validate.rs
+    metadata:
+      summary: check_path_binding_exists() — INV-017 path resolution + existence check; check_url_binding_well_formed() — INV-018 hand-rolled URL sanity check; check_node_bindings() funnel that walks every realization/evidence/provenance array on shapes, constraints, and amendments
+  role: primary
 evidence:
-  - id: binding-existence-tests
-    type: test
-    bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: binding_existence module — INV-017 negative cases (missing path, absolute path, parent-dir escape, empty string, backslash separator) and positive cases (file, directory); INV-018 negative (whitespace, missing scheme://, bad scheme) and positive (https URL)
-    trusted: true
+- id: binding-existence-tests
+  type: test
+  bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: binding_existence module — INV-017 negative cases (missing path, absolute path, parent-dir escape, empty string, backslash separator) and positive cases (file, directory); INV-018 negative (whitespace, missing scheme://, bad scheme) and positive (https URL)
+  trusted: true

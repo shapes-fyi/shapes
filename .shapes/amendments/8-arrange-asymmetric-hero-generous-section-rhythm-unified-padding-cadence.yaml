@@ -9,73 +9,11 @@ intent:
   kind: amendment
   summary: Layout pass after the visual system is in place. Breaks the symmetric 50/50 hero into a 5/12 + 7/12 asymmetric split, increases SectionDivider vertical rhythm so major sections breathe, unifies Install proportions with In Practice (both 2/6 + 4/6), normalizes inner cell padding to the same sm/lg cadence the Container uses, and gives the footer real closure.
   source: ai
-  rationale: >-
-    Squint test on the home page after /animate flagged five layout
-    issues. First, the hero uses a symmetric md:grid-cols-2 split — the
-    brand brief explicitly calls for asymmetric layouts, and a perfectly
-    centered 50/50 split is the textbook "generic SaaS landing"
-    anti-reference. The text side carries a label, a wordmark, a short
-    paragraph, and a button pair; the code side carries a dense ASCII
-    tree. They have very different visual densities and deserve
-    different proportions. Switching to a 5/12 + 7/12 asymmetric split
-    on md+ lets the wordmark feel taller and tighter on the left while
-    the code example gets the room it needs to breathe. Second,
-    SectionDivider currently uses my-6 sm:my-8 (24/32px) which is
-    cramped between major content sections — at this scale the divider
-    line and the content above it almost touch. Major section
-    separation deserves more breathing room: my-12 sm:my-20 lg:my-24
-    (48/80/96px) gives the page real beats between movements. Third,
-    the In Practice section uses md:grid-cols-6 with 2/4 spans while
-    the Install section uses md:grid-cols-5 with 2/3 spans. They are
-    structurally identical sections (label + heading + paragraph in
-    one cell, code block in the other) but read with different
-    proportions, breaking the visual rhythm. Unifying both on
-    md:grid-cols-6 with 2/4 spans makes them feel like a series.
-    Fourth, the inner cell padding uses two different breakpoint
-    cadences across the page — hero/in-practice/install use
-    p-8 md:p-12 lg:p-14 (md cadence) while Two Graphs uses
-    px-6 sm:px-10 lg:px-14 (sm cadence matching the Container).
-    Normalizing the unframed sections to p-6 sm:p-10 lg:p-14 puts
-    every inner padding on the same breakpoint rhythm as the
-    Container's outer padding. Fifth, the footer at py-10 (40px)
-    is too tight to give the page real closure after the dense
-    Install section — bumping to py-16 sm:py-20 (64/80px) lets the
-    eye rest before reaching the footer's brand wordmark. None of
-    these changes touches typography, color, motion, or content —
-    they are pure spatial composition.
-  goals: >-
-    Hero feels asymmetric and intentional rather than centered and
-    safe. Major sections have generous breathing room between them so
-    each one reads as a discrete movement. In Practice and Install
-    feel like a parallel series with matching proportions. All inner
-    cell padding pulls from the same sm/lg breakpoint cadence as the
-    Container primitive. Footer has real closure space.
-  non_goals: >-
-    Does not change typography, color, motion, copy, or content. Does
-    not restructure Two Graphs internals (its four-band rhythm is
-    intentional). Does not touch the spec page layout. Does not add
-    new spacing tokens — uses Tailwind's built-in scale consistently.
-    Does not change container max-widths or border treatments.
+  affected_files: apps/web/src/routes/index.tsx — hero grid switches from md:grid-cols-2 to md:grid-cols-12 with text cell md:col-span-5 and code cell md:col-span-7. Hero, In Practice, and Install inner cell padding normalized to p-6 sm:p-10 lg:p-14. Install section grid switches from md:grid-cols-5 (2/3) to md:grid-cols-6 (2/4) so it parallels In Practice. Footer wrapper py-10 bumped to py-16 sm:py-20. packages/ui/src/components/section-divider.tsx — vertical margin bumped from my-6 sm:my-8 to my-12 sm:my-20 lg:my-24 for generous separation between major sections. apps/web/src/components/footer.tsx — internal py wrapper bumped to py-16 sm:py-20.
+  goals: Hero feels asymmetric and intentional rather than centered and safe. Major sections have generous breathing room between them so each one reads as a discrete movement. In Practice and Install feel like a parallel series with matching proportions. All inner cell padding pulls from the same sm/lg breakpoint cadence as the Container primitive. Footer has real closure space.
+  non_goals: Does not change typography, color, motion, copy, or content. Does not restructure Two Graphs internals (its four-band rhythm is intentional). Does not touch the spec page layout. Does not add new spacing tokens — uses Tailwind's built-in scale consistently. Does not change container max-widths or border treatments.
+  rationale: 'Squint test on the home page after /animate flagged five layout issues. First, the hero uses a symmetric md:grid-cols-2 split — the brand brief explicitly calls for asymmetric layouts, and a perfectly centered 50/50 split is the textbook "generic SaaS landing" anti-reference. The text side carries a label, a wordmark, a short paragraph, and a button pair; the code side carries a dense ASCII tree. They have very different visual densities and deserve different proportions. Switching to a 5/12 + 7/12 asymmetric split on md+ lets the wordmark feel taller and tighter on the left while the code example gets the room it needs to breathe. Second, SectionDivider currently uses my-6 sm:my-8 (24/32px) which is cramped between major content sections — at this scale the divider line and the content above it almost touch. Major section separation deserves more breathing room: my-12 sm:my-20 lg:my-24 (48/80/96px) gives the page real beats between movements. Third, the In Practice section uses md:grid-cols-6 with 2/4 spans while the Install section uses md:grid-cols-5 with 2/3 spans. They are structurally identical sections (label + heading + paragraph in one cell, code block in the other) but read with different proportions, breaking the visual rhythm. Unifying both on md:grid-cols-6 with 2/4 spans makes them feel like a series. Fourth, the inner cell padding uses two different breakpoint cadences across the page — hero/in-practice/install use p-8 md:p-12 lg:p-14 (md cadence) while Two Graphs uses px-6 sm:px-10 lg:px-14 (sm cadence matching the Container). Normalizing the unframed sections to p-6 sm:p-10 lg:p-14 puts every inner padding on the same breakpoint rhythm as the Container''s outer padding. Fifth, the footer at py-10 (40px) is too tight to give the page real closure after the dense Install section — bumping to py-16 sm:py-20 (64/80px) lets the eye rest before reaching the footer''s brand wordmark. None of these changes touches typography, color, motion, or content — they are pure spatial composition.'
   spec_section: N/A — homepage spatial composition
-  affected_files: >-
-    apps/web/src/routes/index.tsx — hero grid switches from
-    md:grid-cols-2 to md:grid-cols-12 with text cell md:col-span-5
-    and code cell md:col-span-7. Hero, In Practice, and Install
-    inner cell padding normalized to p-6 sm:p-10 lg:p-14. Install
-    section grid switches from md:grid-cols-5 (2/3) to md:grid-cols-6
-    (2/4) so it parallels In Practice. Footer wrapper py-10 bumped
-    to py-16 sm:py-20. packages/ui/src/components/section-divider.tsx
-    — vertical margin bumped from my-6 sm:my-8 to my-12 sm:my-20
-    lg:my-24 for generous separation between major sections.
-    apps/web/src/components/footer.tsx — internal py wrapper bumped
-    to py-16 sm:py-20.
-  verification: >-
-    bun run format clean. bun run typecheck clean. shapes validate
-    clean. Manual squint test — hero should feel weighted to the
-    right (code), section breaks should feel like real intervals not
-    seams, In Practice and Install should read as a matched pair.
-    No content reflows beyond the intended changes. Mobile stack
-    should still flow naturally (md:grid-cols-12 collapses to
-    grid-cols-1 below md, same as the prior md:grid-cols-2).
+  verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual squint test — hero should feel weighted to the right (code), section breaks should feel like real intervals not seams, In Practice and Install should read as a matched pair. No content reflows beyond the intended changes. Mobile stack should still flow naturally (md:grid-cols-12 collapses to grid-cols-1 below md, same as the prior md:grid-cols-2).
 initiated_by:
   type: ai

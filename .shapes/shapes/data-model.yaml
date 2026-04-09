@@ -1,113 +1,88 @@
 id: 2
 name: Data Model
-description: >-
-  Serde-backed Rust data structures defining the four node types of the Shapes
-  Specification: Shape, Constraint, Amendment, and Profile. Also includes shared
-  types like Intent (open map), Status (seven-state lifecycle), Realization
-  (code bindings), Evidence (constraint proofs), and Provenance (decision
-  history). All types derive Serialize/Deserialize for YAML and JSON output.
+description: 'Serde-backed Rust data structures defining the four node types of the Shapes Specification: Shape, Constraint, Amendment, and Profile. Also includes shared types like Intent (open map), Status (seven-state lifecycle), Realization (code bindings), Evidence (constraint proofs), and Provenance (decision history). All types derive Serialize/Deserialize for YAML and JSON output.'
 profile: 1
 status: canonical
 intent:
   kind: module
-  summary: >-
-    Serde-backed data structures for all four node types: Shape, Constraint,
-    Amendment, Profile
+  summary: 'Serde-backed data structures for all four node types: Shape, Constraint, Amendment, Profile'
   source: human
-  goals: >-
-    Provide a faithful Rust representation of every Shapes Specification concept.
-    Types must round-trip through YAML serialization without data loss. The
-    Intent open-map pattern must allow arbitrary extra fields while keeping
-    required fields typed. Untagged enums (ShapeRef, ConstraintRef) must allow
-    both ID references and inline node definitions.
-  rationale: >-
-    Separating data structures from I/O and business logic keeps the model
-    testable and spec-aligned. Using serde with custom serialization for Status
-    and Intent ensures the YAML output matches the shapes.fyi spec format while
-    remaining ergonomic in Rust code.
-  non_goals: >-
-    Not responsible for I/O or persistence — the Store layer handles YAML
-    reading and writing. Not responsible for graph algorithms — the DAG Engine
-    operates on loaded instances.
+  goals: Provide a faithful Rust representation of every Shapes Specification concept. Types must round-trip through YAML serialization without data loss. The Intent open-map pattern must allow arbitrary extra fields while keeping required fields typed. Untagged enums (ShapeRef, ConstraintRef) must allow both ID references and inline node definitions.
+  non_goals: Not responsible for I/O or persistence — the Store layer handles YAML reading and writing. Not responsible for graph algorithms — the DAG Engine operates on loaded instances.
+  rationale: Separating data structures from I/O and business logic keeps the model testable and spec-aligned. Using serde with custom serialization for Status and Intent ensures the YAML output matches the shapes.fyi spec format while remaining ergonomic in Rust code.
   spec_section: Core Data Model (Shape, Constraint, Amendment, Profile nodes)
 constraints:
-  - 5
-  - 6
-  - 13
-amendment_log:
-  - 29
-parents:
-  - id: 1
-    role: component
-children:
-  - shape: 7
-    role: pattern
-  - shape: 8
-    role: pattern
+- 5
+- 6
+- 13
 realization:
-  - bindings:
-      - scheme: path
-        value: src/model/mod.rs
-        metadata:
-          summary: Module root — newtype ID wrappers (ShapeId, ConstraintId, AmendmentId, ProfileId) with serde(transparent), NodeType enum, re-exports
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/model/shape.rs
-        metadata:
-          summary: Shape struct with parent_ids()/child_ids() methods, ShapeChildRef, ShapeRef enum (untagged). Vec fields with null-safe serde deserialization.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/model/constraint.rs
-        metadata:
-          summary: Constraint struct (kind, rule, Enforcement enum) with parent_ids()/child_ids() methods, ConstraintChildRef, ConstraintRef enum. Vec fields with null-safe serde deserialization.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/model/amendment.rs
-        metadata:
-          summary: >-
-            Amendment struct with AmendmentTargets, VersionImpact enum,
-            InitiatedType enum, InitiatedBy, and a display-only `archived`
-            boolean (default false, skip-if-default) used by listing/get
-            commands to hide decayed audit entries without affecting
-            validation or reciprocity. Vec fields with null-safe serde
-            deserialization.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/model/profile.rs
-        metadata:
-          summary: Profile struct with Lifecycle, FieldDef, ProfileFields, FieldSection, FieldGroup, Versioning, AmendmentModel enum, AmendmentRules. Vec fields with null-safe serde deserialization.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/model/ids.rs
-        metadata:
-          summary: Newtype ID wrappers (ShapeId, ConstraintId, AmendmentId, ProfileId) with #[serde(transparent)] for transparent YAML round-trip
-      - scheme: path
-        value: src/model/node_type.rs
-        metadata:
-          summary: NodeType enum — the four node kinds (Shape, Constraint, Amendment, Profile) used throughout the store layer
-      - scheme: path
-        value: src/model/status.rs
-        metadata:
-          summary: Status enum (7 states), StatusDetail, TerminalDetail, custom serde for bare-string vs tagged-map output
-      - scheme: path
-        value: src/model/intent.rs
-        metadata:
-          summary: Intent struct — kind/summary/source required fields plus a flattened BTreeMap for arbitrary extra fields governed by Profiles
-      - scheme: path
-        value: src/model/refs.rs
-        metadata:
-          summary: ParentRef<Id> generic — typed back-reference shared by Shape and Constraint parent edges
-      - scheme: path
-        value: src/model/bindings.rs
-        metadata:
-          summary: Binding, Realization, Evidence, Provenance — the value objects that connect a node to external artifacts
-      - scheme: path
-        value: src/model/serde_helpers.rs
-        metadata:
-          summary: null_to_default helper for null-safe Vec/BTreeMap deserialization, shared across model types
-    role: primary
+- bindings:
+  - scheme: path
+    value: src/model/mod.rs
+    metadata:
+      summary: Module root — newtype ID wrappers (ShapeId, ConstraintId, AmendmentId, ProfileId) with serde(transparent), NodeType enum, re-exports
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/model/shape.rs
+    metadata:
+      summary: Shape struct with parent_ids()/child_ids() methods, ShapeChildRef, ShapeRef enum (untagged). Vec fields with null-safe serde deserialization.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/model/constraint.rs
+    metadata:
+      summary: Constraint struct (kind, rule, Enforcement enum) with parent_ids()/child_ids() methods, ConstraintChildRef, ConstraintRef enum. Vec fields with null-safe serde deserialization.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/model/amendment.rs
+    metadata:
+      summary: Amendment struct with AmendmentTargets, VersionImpact enum, InitiatedType enum, InitiatedBy, and a display-only `archived` boolean (default false, skip-if-default) used by listing/get commands to hide decayed audit entries without affecting validation or reciprocity. Vec fields with null-safe serde deserialization.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/model/profile.rs
+    metadata:
+      summary: Profile struct with Lifecycle, FieldDef, ProfileFields, FieldSection, FieldGroup, Versioning, AmendmentModel enum, AmendmentRules. Vec fields with null-safe serde deserialization.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/model/ids.rs
+    metadata:
+      summary: Newtype ID wrappers (ShapeId, ConstraintId, AmendmentId, ProfileId) with
+  - scheme: path
+    value: src/model/node_type.rs
+    metadata:
+      summary: NodeType enum — the four node kinds (Shape, Constraint, Amendment, Profile) used throughout the store layer
+  - scheme: path
+    value: src/model/status.rs
+    metadata:
+      summary: Status enum (7 states), StatusDetail, TerminalDetail, custom serde for bare-string vs tagged-map output
+  - scheme: path
+    value: src/model/intent.rs
+    metadata:
+      summary: Intent struct — kind/summary/source required fields plus a flattened BTreeMap for arbitrary extra fields governed by Profiles
+  - scheme: path
+    value: src/model/refs.rs
+    metadata:
+      summary: ParentRef<Id> generic — typed back-reference shared by Shape and Constraint parent edges
+  - scheme: path
+    value: src/model/bindings.rs
+    metadata:
+      summary: Binding, Realization, Evidence, Provenance — the value objects that connect a node to external artifacts
+  - scheme: path
+    value: src/model/serde_helpers.rs
+    metadata:
+      summary: null_to_default helper for null-safe Vec/BTreeMap deserialization, shared across model types
+  role: primary
+amendment_log:
+- 29
+parents:
+- id: 1
+  role: component
+children:
+- shape: 7
+  role: pattern
+- shape: 8
+  role: pattern

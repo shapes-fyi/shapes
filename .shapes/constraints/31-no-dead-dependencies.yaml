@@ -1,29 +1,15 @@
 id: 31
 name: No Dead Dependencies
-description: >-
-  cargo machete clean — every crate in Cargo.toml is actually imported
-  somewhere. Dead deps are removed, not left behind.
+description: cargo machete clean — every crate in Cargo.toml is actually imported somewhere. Dead deps are removed, not left behind.
 kind: invariant
-rule: >-
-  cargo machete runs clean in CI — every dependency in Cargo.toml must
-  be imported somewhere in the crate. Optional deps behind feature
-  flags are exempt only when the feature is declared in Cargo.toml
-  [features].
+rule: cargo machete runs clean in CI — every dependency in Cargo.toml must be imported somewhere in the crate. Optional deps behind feature flags are exempt only when the feature is declared in Cargo.toml [features].
 enforcement: machine
-status: proposed
 profile: 1
+status: proposed
 intent:
   kind: invariant
   summary: cargo machete clean — no unused dependencies
   source: ai
-  rationale: >-
-    Unused dependencies inflate the supply chain attack surface,
-    lengthen compile times, and confuse readers about which crates
-    the project actually relies on. Running cargo-machete in CI turns
-    "I'll delete it later" into a build failure.
-  impact_if_violated: >-
-    The dep list stops reflecting what the code actually uses; every
-    `cargo deny` run scans crates the binary never pulls in; reviewers
-    wonder which deps are load-bearing.
-  verification_method: >-
-    CI job runs `cargo machete` and fails on any finding.
+  impact_if_violated: The dep list stops reflecting what the code actually uses; every `cargo deny` run scans crates the binary never pulls in; reviewers wonder which deps are load-bearing.
+  rationale: Unused dependencies inflate the supply chain attack surface, lengthen compile times, and confuse readers about which crates the project actually relies on. Running cargo-machete in CI turns "I'll delete it later" into a build failure.
+  verification_method: CI job runs `cargo machete` and fails on any finding.

@@ -1,9 +1,6 @@
 id: 1
 name: Shapes CLI Profile
-description: >-
-  Governance configuration for the shapes-cli project. Defines required and
-  optional intent fields, allowed kinds, and default kinds for every shape
-  and constraint in this repository.
+description: Governance configuration for the shapes-cli project. Defines required and optional intent fields, allowed kinds, and default kinds for every shape and constraint in this repository.
 status: canonical
 intent:
   kind: governance
@@ -14,103 +11,108 @@ fields:
     default_kind: feature
     intent:
       fields:
-        - name: goals
-          description: What this shape must achieve
-          required: true
-        - name: rationale
-          description: Why this approach was chosen over alternatives
-          required: true
-        - name: non_goals
-          description: What is explicitly out of scope
-          required: false
-        - name: spec_section
-          description: >-
-            Which section of the shapes.fyi specification this shape
-            implements or relates to. Use when directly tied to the spec.
-          required: false
+      - name: goals
+        description: What this shape must achieve
+        required: true
+      - name: rationale
+        description: Why this approach was chosen over alternatives
+        required: true
+      - name: non_goals
+        description: What is explicitly out of scope
+        required: false
+      - name: spec_section
+        description: Which section of the shapes.fyi specification this shape implements or relates to. Use when directly tied to the spec.
+        required: false
       kinds:
-        - name: system
-          description: Top-level system boundary
-        - name: module
-          description: Code module or logical grouping
-        - name: feature
-          description: User-facing or agent-facing capability
-        - name: interface
-          description: CLI commands, data contracts, or API surfaces
-        - name: data-flow
-          description: How data moves through the system
-        - name: pattern
-          description: Recurring design pattern or structural convention
+      - name: system
+        description: Top-level system boundary
+        required: false
+      - name: module
+        description: Code module or logical grouping
+        required: false
+      - name: feature
+        description: User-facing or agent-facing capability
+        required: false
+      - name: interface
+        description: CLI commands, data contracts, or API surfaces
+        required: false
+      - name: data-flow
+        description: How data moves through the system
+        required: false
+      - name: pattern
+        description: Recurring design pattern or structural convention
+        required: false
       sources:
-        - name: human
-          description: Hand-authored by an engineer
-        - name: ai
-          description: Authored by an AI agent
+      - name: human
+        description: Hand-authored by an engineer
+        required: false
+      - name: ai
+        description: Authored by an AI agent
+        required: false
     realization:
       fields:
-        - name: summary
-          description: >-
-            Brief description of what this binding points to — specific
-            structs, functions, or sections relevant to this shape
-          required: true
+      - name: summary
+        description: Brief description of what this binding points to — specific structs, functions, or sections relevant to this shape
+        required: true
     evidence:
       fields:
-        - name: summary
-          description: >-
-            Brief description of what this evidence binding demonstrates —
-            specific tests, metrics, or reviews
-          required: true
+      - name: summary
+        description: Brief description of what this evidence binding demonstrates — specific tests, metrics, or reviews
+        required: true
   constraint:
     default_kind: invariant
     intent:
       fields:
-        - name: rationale
-          description: Why this rule exists — the origin story
-          required: true
-        - name: impact_if_violated
-          description: What breaks and how badly
-          required: true
-        - name: exceptions
-          description: Known cases where the rule does not apply
-          required: false
-        - name: verification_method
-          description: How to check compliance
-          required: false
-        - name: spec_section
-          description: >-
-            Which section of the shapes.fyi specification this constraint
-            enforces. Use when directly tied to the spec.
-          required: false
+      - name: rationale
+        description: Why this rule exists — the origin story
+        required: true
+      - name: impact_if_violated
+        description: What breaks and how badly
+        required: true
+      - name: exceptions
+        description: Known cases where the rule does not apply
+        required: false
+      - name: verification_method
+        description: How to check compliance
+        required: false
+      - name: spec_section
+        description: Which section of the shapes.fyi specification this constraint enforces. Use when directly tied to the spec.
+        required: false
       kinds:
-        - name: invariant
-          description: Must always hold — violation is a bug
-        - name: requirement
-          description: Must be implemented for the system to function
-        - name: boundary
-          description: Scope or responsibility limit
-        - name: guideline
-          description: Preferred approach — soft rule
-        - name: limit
-          description: Numeric or resource threshold
-        - name: policy
-          description: Organizational or process rule
+      - name: invariant
+        description: Must always hold — violation is a bug
+        required: false
+      - name: requirement
+        description: Must be implemented for the system to function
+        required: false
+      - name: boundary
+        description: Scope or responsibility limit
+        required: false
+      - name: guideline
+        description: Preferred approach — soft rule
+        required: false
+      - name: limit
+        description: Numeric or resource threshold
+        required: false
+      - name: policy
+        description: Organizational or process rule
+        required: false
       sources:
-        - name: human
-          description: Hand-authored by an engineer
-        - name: ai
-          description: Authored by an AI agent
+      - name: human
+        description: Hand-authored by an engineer
+        required: false
+      - name: ai
+        description: Authored by an AI agent
+        required: false
     realization:
       fields:
-        - name: summary
-          description: >-
-            Brief description of what this binding points to — specific
-            enforcement code or validation logic
-          required: true
+      - name: summary
+        description: Brief description of what this binding points to — specific enforcement code or validation logic
+        required: true
     evidence:
       fields:
-        - name: summary
-          description: >-
-            Brief description of what this evidence binding demonstrates
-          required: true
+      - name: summary
+        description: Brief description of what this evidence binding demonstrates
+        required: true
 amendment_rules:
   application: merge

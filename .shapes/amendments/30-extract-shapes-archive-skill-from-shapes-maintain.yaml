@@ -1,25 +1,15 @@
 id: 30
 name: Extract shapes-archive skill from shapes-maintain
-description: >-
-  Move archival decision framework, criteria, mechanics, and CLI commands
-  out of shapes-maintain into a new dedicated shapes-archive skill. The
-  maintain skill now focuses solely on keeping shapes, constraints, and
-  unarchived amendments in sync. The plugin shape gains a fourth child
-  skill (shape 35) and a new realization binding.
+description: Move archival decision framework, criteria, mechanics, and CLI commands out of shapes-maintain into a new dedicated shapes-archive skill. The maintain skill now focuses solely on keeping shapes, constraints, and unarchived amendments in sync. The plugin shape gains a fourth child skill (shape 35) and a new realization binding.
 targets:
   shape_ids:
-    - 6
-    - 16
+  - 6
+  - 16
 status: proposed
 intent:
   kind: amendment
   summary: Separate archival decision framework into dedicated shapes-archive skill
   source: ai
-  rationale: >-
-    Archival passes are infrequent maintenance tasks with their own decision
-    framework. Bundling them in the maintain skill forced agents to load
-    archival context they rarely need during routine graph maintenance.
-    Extracting into a dedicated skill keeps maintain focused and gives
-    archival a comprehensive, standalone home.
+  rationale: Archival passes are infrequent maintenance tasks with their own decision framework. Bundling them in the maintain skill forced agents to load archival context they rarely need during routine graph maintenance. Extracting into a dedicated skill keeps maintain focused and gives archival a comprehensive, standalone home.
 initiated_by:
   type: ai

@@ -1,40 +1,24 @@
 id: 16
 name: Maintain Skill
-description: >-
-  Keeps the shapes graph in sync with code changes. Provides the decision
-  framework for when to create shapes, amendments, or constraints, how to
-  bind realizations after implementation, and ensures the graph stays valid.
-  Also covers deep audits for periodic health checks. Amendment archival is
-  handled by the separate shapes-archive skill.
+description: Keeps the shapes graph in sync with code changes. Provides the decision framework for when to create shapes, amendments, or constraints, how to bind realizations after implementation, and ensures the graph stays valid. Also covers deep audits for periodic health checks. Amendment archival is handled by the separate shapes-archive skill.
 profile: 1
 status: canonical
 intent:
   kind: feature
-  summary: >-
-    Audit skill that reviews existing shapes graph for quality, consistency,
-    coverage gaps, and stale realizations
+  summary: Audit skill that reviews existing shapes graph for quality, consistency, coverage gaps, and stale realizations
   source: human
-  goals: >-
-    Keep the shapes graph accurate as the project evolves. Code changes over
-    time — files get renamed, features get removed, new modules appear. The
-    maintain skill detects when shapes drift from reality and helps the
-    engineer fix it.
-  non_goals: >-
-    Does not auto-commit changes — presents findings and waits for approval.
-    Does not create new shapes from scratch — use the init skill for that.
-  rationale: >-
-    A shapes graph that drifts from reality is worse than no graph at all —
-    agents would make decisions based on stale context. Periodic maintenance
-    keeps the graph trustworthy.
-amendment_log:
-  - 30
-parents:
-  - id: 6
-    role: feature
+  goals: Keep the shapes graph accurate as the project evolves. Code changes over time — files get renamed, features get removed, new modules appear. The maintain skill detects when shapes drift from reality and helps the engineer fix it.
+  non_goals: Does not auto-commit changes — presents findings and waits for approval. Does not create new shapes from scratch — use the init skill for that.
+  rationale: A shapes graph that drifts from reality is worse than no graph at all — agents would make decisions based on stale context. Periodic maintenance keeps the graph trustworthy.
 realization:
-  - bindings:
-      - scheme: path
-        value: skills/shapes-maintain/SKILL.md
-        metadata:
-          summary: Audit workflow — 9-step process covering validation, duplicates, shallow nodes, coverage, structure
-    role: primary
+- bindings:
+  - scheme: path
+    value: skills/shapes-maintain/SKILL.md
+    metadata:
+      summary: Audit workflow — 9-step process covering validation, duplicates, shallow nodes, coverage, structure
+  role: primary
+amendment_log:
+- 30
+parents:
+- id: 6
+  role: feature

@@ -1,0 +1,19 @@
+id: 32
+name: Add shapes fmt command for deterministic YAML serialization
+description: Adds a new `shapes fmt` command that normalizes all .shapes/ YAML files to serde canonical format, plus a one-time migration of all 91 existing files. Establishes serde canonical as THE serialization format so that future serde round-trips produce minimal, field-only diffs.
+targets:
+  shape_ids:
+  - 4
+  - 10
+status: proposed
+intent:
+  kind: amendment
+  summary: Adds shapes fmt command that normalizes all .shapes/ YAML files to serde canonical format. Ensures deterministic serialization so serde round-trips (e.g. amendment archive) produce minimal field-only diffs. Includes --check flag for CI enforcement. Also normalizes all 91 existing files as one-time migration.
+  source: ai
+  affected_files: src/commands/fmt.rs — new fmt command implementation. src/commands/mod.rs — declare and re-export fmt module. src/main.rs — add Fmt command variant with --check flag and route to handler. src/store.rs — make find_file pub(crate). tests/cli_snapshots.rs — three new tests (fresh fixture passes check, non-canonical detected and normalized, archive-after-fmt is minimal diff).
+  goals: Provide a `shapes fmt` command that normalizes all YAML files to serde canonical format. Support `--check` flag for CI enforcement (exit non-zero without writing). Normalize all existing files as a one-time migration. Make FileStore::find_file pub(crate) so the fmt command can locate files.
+  non_goals: Does not add a custom YAML serializer for human-friendly formatting (block scalars, etc). Does not change the archive command implementation — it was already correct. Does not normalize meta.yaml or scaffold output (save_raw path preserved for TODO-bearing scaffolds).
+  rationale: The `shapes amendment archive` command round-trips through serde (deserialize, mutate archived, serialize), which is correct. But existing files weren't in serde canonical format — they had block scalars, different field order from older serde_yml versions. When archive round-tripped, the entire file got reformatted (430-line diff for a 1-line archived toggle). Rather than surgical text editing, the architectural decision is to make serde canonical THE format. Same struct values always produce the same bytes. The fmt command normalizes everything once, and future round-trips are stable.
+  verification: cargo test passes all 110 tests. shapes fmt --check exits 0 after normalization. shapes validate exits 0. shapes fmt is idempotent (second run produces no changes).
+initiated_by:
+  type: ai

@@ -187,6 +187,20 @@ enum Command {
         #[command(subcommand)]
         operation: AmendmentCommand,
     },
+
+    /// Normalize all `.shapes/` YAML files to serde canonical format.
+    ///
+    /// Ensures deterministic serialization: the same node values always
+    /// produce the same bytes on disk. Run once after migrating from an
+    /// older CLI version, or routinely to keep files canonical so that
+    /// serde round-trips (e.g. `shapes amendment archive`) produce
+    /// minimal, field-only diffs.
+    Fmt {
+        /// Exit non-zero if any files aren't canonical (don't write).
+        /// Useful in CI to enforce canonical formatting.
+        #[arg(long)]
+        check: bool,
+    },
 }
 
 #[derive(Subcommand)]
@@ -428,6 +442,8 @@ fn run(cli: Cli) -> Result<(), CliError> {
             AmendmentCommand::Archive { id } => commands::amendment_archive(id, cli.format)?,
             AmendmentCommand::Unarchive { id } => commands::amendment_unarchive(id, cli.format)?,
         },
+
+        Command::Fmt { check } => commands::fmt(check)?,
     }
 
     Ok(())

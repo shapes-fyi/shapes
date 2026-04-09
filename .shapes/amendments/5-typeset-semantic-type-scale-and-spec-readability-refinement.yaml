@@ -10,67 +10,11 @@ intent:
   kind: amendment
   summary: 'Normalizes typography after /bolder: introduces semantic text-scale tokens in the shared theme, fixes the spec body reading color (muted -> foreground) and line length (max-w-3xl -> 65ch), moves spec metadata labels into the UI sans voice, and unifies tracking and leading across home page headings.'
   source: ai
-  rationale: >-
-    Audit of the home and spec pages after /bolder surfaced three classes
-    of drift. First, the long-form specification body text is rendered in
-    text-muted-foreground, which is a classic AI tell — reading text must
-    sit on the primary foreground color for contrast and comfort. Muted
-    color is correct for metadata, captions, and supporting annotations,
-    not for the 10,000+ words a reader actually consumes. Second, letter
-    spacing and line height are drifting across home headings — hero h1
-    at tracking -0.05em leading 0.82, Two Graphs h2 at tracking -0.04em
-    leading 0.88, In Practice and Install at tracking -0.03em leading
-    0.9, spec h1 at tracking -0.04em — all close but none tokenized, so
-    future edits will drift further. Third, the spec page still uses
-    ad-hoc --spec-body / --spec-body-sub / --spec-meta / --spec-toc /
-    --spec-h2 / --spec-h2-sm / --spec-h3 / --spec-h3-sm / --spec-abstract
-    / --spec-schema-desc / --spec-caption tokens declared inside
-    @layer base :root — they are value-named, spec-local, and orthogonal
-    to the new --font-ui / --font-sans / --font-serif voice system. This
-    amendment consolidates all of that into a semantic scale in the
-    shared @theme so both surfaces pull from one source of truth. The
-    spec body also gets a proper reading measure (max-w-[65ch] instead
-    of max-w-3xl which is 72ch for Crimson Pro at 1.2rem — wide enough
-    to tire the eye). Spec metadata dt labels switch to font-ui so the
-    UI sans voice reads as chrome, not body prose.
-  goals: >-
-    One semantic type scale the whole design system pulls from. Fixed
-    spec body color and comfortable reading measure. Consistent tracking
-    and leading across home display headings. Spec metadata labels
-    clearly distinguished as UI chrome rather than body text.
-  non_goals: >-
-    Does not add new fonts (Cormorant, Crimson Pro, Geist stay). Does
-    not change copy (that is /clarify). Does not touch color beyond
-    swapping body reading color from muted to foreground. Does not
-    introduce responsive clamp() sizing on the hero — the current
-    breakpoint steps (text-7xl sm:text-8xl lg:text-9xl) are already
-    fluid enough and the brand uses structured breakpoints, not fluid
-    display. Does not touch the Button component type, the CodeBlock
-    monospace treatment, or Mermaid diagram text.
+  affected_files: packages/ui/src/styles/globals.css — move the spec-local --spec-* tokens out of @layer base :root and replace them with a semantic --text-* scale in @theme inline. Add complementary --leading-* and --tracking-* tokens so Tailwind auto-generates matching utilities. Keep existing --font-sans / --font-serif / --font-ui voices unchanged. apps/web/src/routes/specification.tsx — swap body text color from text-muted-foreground to text-foreground. Swap content container from max-w-3xl to a 65ch reading measure. Apply font-ui to the metadata dl dt labels. Replace arbitrary text-[length:var(--spec-*)] references with the new semantic utilities. apps/web/src/routes/index.tsx — pull hero, Two Graphs, In Practice, and Install heading sizes and letter-spacing and leading from the new tokens so they share one system rather than per-element custom values.
+  goals: One semantic type scale the whole design system pulls from. Fixed spec body color and comfortable reading measure. Consistent tracking and leading across home display headings. Spec metadata labels clearly distinguished as UI chrome rather than body text.
+  non_goals: Does not add new fonts (Cormorant, Crimson Pro, Geist stay). Does not change copy (that is /clarify). Does not touch color beyond swapping body reading color from muted to foreground. Does not introduce responsive clamp() sizing on the hero — the current breakpoint steps (text-7xl sm:text-8xl lg:text-9xl) are already fluid enough and the brand uses structured breakpoints, not fluid display. Does not touch the Button component type, the CodeBlock monospace treatment, or Mermaid diagram text.
+  rationale: Audit of the home and spec pages after /bolder surfaced three classes of drift. First, the long-form specification body text is rendered in text-muted-foreground, which is a classic AI tell — reading text must sit on the primary foreground color for contrast and comfort. Muted color is correct for metadata, captions, and supporting annotations, not for the 10,000+ words a reader actually consumes. Second, letter spacing and line height are drifting across home headings — hero h1 at tracking -0.05em leading 0.82, Two Graphs h2 at tracking -0.04em leading 0.88, In Practice and Install at tracking -0.03em leading 0.9, spec h1 at tracking -0.04em — all close but none tokenized, so future edits will drift further. Third, the spec page still uses ad-hoc --spec-body / --spec-body-sub / --spec-meta / --spec-toc / --spec-h2 / --spec-h2-sm / --spec-h3 / --spec-h3-sm / --spec-abstract / --spec-schema-desc / --spec-caption tokens declared inside @layer base :root — they are value-named, spec-local, and orthogonal to the new --font-ui / --font-sans / --font-serif voice system. This amendment consolidates all of that into a semantic scale in the shared @theme so both surfaces pull from one source of truth. The spec body also gets a proper reading measure (max-w-[65ch] instead of max-w-3xl which is 72ch for Crimson Pro at 1.2rem — wide enough to tire the eye). Spec metadata dt labels switch to font-ui so the UI sans voice reads as chrome, not body prose.
   spec_section: N/A — typography refinement, no spec content change
-  affected_files: >-
-    packages/ui/src/styles/globals.css — move the spec-local --spec-*
-    tokens out of @layer base :root and replace them with a semantic
-    --text-* scale in @theme inline. Add complementary --leading-*
-    and --tracking-* tokens so Tailwind auto-generates matching
-    utilities. Keep existing --font-sans / --font-serif / --font-ui
-    voices unchanged. apps/web/src/routes/specification.tsx — swap
-    body text color from text-muted-foreground to text-foreground.
-    Swap content container from max-w-3xl to a 65ch reading measure.
-    Apply font-ui to the metadata dl dt labels. Replace arbitrary
-    text-[length:var(--spec-*)] references with the new semantic
-    utilities. apps/web/src/routes/index.tsx — pull hero, Two Graphs,
-    In Practice, and Install heading sizes and letter-spacing and
-    leading from the new tokens so they share one system rather than
-    per-element custom values.
-  verification: >-
-    bun run format clean. bun run typecheck clean. shapes validate
-    clean. Manual check in light and dark modes — spec body should
-    read noticeably more confidently (higher contrast), line measure
-    should be shorter and easier on the eye, metadata labels should
-    read as sans chrome, home headings should hold their amplified
-    scale but without drift. No visual regressions in Mermaid
-    diagrams, code blocks, minimap, or schema explorer (those pull
-    from independent styles).
+  verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual check in light and dark modes — spec body should read noticeably more confidently (higher contrast), line measure should be shorter and easier on the eye, metadata labels should read as sans chrome, home headings should hold their amplified scale but without drift. No visual regressions in Mermaid diagrams, code blocks, minimap, or schema explorer (those pull from independent styles).
 initiated_by:
   type: ai

@@ -1,50 +1,35 @@
 id: 22
 name: Theme System
-description: >-
-  Dark/light theme toggle with FOUC (flash of unstyled content) prevention.
-  Uses localStorage for persistence, a blocking inline script in the root
-  layout for initial theme detection before React hydration, and CSS class-based
-  switching. OKLCH color tokens in globals.css define both light and dark
-  palettes, enabling smooth theme transitions.
+description: Dark/light theme toggle with FOUC (flash of unstyled content) prevention. Uses localStorage for persistence, a blocking inline script in the root layout for initial theme detection before React hydration, and CSS class-based switching. OKLCH color tokens in globals.css define both light and dark palettes, enabling smooth theme transitions.
 profile: 1
 status: canonical
 intent:
   kind: feature
-  summary: >-
-    Dark/light theme toggle with localStorage persistence and FOUC prevention
+  summary: Dark/light theme toggle with localStorage persistence and FOUC prevention
   source: human
-  goals: >-
-    Support dark and light themes with instant switching and no visible flash on
-    page load. Persist the user's theme preference across sessions via
-    localStorage.
-  rationale: >-
-    Theme preference is a basic UX expectation for a developer-facing site. The
-    blocking inline script pattern prevents FOUC by setting the theme class
-    before the browser paints, avoiding the jarring flash that occurs when React
-    hydration sets the theme after initial render.
-  non_goals: >-
-    Does not support system-preference auto-detection beyond initial load. Does
-    not provide per-section or per-component theming.
+  goals: Support dark and light themes with instant switching and no visible flash on page load. Persist the user's theme preference across sessions via localStorage.
+  non_goals: Does not support system-preference auto-detection beyond initial load. Does not provide per-section or per-component theming.
+  rationale: Theme preference is a basic UX expectation for a developer-facing site. The blocking inline script pattern prevents FOUC by setting the theme class before the browser paints, avoiding the jarring flash that occurs when React hydration sets the theme after initial render.
   spec_section: Theme
-parents:
-  - id: 17
-    role: feature
 realization:
-  - bindings:
-      - scheme: path
-        value: apps/web/src/components/spec/theme-toggle.tsx
-        metadata:
-          summary: ThemeToggle component — toggle button, localStorage read/write, class switching
-    role: primary
-  - bindings:
-      - scheme: path
-        value: apps/web/src/routes/__root.tsx
-        metadata:
-          summary: FOUC prevention — blocking inline script for theme detection before hydration
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: packages/ui/src/styles/globals.css
-        metadata:
-          summary: Light/dark OKLCH token definitions — color palettes for both themes
-    role: supporting
+- bindings:
+  - scheme: path
+    value: apps/web/src/components/spec/theme-toggle.tsx
+    metadata:
+      summary: ThemeToggle component — toggle button, localStorage read/write, class switching
+  role: primary
+- bindings:
+  - scheme: path
+    value: apps/web/src/routes/__root.tsx
+    metadata:
+      summary: FOUC prevention — blocking inline script for theme detection before hydration
+  role: supporting
+- bindings:
+  - scheme: path
+    value: packages/ui/src/styles/globals.css
+    metadata:
+      summary: Light/dark OKLCH token definitions — color palettes for both themes
+  role: supporting
+parents:
+- id: 17
+  role: feature

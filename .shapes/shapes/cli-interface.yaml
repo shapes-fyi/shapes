@@ -1,57 +1,30 @@
 id: 10
 name: CLI Interface
-description: >-
-  The public interface of shapes-cli: seven top-level commands parsed by clap.
-  init creates the .shapes/ directory. create makes new nodes from flags or
-  YAML files (including stdin via -). get retrieves a single node. list filters
-  by type, status, and kind. tree renders ASCII DAG visualization. query
-  traverses ancestors, descendants, or effective constraints. validate checks
-  graph integrity. All commands support --format yaml|json for output. Exit
-  codes: 0 success, 1 error, 2 validation failures found.
+description: 'The public interface of shapes-cli: seven top-level commands parsed by clap. init creates the .shapes/ directory. create makes new nodes from flags or YAML files (including stdin via -). get retrieves a single node. list filters by type, status, and kind. tree renders ASCII DAG visualization. query traverses ancestors, descendants, or effective constraints. validate checks graph integrity. All commands support --format yaml|json for output. Exit codes: 0 success, 1 error, 2 validation failures found.'
 profile: 1
 status: canonical
 intent:
   kind: interface
-  summary: >-
-    Seven top-level commands (init, create, get, list, tree, query, validate)
-    with --format yaml|json output and exit codes 0/1/2
+  summary: Seven top-level commands (init, create, get, list, tree, query, validate) with --format yaml|json output and exit codes 0/1/2
   source: human
-  goals: >-
-    Provide a complete, predictable CLI surface that agents can invoke
-    programmatically. `tree` defaults to shape DAG when no node_type is given.
-    `validate` supports `--format json` for structured output. Every command
-    should have consistent output format, clear error messages, and documented
-    exit codes so agents can handle success and failure cases.
-  rationale: >-
-    The command set was designed around the agent workflow: tree for overview,
-    list/get for drill-down, query for constraint discovery, validate for
-    integrity checking. The --format json option exists specifically for
-    machine parsing by agents.
-  non_goals: >-
-    Not an interactive TUI or REPL — the CLI is designed for scripted agent
-    invocation. Does not provide a watch mode or daemon process.
+  goals: Provide a complete, predictable CLI surface that agents can invoke programmatically. `tree` defaults to shape DAG when no node_type is given. `validate` supports `--format json` for structured output. Every command should have consistent output format, clear error messages, and documented exit codes so agents can handle success and failure cases.
+  non_goals: Not an interactive TUI or REPL — the CLI is designed for scripted agent invocation. Does not provide a watch mode or daemon process.
+  rationale: 'The command set was designed around the agent workflow: tree for overview, list/get for drill-down, query for constraint discovery, validate for integrity checking. The --format json option exists specifically for machine parsing by agents.'
   spec_section: CLI command reference
 constraints:
-  - 6
-  - 7
-  - 17
-parents:
-  - id: 1
-    role: interface
+- 6
+- 7
+- 17
 realization:
-  - bindings:
-      - scheme: path
-        value: src/main.rs
-        metadata:
-          summary: >-
-            Cli struct (clap), Command enum with 7 subcommands (Init, Create,
-            Get, List, Tree, Query, Validate). Init takes --template
-            <software|research|editorial|minimal>. CreateCommand with
-            --from/--profile/--intent-kind/--template flags; --name is
-            Option<String> with required_unless_present="from" so heredoc
-            authoring works without --name. DagType/OutputFormat enums.
-            QueryCommand with ancestors/descendants/constraints/
-            shapes-for-constraint.
-    role: primary
+- bindings:
+  - scheme: path
+    value: src/main.rs
+    metadata:
+      summary: Cli struct (clap), Command enum with 7 subcommands (Init, Create, Get, List, Tree, Query, Validate). Init takes --template <software|research|editorial|minimal>. CreateCommand with --from/--profile/--intent-kind/--template flags; --name is Option<String> with required_unless_present="from" so heredoc authoring works without --name. DagType/OutputFormat enums. QueryCommand with ancestors/descendants/constraints/ shapes-for-constraint.
+  role: primary
 amendment_log:
-  - 21
+- 21
+- 32
+parents:
+- id: 1
+  role: interface

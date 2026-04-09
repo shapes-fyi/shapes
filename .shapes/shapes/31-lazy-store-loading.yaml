@@ -1,22 +1,14 @@
 id: 31
 name: Lazy Store Loading
-description: >-
-  Add lazy/streaming node loading for large stores. Currently
-  build_adjacency and validate load all nodes of a type upfront which
-  is fine for hundreds of nodes but would need lazy loading for thousands.
-status: canonical
+description: Add lazy/streaming node loading for large stores. Currently build_adjacency and validate load all nodes of a type upfront which is fine for hundreds of nodes but would need lazy loading for thousands.
 profile: 1
+status: canonical
 intent:
   kind: feature
   summary: Add lazy/streaming node loading for large stores instead of loading all nodes upfront
   source: human
-  goals: >-
-    Load nodes on demand during graph traversal instead of loading all
-    nodes upfront
-  rationale: >-
-    build_adjacency and validate load all nodes of a type into memory
-    upfront, which works for hundreds of nodes but would need streaming
-    for thousands
+  goals: Load nodes on demand during graph traversal instead of loading all nodes upfront
+  rationale: build_adjacency and validate load all nodes of a type into memory upfront, which works for hundreds of nodes but would need streaming for thousands
 parents:
-  - id: 3
-    role: feature
+- id: 3
+  role: feature

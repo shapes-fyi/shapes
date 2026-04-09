@@ -1,69 +1,33 @@
 id: 22
 name: 'Init Skill: collapse Steps 4-7 into create+Edit-TODO+validate'
-description: >-
-  Rewrites the shapes-init skill to remove the old Steps 4 (define Profile),
-  5 (create Shapes), 6 (create Constraints), and 7 (link Everything) and
-  replace them with three minimal steps that mirror the new CLI behavior:
-  create shapes (Read + Edit TODOs), create constraints (same), and an
-  optional Profile step. The new Step 1 documents the four templates.
+description: 'Rewrites the shapes-init skill to remove the old Steps 4 (define Profile), 5 (create Shapes), 6 (create Constraints), and 7 (link Everything) and replace them with three minimal steps that mirror the new CLI behavior: create shapes (Read + Edit TODOs), create constraints (same), and an optional Profile step. The new Step 1 documents the four templates.'
 targets:
   shape_ids:
-    - 15
+  - 15
 status: canonical
 intent:
   kind: amendment
-  summary: >-
-    Skill is now minimal — `shapes create ...`, `Read` the file, `Edit` the
-    TODOs, `shapes validate`. No heredocs, no schema teaching, no
-    link-wiring step. Profile authoring is optional and deferred to Step 6.
+  summary: Skill is now minimal — `shapes create ...`, `Read` the file, `Edit` the TODOs, `shapes validate`. No heredocs, no schema teaching, no link-wiring step. Profile authoring is optional and deferred to Step 6.
   source: ai
-  goals: >-
-    Eliminate hand-authored YAML from the skill. Make the workflow obvious
-    on first read. Document the four templates and the
-    Profile-is-optional invariant. Remove the link-everything step entirely
-    (links are set at Edit time on each scaffolded file).
-  non_goals: >-
-    Does not change the exploration or interview steps. Does not change
-    the autonomous-mode guidance. Does not modify the shapes-maintain or
-    shapes-context skills.
-  rationale: >-
-    The old skill instructions told agents to run `shapes create` with
-    minimal flags then `Write` over the resulting file. This was brittle
-    (Write refuses to overwrite unread files), produced wrong defaults
-    (description = name), and used incorrect Profile schema field names
-    (`field_defs` / `allowed_kinds` / `amendment_model` instead of
-    `fields.shape.intent.{fields,kinds}` /
-    `amendment_rules.application`). The new CLI emits self-documenting
-    scaffolds, so the skill can shrink to "run command, Read, Edit,
-    validate".
+  goals: Eliminate hand-authored YAML from the skill. Make the workflow obvious on first read. Document the four templates and the Profile-is-optional invariant. Remove the link-everything step entirely (links are set at Edit time on each scaffolded file).
+  non_goals: Does not change the exploration or interview steps. Does not change the autonomous-mode guidance. Does not modify the shapes-maintain or shapes-context skills.
+  rationale: The old skill instructions told agents to run `shapes create` with minimal flags then `Write` over the resulting file. This was brittle (Write refuses to overwrite unread files), produced wrong defaults (description = name), and used incorrect Profile schema field names (`field_defs` / `allowed_kinds` / `amendment_model` instead of `fields.shape.intent.{fields,kinds}` / `amendment_rules.application`). The new CLI emits self-documenting scaffolds, so the skill can shrink to "run command, Read, Edit, validate".
   spec_section: N/A — skill rewrite
 realization:
-  - bindings:
-      - scheme: path
-        value: skills/shapes-init/SKILL.md
-        metadata:
-          summary: >-
-            Steps 4-7 collapsed to Steps 4-6 (create shapes, create
-            constraints, optional Profile). Step 1 documents
-            --template <software|research|editorial|minimal>. Progress
-            checklist updated. Explicit note that --enforcement accepts
-            only `manual` or `machine`. The link-everything step is
-            removed; reciprocal links are set at Edit time on each
-            scaffolded file.
-    role: primary
+- bindings:
+  - scheme: path
+    value: skills/shapes-init/SKILL.md
+    metadata:
+      summary: Steps 4-7 collapsed to Steps 4-6 (create shapes, create constraints, optional Profile). Step 1 documents --template <software|research|editorial|minimal>. Progress checklist updated. Explicit note that --enforcement accepts only `manual` or `machine`. The link-everything step is removed; reciprocal links are set at Edit time on each scaffolded file.
+  role: primary
 evidence:
-  - id: scaffold-system-implements-skill
-    type: review
-    bindings:
-      - scheme: path
-        value: src/commands/scaffold.rs
-        metadata:
-          summary: >-
-            Manual review evidence — the skill instructs the agent to run
-            `shapes create`, Read, Edit, Validate. The scaffold writer
-            here is what makes that workflow possible: every required
-            field becomes a TODO block and every optional structure
-            becomes a commented stub the agent can uncomment.
-    trusted: false
+- id: scaffold-system-implements-skill
+  type: review
+  bindings:
+  - scheme: path
+    value: src/commands/scaffold.rs
+    metadata:
+      summary: 'Manual review evidence — the skill instructs the agent to run `shapes create`, Read, Edit, Validate. The scaffold writer here is what makes that workflow possible: every required field becomes a TODO block and every optional structure becomes a commented stub the agent can uncomment.'
+  trusted: false
 initiated_by:
   type: ai

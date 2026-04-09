@@ -1,151 +1,116 @@
 id: 33
 name: Rust Idioms Refactor
-description: >-
-  Whole-crate refactor that brings src/ into strict alignment with idiomatic
-  Rust and consolidates the domain-schema layer onto Profiles. Enforces
-  architectural constraints 19–34: lean mod.rs files, module-level //! docs,
-  /// docs on every public symbol, removal of ASCII section dividers,
-  &str-over-String discipline, a fixed crate-root lint baseline, justified
-  #[allow] attributes, no silent unwrap/expect, #[must_use] on pure getters,
-  a pinned rustfmt.toml, a cargo-deny supply chain gate, cargo-machete
-  dead-dep enforcement, insta snapshot coverage of CLI output, rustdoc
-  warnings promoted to errors, a GitHub Actions workflow wiring the whole
-  lot into CI, and the Template→Profile consolidation that makes Profile
-  the sole source of truth for intent field hints, kind allow-lists,
-  default kinds, and required-field enforcement.
-status: proposed
+description: 'Whole-crate refactor that brings src/ into strict alignment with idiomatic Rust and consolidates the domain-schema layer onto Profiles. Enforces architectural constraints 19–34: lean mod.rs files, module-level //! docs, /// docs on every public symbol, removal of ASCII section dividers, &str-over-String discipline, a fixed crate-root lint baseline, justified #[allow] attributes, no silent unwrap/expect, #[must_use] on pure getters, a pinned rustfmt.toml, a cargo-deny supply chain gate, cargo-machete dead-dep enforcement, insta snapshot coverage of CLI output, rustdoc warnings promoted to errors, a GitHub Actions workflow wiring the whole lot into CI, and the Template→Profile consolidation that makes Profile the sole source of truth for intent field hints, kind allow-lists, default kinds, and required-field enforcement.'
 profile: 1
-parents:
-  - id: 1
-    role: parent
-children:
-  - shape: 34
-    role: feature
+status: proposed
 intent:
   kind: feature
-  summary: >-
-    Whole-crate Rust idioms refactor enforcing constraints 19–28 across src/
+  summary: Whole-crate Rust idioms refactor enforcing constraints 19–28 across src/
   source: ai
-  goals: >-
-    Implement constraints 19–28 across every file under src/. Eliminate
-    ASCII section dividers in favor of submodule splits and item-level
-    /// docs. Document every public symbol with /// comments. Add a crate
-    root lint baseline (deny(unsafe_code), warn(missing_docs),
-    warn(rust_2018_idioms)) plus rustfmt.toml. Restructure src/commands/
-    into a verb/noun subdirectory layout so commands/mod.rs becomes pure
-    wiring. Split src/model/common.rs along its existing internal sections
-    so each concept (status, intent, serde helpers, newtype IDs) lives in
-    its own file. Add #[must_use] to pure getters. Audit and justify every
-    .unwrap()/.expect() and #[allow] in non-test code.
-  rationale: >-
-    The CLI crate is the canonical reference implementation of the Shapes
-    protocol. Agents read its source as ground truth, and the current
-    section-divider style + sparse public docs make that harder than it
-    should be. Codifying these idioms as graph constraints (rather than
-    relying on reviewer memory) means future code stays aligned
-    automatically and reviewers have something concrete to point at.
-  non_goals: >-
-    Refactoring apps/web, packages/ui, or the spec site. Changing public
-    CLI behavior — clap schema, scaffold YAML output, exit codes, and
-    stdout/stderr layout must remain byte-identical. Altering .shapes/
-    YAML on disk beyond this refactor's own bookkeeping. Swapping or
-    upgrading dependencies. Introducing Cow, async, or other complexity
-    that fights constraint:9 Minimal Complexity.
+  goals: 'Implement constraints 19–28 across every file under src/. Eliminate ASCII section dividers in favor of submodule splits and item-level /// docs. Document every public symbol with /// comments. Add a crate root lint baseline (deny(unsafe_code), warn(missing_docs), warn(rust_2018_idioms)) plus rustfmt.toml. Restructure src/commands/ into a verb/noun subdirectory layout so commands/mod.rs becomes pure wiring. Split src/model/common.rs along its existing internal sections so each concept (status, intent, serde helpers, newtype IDs) lives in its own file. Add #[must_use] to pure getters. Audit and justify every .unwrap()/.expect() and #[allow] in non-test code.'
+  non_goals: Refactoring apps/web, packages/ui, or the spec site. Changing public CLI behavior — clap schema, scaffold YAML output, exit codes, and stdout/stderr layout must remain byte-identical. Altering .shapes/ YAML on disk beyond this refactor's own bookkeeping. Swapping or upgrading dependencies. Introducing Cow, async, or other complexity that fights constraint:9 Minimal Complexity.
+  rationale: The CLI crate is the canonical reference implementation of the Shapes protocol. Agents read its source as ground truth, and the current section-divider style + sparse public docs make that harder than it should be. Codifying these idioms as graph constraints (rather than relying on reviewer memory) means future code stays aligned automatically and reviewers have something concrete to point at.
 constraints:
-  - 19
-  - 20
-  - 21
-  - 22
-  - 23
-  - 24
-  - 25
-  - 26
-  - 27
-  - 28
-  - 29
-  - 30
-  - 31
-  - 32
-  - 33
-  - 34
-  - 35
-  - 36
+- 19
+- 20
+- 21
+- 22
+- 23
+- 24
+- 25
+- 26
+- 27
+- 28
+- 29
+- 30
+- 31
+- 32
+- 33
+- 34
+- 35
+- 36
 realization:
-  - bindings:
-      - scheme: path
-        value: src/
-        metadata:
-          summary: The entire CLI crate — every file is in scope for the refactor
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/main.rs
-        metadata:
-          summary: Crate root — receives the lint baseline inner attributes per constraint 24
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: src/commands/mod.rs
-        metadata:
-          summary: 514-line bag of command implementations to be split into commands/{create,get,list}/{shape,constraint,amendment,profile}.rs
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: src/model
-        metadata:
-          summary: Post-refactor model module — the multi-section common.rs was decomposed into siblings ids.rs, node_type.rs, status.rs, intent.rs, refs.rs, bindings.rs, serde_helpers.rs
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: src/model/mod.rs
-        metadata:
-          summary: Currently declares newtype ID wrappers inline; the wrappers move to a sibling file so mod.rs is pure wiring per constraint 19
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: src/error.rs
-        metadata:
-          summary: Heavy section-divider usage (lines 7-9, 39-41, 60-62, 71-73) to be replaced with item-level /// docs
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: src/store.rs
-        metadata:
-          summary: NodeStore trait at line 17 needs /// docs; section dividers at 13-15 and 243-245 to be removed
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: rustfmt.toml
-        metadata:
-          summary: New file at repo root pinning edition = "2024" per constraint 28
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: deny.toml
-        metadata:
-          summary: New file at repo root configuring cargo-deny (advisories, licenses, bans, sources) per constraint 29
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: .github/workflows/ci.yml
-        metadata:
-          summary: New GitHub Actions workflow running fmt, clippy, test, doc, deny, and machete on every PR; wires constraints 24, 28, 29, 31, 32 into CI
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: tests/snapshots/
-        metadata:
-          summary: insta snapshot directory — captures verbatim CLI scaffold output per constraint 30
-    role: test
-  - bindings:
-      - scheme: path
-        value: src/templates.rs
-        metadata:
-          summary: Template→StarterKit consolidation per constraint 34 — pub(crate) starter kit factory used only by shapes init and shapes create profile to generate Profile YAML
-    role: supporting
-  - bindings:
-      - scheme: path
-        value: src/model/profile.rs
-        metadata:
-          summary: FieldSection gains default_kind field — Profile is the sole source of default --kind values per constraint 34
-    role: supporting
+- bindings:
+  - scheme: path
+    value: src/
+    metadata:
+      summary: The entire CLI crate — every file is in scope for the refactor
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/main.rs
+    metadata:
+      summary: Crate root — receives the lint baseline inner attributes per constraint 24
+  role: supporting
+- bindings:
+  - scheme: path
+    value: src/commands/mod.rs
+    metadata:
+      summary: '514-line bag of command implementations to be split into commands/{create,get,list}/{shape,constraint,amendment,profile}.rs'
+  role: supporting
+- bindings:
+  - scheme: path
+    value: src/model
+    metadata:
+      summary: Post-refactor model module — the multi-section common.rs was decomposed into siblings ids.rs, node_type.rs, status.rs, intent.rs, refs.rs, bindings.rs, serde_helpers.rs
+  role: supporting
+- bindings:
+  - scheme: path
+    value: src/model/mod.rs
+    metadata:
+      summary: Currently declares newtype ID wrappers inline; the wrappers move to a sibling file so mod.rs is pure wiring per constraint 19
+  role: supporting
+- bindings:
+  - scheme: path
+    value: src/error.rs
+    metadata:
+      summary: Heavy section-divider usage (lines 7-9, 39-41, 60-62, 71-73) to be replaced with item-level /// docs
+  role: supporting
+- bindings:
+  - scheme: path
+    value: src/store.rs
+    metadata:
+      summary: NodeStore trait at line 17 needs /// docs; section dividers at 13-15 and 243-245 to be removed
+  role: supporting
+- bindings:
+  - scheme: path
+    value: rustfmt.toml
+    metadata:
+      summary: New file at repo root pinning edition = "2024" per constraint 28
+  role: supporting
+- bindings:
+  - scheme: path
+    value: deny.toml
+    metadata:
+      summary: New file at repo root configuring cargo-deny (advisories, licenses, bans, sources) per constraint 29
+  role: supporting
+- bindings:
+  - scheme: path
+    value: '.github/workflows/ci.yml'
+    metadata:
+      summary: New GitHub Actions workflow running fmt, clippy, test, doc, deny, and machete on every PR; wires constraints 24, 28, 29, 31, 32 into CI
+  role: supporting
+- bindings:
+  - scheme: path
+    value: tests/snapshots/
+    metadata:
+      summary: insta snapshot directory — captures verbatim CLI scaffold output per constraint 30
+  role: test
+- bindings:
+  - scheme: path
+    value: src/templates.rs
+    metadata:
+      summary: Template→StarterKit consolidation per constraint 34 — pub(crate) starter kit factory used only by shapes init and shapes create profile to generate Profile YAML
+  role: supporting
+- bindings:
+  - scheme: path
+    value: src/model/profile.rs
+    metadata:
+      summary: FieldSection gains default_kind field — Profile is the sole source of default --kind values per constraint 34
+  role: supporting
+parents:
+- id: 1
+  role: parent
+children:
+- shape: 34
+  role: feature
