@@ -25,7 +25,7 @@ realization:
   role: primary
 amendment_log:
 - 19
-- 36
+- 40
 parents:
 - id: 1
   role: component

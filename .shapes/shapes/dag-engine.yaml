@@ -39,7 +39,7 @@ realization:
       summary: MockStore (HashMap-based NodeStore impl) and validation tests
   role: primary
 amendment_log:
-- 34
+- 38
 parents:
 - id: 1
   role: component
