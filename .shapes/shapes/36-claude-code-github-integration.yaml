@@ -1,0 +1,28 @@
+id: 36
+name: Claude Code GitHub Integration
+description: GitHub Actions workflows that give Claude Code a repo-native entry point — interactive via @claude mentions in issues, PRs, and reviews, and automated via PR auto-review on every push. Both workflows are gated to the snowmead user via github.actor checks.
+profile: 1
+status: proposed
+intent:
+  kind: feature
+  summary: GitHub Actions workflows that give Claude Code a repo-native entry point — interactive via @claude mentions and automated via PR auto-review. Restricted to the snowmead user.
+  source: ai
+  goals: Enable Claude Code to operate on the repository through GitHub-native interactions. The interactive workflow (claude.yml) lets the repo owner trigger Claude by mentioning @claude in issue comments, PR comments, PR reviews, or new issues. The auto-review workflow (claude-code-review.yml) runs Claude's code-review plugin on every PR event. Both workflows are restricted to github.actor == snowmead to prevent unauthorized usage and API cost.
+  non_goals: Not a replacement for local Claude Code usage — this is the GitHub-native complement. Does not define Claude's capabilities or allowed tools beyond what the action provides by default. Does not manage the CLAUDE_CODE_OAUTH_TOKEN secret — that is a repository-level GitHub secret configured outside the graph.
+  rationale: Claude Code Action (anthropics/claude-code-action@v1) provides the runtime, but the workflow files define when and for whom it triggers. Gating on github.actor rather than author_association or team membership is the simplest effective control for a single-owner repository. The two workflows are separate because interactive and automated triggers have different event types, permission needs, and plugin configurations.
+realization:
+- bindings:
+  - scheme: path
+    value: '.github/workflows/claude.yml'
+    metadata:
+      summary: Interactive Claude workflow — triggers on @claude mentions in issue_comment, pull_request_review_comment, pull_request_review, and issues events. Gated by github.actor == snowmead.
+  role: primary
+- bindings:
+  - scheme: path
+    value: '.github/workflows/claude-code-review.yml'
+    metadata:
+      summary: Automated PR review workflow — triggers on pull_request opened/synchronize/ready_for_review/reopened events. Runs the code-review plugin. Gated by github.actor == snowmead.
+  role: primary
+parents:
+- id: 1
+  role: component

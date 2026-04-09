@@ -55,6 +55,7 @@ realization:
   role: supporting
 amendment_log:
 - 24
+- 33
 children:
 - shape: 2
   role: component
@@ -85,4 +86,6 @@ children:
 - shape: 27
   role: component
 - shape: 33
+  role: component
+- shape: 36
   role: component
