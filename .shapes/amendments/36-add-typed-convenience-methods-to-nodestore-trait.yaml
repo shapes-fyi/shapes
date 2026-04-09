@@ -1,0 +1,13 @@
+id: 36
+name: Add typed convenience methods to NodeStore trait
+description: Add typed convenience methods to NodeStore trait
+targets:
+  shape_ids:
+  - 3
+status: proposed
+intent:
+  kind: amendment
+  summary: Add default methods load_shape, load_constraint, load_amendment, load_profile to NodeStore trait. Purely additive — existing load<T> signature unchanged.
+  source: ai
+initiated_by:
+  type: ai

@@ -80,7 +80,7 @@ pub fn create_constraint(
             .to_owned(),
     };
 
-    validate_kind_against_profile(&profile, "constraint", &kind_str)?;
+    validate_kind_against_profile(&profile, crate::model::NodeType::Constraint, &kind_str)?;
 
     let yaml = scaffold::scaffold_constraint(&scaffold::ConstraintScaffold {
         id: id.get(),

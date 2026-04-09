@@ -38,6 +38,8 @@ realization:
     metadata:
       summary: MockStore (HashMap-based NodeStore impl) and validation tests
   role: primary
+amendment_log:
+- 34
 parents:
 - id: 1
   role: component

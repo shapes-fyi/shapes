@@ -31,6 +31,26 @@ pub trait NodeStore {
     /// Lists all IDs for a given node type, in ascending order.
     fn list_ids(&self, node_type: NodeType) -> Result<Vec<u64>>;
 
+    /// Loads a [`Shape`](crate::model::Shape) by typed ID.
+    fn load_shape(&self, id: crate::model::ShapeId) -> Result<crate::model::Shape> {
+        self.load(NodeType::Shape, id.get())
+    }
+
+    /// Loads a [`Constraint`](crate::model::Constraint) by typed ID.
+    fn load_constraint(&self, id: crate::model::ConstraintId) -> Result<crate::model::Constraint> {
+        self.load(NodeType::Constraint, id.get())
+    }
+
+    /// Loads an [`Amendment`](crate::model::Amendment) by typed ID.
+    fn load_amendment(&self, id: crate::model::AmendmentId) -> Result<crate::model::Amendment> {
+        self.load(NodeType::Amendment, id.get())
+    }
+
+    /// Loads a [`Profile`](crate::model::Profile) by typed ID.
+    fn load_profile(&self, id: crate::model::ProfileId) -> Result<crate::model::Profile> {
+        self.load(NodeType::Profile, id.get())
+    }
+
     /// Allocates the next free ID for `node_type` by scanning existing
     /// nodes. The default implementation walks `list_ids` and returns
     /// `max + 1`.
@@ -69,8 +89,8 @@ impl Meta {
 
 /// Helper struct used to extract just the `id` field from a YAML node.
 #[derive(Deserialize)]
-struct IdOnly {
-    id: u64,
+pub(crate) struct IdOnly {
+    pub(crate) id: u64,
 }
 
 /// Helper struct used to extract the `name` field for filename

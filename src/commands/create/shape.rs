@@ -81,7 +81,7 @@ pub fn create_shape(
             .to_owned(),
     };
 
-    validate_kind_against_profile(&profile, "shape", &kind_str)?;
+    validate_kind_against_profile(&profile, crate::model::NodeType::Shape, &kind_str)?;
 
     let yaml = scaffold::scaffold_shape(&scaffold::ShapeScaffold {
         id,

@@ -101,6 +101,64 @@ impl Shape {
     }
 }
 
+impl super::traits::GraphNode for Shape {
+    type Id = ShapeId;
+
+    fn raw_id(&self) -> u64 {
+        self.id.get()
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn status(&self) -> &Status {
+        &self.status
+    }
+
+    fn intent(&self) -> &Intent {
+        &self.intent
+    }
+
+    fn amendment_log(&self) -> &[super::AmendmentId] {
+        &self.amendment_log
+    }
+}
+
+impl super::traits::DagNode for Shape {
+    fn parent_ids(&self) -> Vec<ShapeId> {
+        self.parent_ids()
+    }
+
+    fn child_ids(&self) -> Vec<ShapeId> {
+        self.child_ids()
+    }
+
+    fn constraint_ids(&self) -> Vec<super::ConstraintId> {
+        self.constraints.clone()
+    }
+
+    fn profile_id(&self) -> Option<super::ProfileId> {
+        self.profile
+    }
+
+    fn realization(&self) -> &[super::Realization] {
+        &self.realization
+    }
+
+    fn evidence(&self) -> &[super::Evidence] {
+        &self.evidence
+    }
+
+    fn provenance(&self) -> &[super::Provenance] {
+        &self.provenance
+    }
+
+    fn metadata(&self) -> &std::collections::BTreeMap<String, serde_yml::Value> {
+        &self.metadata
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ShapeChildRef {
     pub shape: ShapeRef,

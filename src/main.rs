@@ -358,6 +358,15 @@ pub enum DagType {
     Constraint,
 }
 
+impl From<DagType> for model::NodeType {
+    fn from(dag: DagType) -> Self {
+        match dag {
+            DagType::Shape => model::NodeType::Shape,
+            DagType::Constraint => model::NodeType::Constraint,
+        }
+    }
+}
+
 #[derive(Subcommand)]
 enum QueryCommand {
     /// Walk up the parent chain of a node.

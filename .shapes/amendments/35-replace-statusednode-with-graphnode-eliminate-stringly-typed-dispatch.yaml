@@ -1,0 +1,13 @@
+id: 35
+name: Replace StatusedNode with GraphNode, eliminate stringly-typed dispatch
+description: Replace StatusedNode with GraphNode, eliminate stringly-typed dispatch
+targets:
+  shape_ids:
+  - 4
+status: proposed
+intent:
+  kind: amendment
+  summary: 'ci_check.rs deletes private StatusedNode trait and imports GraphNode from model. profile_helpers.rs changes node_type_str: &str to node_type: NodeType.'
+  source: ai
+initiated_by:
+  type: ai

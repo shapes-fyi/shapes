@@ -258,7 +258,7 @@ fn check_required_amendments<T>(
     issues: &mut Vec<ValidationIssue>,
 ) -> Result<()>
 where
-    T: DeserializeOwned + StatusedNode,
+    T: DeserializeOwned + GraphNode,
 {
     let type_dir = shapes_dir.join(node_type.dir_name());
     let head_map: BTreeMap<u64, T> = if type_dir.is_dir() {
@@ -278,7 +278,7 @@ where
             // New in PR — no requirement.
             continue;
         };
-        if !base_node.status_ref().requires_amendment_on_change() {
+        if !base_node.status().requires_amendment_on_change() {
             continue;
         }
         let needs_amendment = match head_node {
@@ -297,7 +297,7 @@ where
                 node_id: id.to_string(),
                 message: format!(
                     "{node_type} {id} was {kind} on a {} base, but no amendment in this PR targets it",
-                    base_node.status_ref().name()
+                    base_node.status().name()
                 ),
             });
         }
@@ -305,30 +305,9 @@ where
     Ok(())
 }
 
-/// Trait that lets the generic check function reach for `.status`
-/// without committing to a specific node type. Implemented for the
-/// three node types ci-check enforces.
-trait StatusedNode {
-    fn status_ref(&self) -> &crate::model::status::Status;
-}
-
-impl StatusedNode for Shape {
-    fn status_ref(&self) -> &crate::model::status::Status {
-        &self.status
-    }
-}
-
-impl StatusedNode for Constraint {
-    fn status_ref(&self) -> &crate::model::status::Status {
-        &self.status
-    }
-}
-
-impl StatusedNode for Profile {
-    fn status_ref(&self) -> &crate::model::status::Status {
-        &self.status
-    }
-}
+/// Re-export the model-level trait used by the generic check functions
+/// to reach `.status()` without committing to a specific node type.
+use crate::model::GraphNode;
 
 fn shape_monitored_changed(base: &Shape, head: &Shape) -> bool {
     base.name != head.name
@@ -482,13 +461,9 @@ fn git_show(base: &str, path: &Path) -> Result<Option<String>> {
     bail!("git show {spec} failed: {stderr}");
 }
 
-#[derive(serde::Deserialize)]
-struct IdOnly {
-    id: u64,
-}
-
 fn parse_id(yaml: &str) -> Result<u64> {
-    let id_only: IdOnly = serde_yml::from_str(yaml).context("YAML missing top-level `id` field")?;
+    let id_only: crate::store::IdOnly =
+        serde_yml::from_str(yaml).context("YAML missing top-level `id` field")?;
     Ok(id_only.id)
 }
 

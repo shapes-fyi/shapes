@@ -1,28 +1,38 @@
+//! ASCII tree visualization for shape and constraint DAGs.
+
 use anyhow::Result;
 
 use crate::DagType;
 use crate::model::*;
 use crate::store::NodeStore;
 
+/// Prints the DAG as an ASCII tree with Unicode box-drawing characters.
 pub fn print_tree(
     store: &impl NodeStore,
     dag_type: DagType,
     root: Option<u64>,
     max_depth: usize,
 ) -> Result<()> {
-    let label = match dag_type {
-        DagType::Shape => "shape",
-        DagType::Constraint => "constraint",
-    };
+    match dag_type {
+        DagType::Shape => print_tree_of::<Shape>(store, root, max_depth),
+        DagType::Constraint => print_tree_of::<Constraint>(store, root, max_depth),
+    }
+}
 
+/// Generic tree printer over any [`DagNode`] type.
+fn print_tree_of<N: DagNode>(
+    store: &impl NodeStore,
+    root: Option<u64>,
+    max_depth: usize,
+) -> Result<()> {
     let roots = if let Some(root_id) = root {
         vec![root_id]
     } else {
-        find_roots(store, dag_type)?
+        find_roots_of::<N>(store)?
     };
 
     if roots.is_empty() {
-        eprintln!("No {label} nodes found.");
+        eprintln!("No {} nodes found.", N::Id::NODE_TYPE);
         return Ok(());
     }
 
@@ -30,115 +40,62 @@ pub fn print_tree(
         if i > 0 {
             println!();
         }
-        let (root_label, child_ids, constraint_ids) = get_node_info(store, dag_type, *root_id)?;
-        println!("{root_label}");
+        let node: N = store.load(N::Id::NODE_TYPE, *root_id)?;
+        println!("{}", node.tree_label());
 
         if max_depth == 0 {
             continue;
         }
 
+        let constraint_ids = node.constraint_ids();
+        let child_ids: Vec<u64> = node.child_ids().into_iter().map(|c| c.get()).collect();
         let total = constraint_ids.len() + child_ids.len();
+
         for (ci, cid) in constraint_ids.iter().enumerate() {
             let is_last = ci + 1 == total;
-            let connector = if is_last {
-                "\u{2514}\u{2500}\u{2500} "
-            } else {
-                "\u{251c}\u{2500}\u{2500} "
-            };
+            let connector = if is_last { "\u{2514}\u{2500}\u{2500} " } else { "\u{251c}\u{2500}\u{2500} " };
             let cname = store
-                .load::<Constraint>(NodeType::Constraint, *cid)
+                .load::<Constraint>(NodeType::Constraint, cid.get())
                 .map(|c| c.name)
                 .unwrap_or_else(|_| "???".into());
             println!("{connector}constraint:{cid} {cname}");
         }
         for (ci, child_id) in child_ids.iter().enumerate() {
             let is_last = constraint_ids.len() + ci + 1 == total;
-            print_subtree(store, dag_type, *child_id, max_depth - 1, "", is_last)?;
+            print_subtree_of::<N>(store, *child_id, max_depth - 1, "", is_last)?;
         }
     }
 
     Ok(())
 }
 
-fn find_roots(store: &impl NodeStore, dag_type: DagType) -> Result<Vec<u64>> {
-    let node_type = match dag_type {
-        DagType::Shape => NodeType::Shape,
-        DagType::Constraint => NodeType::Constraint,
-    };
-    let ids = store.list_ids(node_type)?;
-
+/// Finds root nodes (those with no parents) for a given DAG type.
+fn find_roots_of<N: DagNode>(store: &impl NodeStore) -> Result<Vec<u64>> {
+    let ids = store.list_ids(N::Id::NODE_TYPE)?;
     let mut roots = Vec::new();
     for id in ids {
-        let has_parents = match dag_type {
-            DagType::Shape => {
-                let s: Shape = store.load(node_type, id)?;
-                !s.parents.is_empty()
-            }
-            DagType::Constraint => {
-                let c: Constraint = store.load(node_type, id)?;
-                !c.parents.is_empty()
-            }
-        };
-        if !has_parents {
+        let node: N = store.load(N::Id::NODE_TYPE, id)?;
+        if DagNode::parent_ids(&node).is_empty() {
             roots.push(id);
         }
     }
     Ok(roots)
 }
 
-fn get_node_info(
+/// Recursively prints a subtree rooted at `id`.
+fn print_subtree_of<N: DagNode>(
     store: &impl NodeStore,
-    dag_type: DagType,
-    id: u64,
-) -> Result<(String, Vec<u64>, Vec<u64>)> {
-    let node_type = match dag_type {
-        DagType::Shape => NodeType::Shape,
-        DagType::Constraint => NodeType::Constraint,
-    };
-    match dag_type {
-        DagType::Shape => {
-            let s: Shape = store.load(node_type, id)?;
-            let label = format!(
-                "shape:{} {} [{}] kind={}",
-                s.id,
-                s.name,
-                s.status.name(),
-                s.intent.kind
-            );
-            let children: Vec<u64> = s.child_ids().into_iter().map(|c| c.get()).collect();
-            let constraints: Vec<u64> = s.constraints.iter().map(|c| c.get()).collect();
-            Ok((label, children, constraints))
-        }
-        DagType::Constraint => {
-            let c: Constraint = store.load(node_type, id)?;
-            let label = format!(
-                "constraint:{} {} [{}] kind={}",
-                c.id,
-                c.name,
-                c.status.name(),
-                c.kind
-            );
-            let children: Vec<u64> = c.child_ids().into_iter().map(|c| c.get()).collect();
-            Ok((label, children, vec![]))
-        }
-    }
-}
-
-fn print_subtree(
-    store: &impl NodeStore,
-    dag_type: DagType,
     id: u64,
     depth_remaining: usize,
     prefix: &str,
     is_last: bool,
 ) -> Result<()> {
-    let connector = if is_last {
-        "\u{2514}\u{2500}\u{2500} "
-    } else {
-        "\u{251c}\u{2500}\u{2500} "
-    };
+    let connector = if is_last { "\u{2514}\u{2500}\u{2500} " } else { "\u{251c}\u{2500}\u{2500} " };
 
-    let (label, child_ids, constraint_ids) = get_node_info(store, dag_type, id)?;
+    let node: N = store.load(N::Id::NODE_TYPE, id)?;
+    let label = node.tree_label();
+    let constraint_ids = node.constraint_ids();
+    let child_ids: Vec<u64> = node.child_ids().into_iter().map(|c| c.get()).collect();
 
     println!("{prefix}{connector}{label}");
 
@@ -158,13 +115,9 @@ fn print_subtree(
     let total_items = constraint_ids.len() + child_ids.len();
     for (i, cid) in constraint_ids.iter().enumerate() {
         let is_last_item = i + 1 == total_items;
-        let c_connector = if is_last_item {
-            "\u{2514}\u{2500}\u{2500} "
-        } else {
-            "\u{251c}\u{2500}\u{2500} "
-        };
+        let c_connector = if is_last_item { "\u{2514}\u{2500}\u{2500} " } else { "\u{251c}\u{2500}\u{2500} " };
         let cname = store
-            .load::<Constraint>(NodeType::Constraint, *cid)
+            .load::<Constraint>(NodeType::Constraint, cid.get())
             .map(|c| c.name)
             .unwrap_or_else(|_| "???".into());
         println!("{child_prefix}{c_connector}constraint:{cid} {cname}");
@@ -172,14 +125,7 @@ fn print_subtree(
 
     for (i, child_id) in child_ids.iter().enumerate() {
         let is_last_child = constraint_ids.len() + i + 1 == total_items;
-        print_subtree(
-            store,
-            dag_type,
-            *child_id,
-            depth_remaining - 1,
-            &child_prefix,
-            is_last_child,
-        )?;
+        print_subtree_of::<N>(store, *child_id, depth_remaining - 1, &child_prefix, is_last_child)?;
     }
 
     Ok(())
