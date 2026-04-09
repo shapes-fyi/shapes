@@ -385,10 +385,7 @@ fn check_dag_refs<N: DagNode>(
                     severity: Severity::Error,
                     node_type: type_name.clone(),
                     node_id: id.to_string(),
-                    message: format!(
-                        "references non-existent parent {} {}",
-                        type_name, parent_id
-                    ),
+                    message: format!("references non-existent parent {} {}", type_name, parent_id),
                 });
             }
         }
@@ -400,10 +397,7 @@ fn check_dag_refs<N: DagNode>(
                     severity: Severity::Error,
                     node_type: type_name.clone(),
                     node_id: id.to_string(),
-                    message: format!(
-                        "references non-existent child {} {}",
-                        type_name, child_id
-                    ),
+                    message: format!("references non-existent child {} {}", type_name, child_id),
                 });
             }
         }

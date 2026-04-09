@@ -53,7 +53,11 @@ fn print_tree_of<N: DagNode>(
 
         for (ci, cid) in constraint_ids.iter().enumerate() {
             let is_last = ci + 1 == total;
-            let connector = if is_last { "\u{2514}\u{2500}\u{2500} " } else { "\u{251c}\u{2500}\u{2500} " };
+            let connector = if is_last {
+                "\u{2514}\u{2500}\u{2500} "
+            } else {
+                "\u{251c}\u{2500}\u{2500} "
+            };
             let cname = store
                 .load::<Constraint>(NodeType::Constraint, cid.get())
                 .map(|c| c.name)
@@ -90,7 +94,11 @@ fn print_subtree_of<N: DagNode>(
     prefix: &str,
     is_last: bool,
 ) -> Result<()> {
-    let connector = if is_last { "\u{2514}\u{2500}\u{2500} " } else { "\u{251c}\u{2500}\u{2500} " };
+    let connector = if is_last {
+        "\u{2514}\u{2500}\u{2500} "
+    } else {
+        "\u{251c}\u{2500}\u{2500} "
+    };
 
     let node: N = store.load(N::Id::NODE_TYPE, id)?;
     let label = node.tree_label();
@@ -115,7 +123,11 @@ fn print_subtree_of<N: DagNode>(
     let total_items = constraint_ids.len() + child_ids.len();
     for (i, cid) in constraint_ids.iter().enumerate() {
         let is_last_item = i + 1 == total_items;
-        let c_connector = if is_last_item { "\u{2514}\u{2500}\u{2500} " } else { "\u{251c}\u{2500}\u{2500} " };
+        let c_connector = if is_last_item {
+            "\u{2514}\u{2500}\u{2500} "
+        } else {
+            "\u{251c}\u{2500}\u{2500} "
+        };
         let cname = store
             .load::<Constraint>(NodeType::Constraint, cid.get())
             .map(|c| c.name)
@@ -125,7 +137,13 @@ fn print_subtree_of<N: DagNode>(
 
     for (i, child_id) in child_ids.iter().enumerate() {
         let is_last_child = constraint_ids.len() + i + 1 == total_items;
-        print_subtree_of::<N>(store, *child_id, depth_remaining - 1, &child_prefix, is_last_child)?;
+        print_subtree_of::<N>(
+            store,
+            *child_id,
+            depth_remaining - 1,
+            &child_prefix,
+            is_last_child,
+        )?;
     }
 
     Ok(())

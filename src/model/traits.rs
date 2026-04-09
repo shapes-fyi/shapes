@@ -64,7 +64,7 @@ pub trait GraphNode {
 /// [`Amendment`](super::Amendment) and [`Profile`](super::Profile) do
 /// not form DAGs and should not implement `DagNode`.
 ///
-/// The associated type [`Id`](Self::Id) is inherited from [`GraphNode`]
+/// The associated type `Id` is inherited from [`GraphNode`]
 /// and preserves compile-time type safety: `Shape`'s ID is `ShapeId`,
 /// `Constraint`'s is `ConstraintId`. This makes the trait not
 /// object-safe, which is intentional — all usage is static dispatch.

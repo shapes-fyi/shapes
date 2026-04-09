@@ -11,7 +11,7 @@ use serde::Serialize;
 
 use crate::OutputFormat;
 use crate::commands::shared::{open_store, output};
-use crate::model::{Amendment, AmendmentId, Constraint, NodeType, Profile, Shape};
+use crate::model::{Amendment, AmendmentId, GraphNode, NodeType};
 use crate::store::{FileStore, NodeStore};
 
 /// Loads a single node and prints it. When `archived` is `false` (the
@@ -21,23 +21,24 @@ use crate::store::{FileStore, NodeStore};
 /// know to defer reading them.
 pub fn get(node_type: NodeType, id: u64, archived: bool, format: OutputFormat) -> Result<()> {
     let store = open_store()?;
+    use crate::model::ids::{AmendmentId, ConstraintId, ProfileId, ShapeId};
     match node_type {
         NodeType::Shape => {
-            let node: Shape = store.load(node_type, id)?;
-            emit_with_amendment_log(&node, &node.amendment_log, &store, archived, format)
+            let node = store.load_shape(ShapeId::new(id))?;
+            emit_with_amendment_log(&node, node.amendment_log(), &store, archived, format)
         }
         NodeType::Constraint => {
-            let node: Constraint = store.load(node_type, id)?;
-            emit_with_amendment_log(&node, &node.amendment_log, &store, archived, format)
+            let node = store.load_constraint(ConstraintId::new(id))?;
+            emit_with_amendment_log(&node, node.amendment_log(), &store, archived, format)
         }
         NodeType::Profile => {
-            let node: Profile = store.load(node_type, id)?;
-            emit_with_amendment_log(&node, &node.amendment_log, &store, archived, format)
+            let node = store.load_profile(ProfileId::new(id))?;
+            emit_with_amendment_log(&node, node.amendment_log(), &store, archived, format)
         }
         NodeType::Amendment => {
             // Direct fetch by id is an explicit request: always return
             // the full amendment including its `archived` field.
-            output(&store.load::<Amendment>(node_type, id)?, format)
+            output(&store.load_amendment(AmendmentId::new(id))?, format)
         }
     }
 }
