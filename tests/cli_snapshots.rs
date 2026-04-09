@@ -620,10 +620,7 @@ intent:
         .unwrap();
 
         // --check should fail.
-        shapes_in(&dir)
-            .args(["fmt", "--check"])
-            .assert()
-            .failure();
+        shapes_in(&dir).args(["fmt", "--check"]).assert().failure();
 
         // fmt should normalize.
         shapes_in(&dir).arg("fmt").assert().success();
