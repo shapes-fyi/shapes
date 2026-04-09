@@ -1,6 +1,6 @@
 id: 37
 name: Type-Level Trait Hierarchy
-description: Three-layer trait hierarchy that encodes the structural relationships between the four node types at the Rust type level. NodeId unifies the four ID newtypes behind a common trait with a NODE_TYPE constant. GraphNode captures the fields shared by all four node types (id, name, status, intent). DagNode captures the DAG-navigable subset shared by Shape and Constraint (parent/child links, constraint references, binding accessors). Together with a define_id! macro, this eliminates ~200 lines of duplicated match blocks in the DAG engine while preserving compile-time type safety.
+description: Three-layer trait hierarchy that encodes the structural relationships between the four node types at the Rust type level. NodeId unifies the four ID newtypes behind a common trait with a NODE_TYPE constant. GraphNode captures the universally shared fields (raw_id, name, status, intent) — only fields that every node type genuinely has. DagNode captures the DAG-navigable subset shared by Shape and Constraint (parent/child links, constraint references, binding accessors). Together with a define_id! macro, this eliminates ~200 lines of duplicated match blocks in the DAG engine while preserving compile-time type safety. Fields like amendment_log that only some node types have are accessed via direct struct fields, not the trait.
 profile: 1
 status: proposed
 intent:
@@ -10,10 +10,10 @@ intent:
   goals:
   - Eliminate duplicated Shape/Constraint match blocks in walk.rs, tree.rs, and validate.rs by enabling trait-generic functions
   - Provide a NodeId trait with NODE_TYPE constant so generic code can load nodes without knowing the concrete type
-  - Provide a GraphNode trait for uniform access to fields shared by all node types (status, name, intent)
+  - Provide a GraphNode trait for uniform access to the universally shared fields (raw_id, name, status, intent) — no default stubs for fields that only some types have
   - Provide a DagNode trait for the DAG-navigable subset (parent_ids, child_ids, constraint_ids, binding accessors)
   - Replace four identical 35-line ID newtype blocks with a define_id! macro
-  non_goals: Making Profile or Amendment implement DagNode — they have no parent/child DAG links. Adding BindingHolder as a separate trait — Amendment's binding access is too isolated. Object safety — all usage is static dispatch.
+  non_goals: Making Profile or Amendment implement DagNode — they have no parent/child DAG links. Adding BindingHolder as a separate trait — Amendment's binding access is too isolated. Object safety — all usage is static dispatch. Putting amendment_log on GraphNode — only three of four types have it, and no generic code accesses it through a trait bound.
   rationale: The DAG engine had accumulated ~216 lines of near-identical Shape/Constraint match blocks across ~12 sites in walk.rs, tree.rs, and validate.rs. Every new invariant check had to be written twice. A three-layer trait hierarchy targets precisely this proven duplication while keeping the type system tight — DagNode is not object-safe, preserving compile-time ID type safety through associated types.
 constraints:
 - 13
