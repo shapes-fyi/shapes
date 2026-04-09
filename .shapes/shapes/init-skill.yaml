@@ -1,49 +1,24 @@
 id: 15
 name: Init Skill
-description: >-
-  Interactive Claude Code skill that bootstraps shapes for a new project.
-  Explores the project structure (manifest, README, source, tests, CI),
-  then interviews the engineer in rounds covering purpose, architecture,
-  constraints, domain knowledge, and evolution. Creates a Profile defining
-  project-specific fields and kinds, then generates a rich graph of shapes
-  and constraints linked by parent/child relationships and realization bindings.
-  Validates the result and presents a summary.
+description: Interactive Claude Code skill that bootstraps shapes for a new project. Explores the project structure (manifest, README, source, tests, CI), then interviews the engineer in rounds covering purpose, architecture, constraints, domain knowledge, and evolution. Creates a Profile defining project-specific fields and kinds, then generates a rich graph of shapes and constraints linked by parent/child relationships and realization bindings. Validates the result and presents a summary.
 profile: 1
 status: canonical
 intent:
   kind: feature
-  summary: >-
-    Interactive skill that bootstraps shapes for a project through code
-    analysis and engineer interview
+  summary: Interactive skill that bootstraps shapes for a project through code analysis and engineer interview
   source: human
-  goals: >-
-    Produce high-quality shapes that capture what an engineer carries in their
-    head — not just code structure, but intent, constraints, and design
-    rationale. The interview process should draw out unwritten rules and
-    domain knowledge that no amount of code reading would reveal.
-  rationale: >-
-    Manually writing YAML shapes files is tedious and requires deep spec
-    knowledge. An interactive skill that combines code analysis with engineer
-    interview produces better results faster. The interview rounds are ordered
-    to build understanding progressively.
-  non_goals: >-
-    Does not run autonomously — requires interactive engineer collaboration.
-    Does not read minds — the interview is necessary because code analysis
-    alone cannot capture intent and constraints.
-parents:
-  - id: 6
-    role: feature
+  goals: Produce high-quality shapes that capture what an engineer carries in their head — not just code structure, but intent, constraints, and design rationale. The interview process should draw out unwritten rules and domain knowledge that no amount of code reading would reveal.
+  non_goals: Does not run autonomously — requires interactive engineer collaboration. Does not read minds — the interview is necessary because code analysis alone cannot capture intent and constraints.
+  rationale: Manually writing YAML shapes files is tedious and requires deep spec knowledge. An interactive skill that combines code analysis with engineer interview produces better results faster. The interview rounds are ordered to build understanding progressively.
 realization:
-  - bindings:
-      - scheme: path
-        value: skills/shapes-init/SKILL.md
-        metadata:
-          summary: >-
-            Bootstrap workflow — 7-step process from init (with --template
-            selection) through exploration, interview, create-then-Edit-TODO
-            for shapes and constraints, optional Profile authoring, and
-            validation. No hand-authored YAML; the CLI scaffold writer
-            produces self-documenting files with TODO placeholders.
-    role: primary
+- bindings:
+  - scheme: path
+    value: skills/shapes-init/SKILL.md
+    metadata:
+      summary: Bootstrap workflow — 7-step process from init (with --template selection) through exploration, interview, create-then-Edit-TODO for shapes and constraints, optional Profile authoring, and validation. No hand-authored YAML; the CLI scaffold writer produces self-documenting files with TODO placeholders.
+  role: primary
 amendment_log:
-  - 22
+- 22
+parents:
+- id: 6
+  role: feature

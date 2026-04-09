@@ -1,31 +1,15 @@
 id: 25
 name: Must-Use on Pure Getters
-description: >-
-  Pure pub functions and methods that only compute or return a value carry
-  #[must_use], so dropping their result triggers a compile-time warning.
+description: 'Pure pub functions and methods that only compute or return a value carry #[must_use], so dropping their result triggers a compile-time warning.'
 kind: guideline
-rule: >-
-  Pure functions and methods whose only purpose is to return a value carry
-  #[must_use]. Applies to: ID newtype accessors (ShapeId::get etc.),
-  CliError::exit_code, is_empty-style predicates, and any pub fn whose return
-  value being dropped would indicate a caller bug.
+rule: 'Pure functions and methods whose only purpose is to return a value carry #[must_use]. Applies to: ID newtype accessors (ShapeId::get etc.), CliError::exit_code, is_empty-style predicates, and any pub fn whose return value being dropped would indicate a caller bug.'
 enforcement: manual
-status: proposed
 profile: 1
+status: proposed
 intent:
   kind: guideline
   summary: '#[must_use] on pure getters and predicates'
   source: ai
-  rationale: >-
-    Pure getters that compute exit codes or expose newtype IDs are bugs
-    waiting to happen if a caller drops the result. #[must_use] turns those
-    bugs into compile-time warnings at zero runtime cost. Targets include
-    CliError::exit_code (src/error.rs:90), the four ID newtype get() methods
-    in src/model/mod.rs, and AmendmentTargets::is_empty
-    (src/model/amendment.rs:61-67).
-  impact_if_violated: >-
-    Silent caller bugs where someone calls a getter for its (non-existent)
-    side effects and ignores the value.
-  verification_method: >-
-    Code review at PR time; spot-check that every pub fn returning a value
-    with no side effects carries #[must_use].
+  impact_if_violated: Silent caller bugs where someone calls a getter for its (non-existent) side effects and ignores the value.
+  rationale: 'Pure getters that compute exit codes or expose newtype IDs are bugs waiting to happen if a caller drops the result. #[must_use] turns those bugs into compile-time warnings at zero runtime cost. Targets include CliError::exit_code (src/error.rs:90), the four ID newtype get() methods in src/model/mod.rs, and AmendmentTargets::is_empty (src/model/amendment.rs:61-67).'
+  verification_method: 'Code review at PR time; spot-check that every pub fn returning a value with no side effects carries #[must_use].'

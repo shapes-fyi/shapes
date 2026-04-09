@@ -1,31 +1,15 @@
 id: 32
 name: Rustdoc Warnings Are Errors
-description: >-
-  cargo doc is built with RUSTDOCFLAGS='-D warnings' in CI, so broken
-  intra-doc links and other rustdoc warnings fail the build.
+description: cargo doc is built with RUSTDOCFLAGS='-D warnings' in CI, so broken intra-doc links and other rustdoc warnings fail the build.
 kind: invariant
-rule: >-
-  cargo doc --no-deps runs with RUSTDOCFLAGS='-D warnings' in CI.
-  Broken intra-doc links, missing code blocks, and any other rustdoc
-  warning fails the build. Pairs with constraint 21 (Public Symbol
-  Documentation) to keep rustdoc output trustworthy.
+rule: cargo doc --no-deps runs with RUSTDOCFLAGS='-D warnings' in CI. Broken intra-doc links, missing code blocks, and any other rustdoc warning fails the build. Pairs with constraint 21 (Public Symbol Documentation) to keep rustdoc output trustworthy.
 enforcement: machine
-status: proposed
 profile: 1
+status: proposed
 intent:
   kind: invariant
   summary: cargo doc fails on any rustdoc warning in CI
   source: ai
-  rationale: >-
-    Constraint 21 mandates /// docs on every public symbol, and
-    constraint 24 already promotes missing_docs to deny. The natural
-    closing move is to also fail on broken intra-doc links and other
-    rustdoc warnings — otherwise docs can rot silently as items are
-    renamed or moved.
-  impact_if_violated: >-
-    Broken `[Shape]`-style links land unnoticed; rustdoc output for
-    the crate loses the trust it needs to be a first-class reference
-    for agents.
-  verification_method: >-
-    CI job runs `RUSTDOCFLAGS='-D warnings' cargo doc --no-deps` and
-    fails on any warning.
+  impact_if_violated: Broken `[Shape]`-style links land unnoticed; rustdoc output for the crate loses the trust it needs to be a first-class reference for agents.
+  rationale: Constraint 21 mandates /// docs on every public symbol, and constraint 24 already promotes missing_docs to deny. The natural closing move is to also fail on broken intra-doc links and other rustdoc warnings — otherwise docs can rot silently as items are renamed or moved.
+  verification_method: CI job runs `RUSTDOCFLAGS='-D warnings' cargo doc --no-deps` and fails on any warning.

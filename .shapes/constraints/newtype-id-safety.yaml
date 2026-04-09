@@ -1,23 +1,14 @@
 id: 13
 name: Newtype ID Safety
-description: >-
-  Newtype wrappers (ShapeId, ConstraintId, AmendmentId, ProfileId) prevent
-  silently mixing node ID types that are all u64 at the wire level. Without
-  newtypes, a ShapeId could be passed where a ConstraintId is expected with
-  no compiler error.
+description: Newtype wrappers (ShapeId, ConstraintId, AmendmentId, ProfileId) prevent silently mixing node ID types that are all u64 at the wire level. Without newtypes, a ShapeId could be passed where a ConstraintId is expected with no compiler error.
 kind: invariant
 rule: All node ID fields in model structs MUST use the corresponding newtype wrapper (ShapeId, ConstraintId, AmendmentId, ProfileId), not bare u64
 enforcement: machine
-status: canonical
 profile: 1
+status: canonical
 intent:
   kind: requirement
   summary: Compile-time type safety for node ID fields
   source: human
-  rationale: >-
-    Bare u64 type aliases provided zero compile-time distinction between ID
-    types, allowing silent cross-type confusion in function calls and data
-    structures
-  impact_if_violated: >-
-    Wrong node type could be loaded, modified, or deleted when IDs are
-    accidentally swapped between shapes, constraints, amendments, or profiles
+  impact_if_violated: Wrong node type could be loaded, modified, or deleted when IDs are accidentally swapped between shapes, constraints, amendments, or profiles
+  rationale: Bare u64 type aliases provided zero compile-time distinction between ID types, allowing silent cross-type confusion in function calls and data structures

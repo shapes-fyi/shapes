@@ -1,43 +1,27 @@
 id: 5
 name: YAML Source of Truth
-description: >-
-  The .shapes/ directory containing YAML files is the single source of truth
-  for all shapes data. JSON output via --format json is a derived, ephemeral
-  view — it is never written back to disk. This ensures git diffs are
-  always meaningful and the YAML files are always complete.
-profile: 1
+description: The .shapes/ directory containing YAML files is the single source of truth for all shapes data. JSON output via --format json is a derived, ephemeral view — it is never written back to disk. This ensures git diffs are always meaningful and the YAML files are always complete.
 kind: policy
-rule: >-
-  The .shapes/ YAML files are the canonical representation — JSON output is
-  ephemeral and derived
+rule: The .shapes/ YAML files are the canonical representation — JSON output is ephemeral and derived
 enforcement: manual
+profile: 1
 status: canonical
 intent:
   kind: requirement
   summary: YAML Source of Truth
   source: human
-  rationale: >-
-    Having a single canonical format prevents synchronization issues. YAML was
-    chosen over JSON because it supports comments, multi-line strings, and
-    produces cleaner git diffs. The JSON output exists solely for machine
-    parsing by agents.
-  impact_if_violated: >-
-    Two sources of truth would inevitably diverge. Agents reading JSON and
-    humans editing YAML would see different data. Git would track redundant
-    changes.
-  exceptions: >-
-    If a future MCP server mode is added, it may maintain an in-memory index
-    for performance, but the YAML files remain canonical and the index must
-    be derivable from them.
+  exceptions: If a future MCP server mode is added, it may maintain an in-memory index for performance, but the YAML files remain canonical and the index must be derivable from them.
+  impact_if_violated: Two sources of truth would inevitably diverge. Agents reading JSON and humans editing YAML would see different data. Git would track redundant changes.
+  rationale: Having a single canonical format prevents synchronization issues. YAML was chosen over JSON because it supports comments, multi-line strings, and produces cleaner git diffs. The JSON output exists solely for machine parsing by agents.
 evidence:
-  - id: no-json-write-path
-    type: structural
-    bindings:
-      - scheme: path
-        value: src/store.rs
-        metadata:
-          summary: Store only writes YAML via serde_yml::to_string — no JSON write path exists in save()
-      - scheme: path
-        value: src/commands/mod.rs
-        metadata:
-          summary: JSON output is ephemeral — generated on stdout by serde_json::to_string, never written to .shapes/ files
+- id: no-json-write-path
+  type: structural
+  bindings:
+  - scheme: path
+    value: src/store.rs
+    metadata:
+      summary: Store only writes YAML via serde_yml::to_string — no JSON write path exists in save()
+  - scheme: path
+    value: src/commands/mod.rs
+    metadata:
+      summary: JSON output is ephemeral — generated on stdout by serde_json::to_string, never written to .shapes/ files

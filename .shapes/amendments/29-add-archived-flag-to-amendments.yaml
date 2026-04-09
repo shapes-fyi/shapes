@@ -1,136 +1,27 @@
 id: 29
 name: Add archived flag to amendments
-description: >-
-  Introduce a display-only `archived: bool` field on the Amendment node
-  so decayed audit entries can be hidden from default listing output
-  without losing the audit trail. Extends the CLI with `shapes amendment
-  archive <id>` / `unarchive <id>` and wires `--archived` opt-in flags
-  on `shapes list` and `shapes get`. Relaxes CI-003 only enough to
-  permit archive-only diffs on canonical amendments; every other field
-  remains strictly immutable. Adds a new CI-037 invariant (constraint
-  37) pinning archival as display-only so validation and CI always see
-  the full amendment set.
+description: 'Introduce a display-only `archived: bool` field on the Amendment node so decayed audit entries can be hidden from default listing output without losing the audit trail. Extends the CLI with `shapes amendment archive <id>` / `unarchive <id>` and wires `--archived` opt-in flags on `shapes list` and `shapes get`. Relaxes CI-003 only enough to permit archive-only diffs on canonical amendments; every other field remains strictly immutable. Adds a new CI-037 invariant (constraint 37) pinning archival as display-only so validation and CI always see the full amendment set.'
 targets:
   shape_ids:
-    - 2
-    - 23
+  - 2
+  - 23
   constraint_ids:
-    - 10
-    - 37
+  - 10
+  - 37
 status: proposed
 intent:
   kind: amendment
-  summary: >-
-    Add display-only `archived` flag to Amendment so stale audit
-    entries can be hidden from routine `shapes list` / `shapes get`
-    output without being deleted. Narrow CI-003 carve-out allows
-    archive-only diffs; constraint 37 pins the display-only contract.
+  summary: Add display-only `archived` flag to Amendment so stale audit entries can be hidden from routine `shapes list` / `shapes get` output without being deleted. Narrow CI-003 carve-out allows archive-only diffs; constraint 37 pins the display-only contract.
   source: ai
-  rationale: >-
-    Amendments are kept indefinitely for audit, so the log grows with
-    entries whose insight value has decayed — old migration steps,
-    superseded decisions, trivial refactors whose rationale is now
-    fully inlined in the current shape intent. Agents reading a shape
-    should not have to wade through those entries to understand the
-    current state. Deletion is off the table because it would break
-    the audit trail the amendment system exists to provide.
-
-    The chosen model is a display-only `archived: bool` on the
-    Amendment itself. When set, `shapes list amendment` and
-    `shapes get <parent>` drop the entry from output unless
-    `--archived` is passed; with the flag, archived entries in
-    `amendment_log` are annotated so readers can distinguish them.
-    The record stays on disk, validation and CI always see it, and
-    reciprocity (INV-019) continues to apply. This is strictly a
-    render-time decoration — no node YAML is ever rewritten as a
-    side effect of querying.
-
-    CI-003 is narrowly relaxed to permit diffs whose sole delta is
-    the `archived` field; every other field still trips immutability.
-    The new `shapes amendment archive` / `unarchive` commands are
-    the sole write path, centralizing the carve-out in one code site
-    instead of letting agents hand-edit amendment YAML.
-
-    Constraint 37 (Archived Is Display-Only) is added to pin the
-    contract as a first-class invariant: validation and CI must see
-    the full amendment set regardless of archived state, and
-    archival must never be used to short-circuit enforcement.
-    Without this constraint the display-only contract would live
-    only in implementation comments and could silently regress.
-  goals: >-
-    Amendment.archived round-trips through serde with zero impact on
-    existing files (skip_serializing_if). `shapes list amendment` and
-    `shapes get <parent>` hide archived entries by default; pass
-    `--archived` to surface them (annotated in get output). `shapes
-    amendment archive|unarchive` toggle the flag via the store. CI-003
-    permits archive-only diffs but still rejects any other field
-    change. INV-019 continues to bite on archived amendments. Shapes
-    specification, JSON schema, operations spec, CLI binding, website
-    spec page, README, and both shapes skills all document the new
-    behavior. Conformance fixtures include an archived amendment so
-    downstream implementations exercise the field.
-  non_goals: >-
-    Does not delete or mutate historical amendment content. Does not
-    relax INV-019 or CI-002. Does not add a "hide all amendments
-    older than N months" auto-archival pass (archival is an explicit
-    maintenance decision per entry, guided by the shapes-maintain
-    skill). Does not expose `--archived` on `shapes tree`, `query`,
-    or `validate` — those commands either do not surface amendments
-    or must always see the full set. Does not change the Amendment
-    JSON Schema's required fields.
+  affected_files: 'src/model/amendment.rs — add archived: bool with serde skip_default and is_archived() getter. src/commands/list.rs — add include_archived parameter; skip archived rows in the Amendment arm unless flag set. src/commands/get.rs — add archived parameter; cross-load referenced amendments to drop or annotate amendment_log at render time via patch_yaml_amendment_log / patch_json_amendment_log. src/commands/amendment.rs — new module with archive/unarchive functions, the sole write path for the field. src/commands/mod.rs — wire the amendment module and re-exports. src/commands/ci_check.rs — add is_archive_only_change helper; the CI-003 equality check now tolerates archive-only diffs. src/main.rs — --archived flag on List and Get; new Amendment subcommand with Archive { id } / Unarchive { id }. src/commands/create/amendment.rs — initialize archived: false on scaffolded amendments. spec/schema/amendment.json — add archived property. spec/specification.md §4.3 — document archived field and display semantics. spec/operations.md list/get parameter tables. spec/bindings/cli.md — --archived flag on list/get, new amendment archive|unarchive subcommand, operation summary row. spec/invariants.md — INV-019 note that archived amendments still participate in reciprocity. apps/web/src/components/spec/schema-data.tsx — AMENDMENT_SCHEMA gains an archived field entry. apps/web/src/components/spec/sections.tsx — Amendment narrative paragraph on archival semantics. README.md — Four Node Types row + Commands reference additions. skills/shapes-context/SKILL.md — Amendment bullet + discovery step note on archived filtering. skills/shapes-maintain/SKILL.md — new "Archiving Stale Amendments" section, Deep Audit archival pass, CLI quick reference entries. .shapes/shapes/data-model.yaml — Amendment binding summary mentions the archived field. .shapes/constraints/amendment-immutability.yaml — rule and rationale updated to name archived as the sole permitted mutation. .shapes/constraints/37-archived-is-display-only.yaml — new invariant pinning the display-only contract. spec/conformance/test-vectors/valid/full/.shapes/amendments/ — new fixture amendment with archived: true. tests/cli_snapshots.rs — seed_rich_fixture gains an archived amendment and new snapshot tests cover the default/filter and --archived modes.'
+  goals: Amendment.archived round-trips through serde with zero impact on existing files (skip_serializing_if). `shapes list amendment` and `shapes get <parent>` hide archived entries by default; pass `--archived` to surface them (annotated in get output). `shapes amendment archive|unarchive` toggle the flag via the store. CI-003 permits archive-only diffs but still rejects any other field change. INV-019 continues to bite on archived amendments. Shapes specification, JSON schema, operations spec, CLI binding, website spec page, README, and both shapes skills all document the new behavior. Conformance fixtures include an archived amendment so downstream implementations exercise the field.
+  non_goals: Does not delete or mutate historical amendment content. Does not relax INV-019 or CI-002. Does not add a "hide all amendments older than N months" auto-archival pass (archival is an explicit maintenance decision per entry, guided by the shapes-maintain skill). Does not expose `--archived` on `shapes tree`, `query`, or `validate` — those commands either do not surface amendments or must always see the full set. Does not change the Amendment JSON Schema's required fields.
+  rationale: |-
+    Amendments are kept indefinitely for audit, so the log grows with entries whose insight value has decayed — old migration steps, superseded decisions, trivial refactors whose rationale is now fully inlined in the current shape intent. Agents reading a shape should not have to wade through those entries to understand the current state. Deletion is off the table because it would break the audit trail the amendment system exists to provide.
+    The chosen model is a display-only `archived: bool` on the Amendment itself. When set, `shapes list amendment` and `shapes get <parent>` drop the entry from output unless `--archived` is passed; with the flag, archived entries in `amendment_log` are annotated so readers can distinguish them. The record stays on disk, validation and CI always see it, and reciprocity (INV-019) continues to apply. This is strictly a render-time decoration — no node YAML is ever rewritten as a side effect of querying.
+    CI-003 is narrowly relaxed to permit diffs whose sole delta is the `archived` field; every other field still trips immutability. The new `shapes amendment archive` / `unarchive` commands are the sole write path, centralizing the carve-out in one code site instead of letting agents hand-edit amendment YAML.
+    Constraint 37 (Archived Is Display-Only) is added to pin the contract as a first-class invariant: validation and CI must see the full amendment set regardless of archived state, and archival must never be used to short-circuit enforcement. Without this constraint the display-only contract would live only in implementation comments and could silently regress.
   spec_section: Amendment archival semantics
-  affected_files: >-
-    src/model/amendment.rs — add archived: bool with serde skip_default
-    and is_archived() getter.
-    src/commands/list.rs — add include_archived parameter; skip
-    archived rows in the Amendment arm unless flag set.
-    src/commands/get.rs — add archived parameter; cross-load
-    referenced amendments to drop or annotate amendment_log at render
-    time via patch_yaml_amendment_log / patch_json_amendment_log.
-    src/commands/amendment.rs — new module with archive/unarchive
-    functions, the sole write path for the field.
-    src/commands/mod.rs — wire the amendment module and re-exports.
-    src/commands/ci_check.rs — add is_archive_only_change helper; the
-    CI-003 equality check now tolerates archive-only diffs.
-    src/main.rs — --archived flag on List and Get; new Amendment
-    subcommand with Archive { id } / Unarchive { id }.
-    src/commands/create/amendment.rs — initialize archived: false on
-    scaffolded amendments.
-    spec/schema/amendment.json — add archived property.
-    spec/specification.md §4.3 — document archived field and
-    display semantics. spec/operations.md list/get parameter tables.
-    spec/bindings/cli.md — --archived flag on list/get, new amendment
-    archive|unarchive subcommand, operation summary row.
-    spec/invariants.md — INV-019 note that archived amendments still
-    participate in reciprocity.
-    apps/web/src/components/spec/schema-data.tsx — AMENDMENT_SCHEMA
-    gains an archived field entry.
-    apps/web/src/components/spec/sections.tsx — Amendment narrative
-    paragraph on archival semantics.
-    README.md — Four Node Types row + Commands reference additions.
-    skills/shapes-context/SKILL.md — Amendment bullet + discovery
-    step note on archived filtering.
-    skills/shapes-maintain/SKILL.md — new "Archiving Stale Amendments"
-    section, Deep Audit archival pass, CLI quick reference entries.
-    .shapes/shapes/data-model.yaml — Amendment binding summary
-    mentions the archived field.
-    .shapes/constraints/amendment-immutability.yaml — rule and
-    rationale updated to name archived as the sole permitted
-    mutation.
-    .shapes/constraints/37-archived-is-display-only.yaml — new
-    invariant pinning the display-only contract.
-    spec/conformance/test-vectors/valid/full/.shapes/amendments/ —
-    new fixture amendment with archived: true.
-    tests/cli_snapshots.rs — seed_rich_fixture gains an archived
-    amendment and new snapshot tests cover the default/filter and
-    --archived modes.
-  verification: >-
-    cargo nextest run clean. cargo fmt, cargo clippy --all-targets
-    clean. shapes validate on the repo .shapes graph clean. Manual
-    smoke test: shapes list amendment (hides archived), --archived
-    (shows), shapes amendment archive/unarchive toggle, shapes get
-    shape <id> with and without --archived, shapes ci-check on an
-    archive-only diff (passes CI-003), shapes ci-check on an
-    archive-plus-other-field diff (fails CI-003).
+  verification: 'cargo nextest run clean. cargo fmt, cargo clippy --all-targets clean. shapes validate on the repo .shapes graph clean. Manual smoke test: shapes list amendment (hides archived), --archived (shows), shapes amendment archive/unarchive toggle, shapes get shape <id> with and without --archived, shapes ci-check on an archive-only diff (passes CI-003), shapes ci-check on an archive-plus-other-field diff (fails CI-003).'
 initiated_by:
   type: ai

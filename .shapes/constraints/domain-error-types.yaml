@@ -1,36 +1,16 @@
 id: 14
 name: Domain Error Types
-description: >-
-  Three-layer error strategy: CreateError carries variants whose existence
-  affects exit codes (currently InvalidKind), ValidationError carries
-  IssuesFound for the dedicated exit-2 path, and CliError wraps both plus
-  anyhow::Error as the universal catch-all. anyhow remains the default for
-  everything that does not need a typed exit code.
+description: 'Three-layer error strategy: CreateError carries variants whose existence affects exit codes (currently InvalidKind), ValidationError carries IssuesFound for the dedicated exit-2 path, and CliError wraps both plus anyhow::Error as the universal catch-all. anyhow remains the default for everything that does not need a typed exit code.'
 kind: guideline
-rule: >-
-  Domain-specific error types (CreateError, ValidationError) are reserved
-  for cases the CLI maps to a typed process exit code via
-  CliError::exit_code (currently exit 2 for ValidationError::IssuesFound).
-  Everything else propagates through CliError::Other(anyhow::Error).
-  Adding a new typed error variant should be motivated by a new exit code,
-  not by general "be more typed" arguments.
+rule: Domain-specific error types (CreateError, ValidationError) are reserved for cases the CLI maps to a typed process exit code via CliError::exit_code (currently exit 2 for ValidationError::IssuesFound). Everything else propagates through CliError::Other(anyhow::Error). Adding a new typed error variant should be motivated by a new exit code, not by general "be more typed" arguments.
 enforcement: manual
-status: canonical
 profile: 1
-amendment_log:
-  - 26
+status: canonical
 intent:
   kind: requirement
   summary: Typed errors only when they unlock typed exit codes; anyhow everywhere else
   source: human
-  rationale: >-
-    The original constraint anticipated a full migration from anyhow to
-    typed errors. After the back-compat strip, we kept anyhow as the
-    default and only retain typed error types where they actually unlock
-    something — a non-zero exit code mapping. Typed-everywhere would be
-    ceremony without payoff for a CLI of this size.
-  impact_if_violated: >-
-    Either the binary loses the ability to return a meaningful exit code
-    (typed errors collapsed into anyhow strings), or every error path
-    accumulates a hand-rolled variant tree that duplicates anyhow's
-    context propagation for no behavioral gain.
+  impact_if_violated: Either the binary loses the ability to return a meaningful exit code (typed errors collapsed into anyhow strings), or every error path accumulates a hand-rolled variant tree that duplicates anyhow's context propagation for no behavioral gain.
+  rationale: The original constraint anticipated a full migration from anyhow to typed errors. After the back-compat strip, we kept anyhow as the default and only retain typed error types where they actually unlock something — a non-zero exit code mapping. Typed-everywhere would be ceremony without payoff for a CLI of this size.
+amendment_log:
+- 26

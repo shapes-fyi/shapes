@@ -1,85 +1,40 @@
 id: 32
 name: Scaffold System
-description: >-
-  CLI-side scaffolding that emits rich YAML files for shapes and
-  constraints. Reads field hints, kind allow-lists, and default kinds
-  from the active Profile (or a per-call override). Bypasses serde at
-  write time so first-fill TODO comments survive on disk; subsequent
-  saves through the regular store path serialize cleanly via serde and
-  produce comment-free files. Profile scaffolding is handled separately
-  by StarterKit::to_profile_yaml in templates.rs, which builds a
-  complete Profile struct in memory and serializes it via serde — no
-  hand-rolled YAML.
+description: CLI-side scaffolding that emits rich YAML files for shapes and constraints. Reads field hints, kind allow-lists, and default kinds from the active Profile (or a per-call override). Bypasses serde at write time so first-fill TODO comments survive on disk; subsequent saves through the regular store path serialize cleanly via serde and produce comment-free files. Profile scaffolding is handled separately by StarterKit::to_profile_yaml in templates.rs, which builds a complete Profile struct in memory and serializes it via serde — no hand-rolled YAML.
 profile: 1
 status: canonical
-amendment_log:
-  - 26
 intent:
   kind: module
-  summary: >-
-    Profile-driven YAML scaffold writer for shapes create
-    shape/constraint that emits rich TODO placeholders and stub sections
-    so authored files are self-documenting on first read.
+  summary: Profile-driven YAML scaffold writer for shapes create shape/constraint that emits rich TODO placeholders and stub sections so authored files are self-documenting on first read.
   source: ai
-  goals: >-
-    Make `shapes create shape/constraint` produce files an editor (human
-    or agent) can read directly to know exactly which fields still need
-    to be filled in. Scaffold output reads exclusively from the active
-    Profile per constraint:34 — no parallel hardcoded hint layer.
-  non_goals: >-
-    Does not preserve scaffold comments across subsequent saves; comments
-    are first-fill hints only. Does not enforce anything — enforcement is
-    the validator's job (see constraint:35 Profile Enforcement Coverage).
-    Does not perform Profile scaffolding for `shapes create profile` —
-    that path uses StarterKit::to_profile_yaml directly.
-  rationale: >-
-    Before the consolidation, scaffolds were driven by a parallel
-    hardcoded Template layer that duplicated 4 of 8 Profile
-    responsibilities (constraint:34). The consolidation collapsed the
-    two layers: the scaffolder now reads from the active Profile, which
-    is also what the validator reads. Single source of truth, no silent
-    divergence.
+  goals: Make `shapes create shape/constraint` produce files an editor (human or agent) can read directly to know exactly which fields still need to be filled in. Scaffold output reads exclusively from the active Profile per constraint:34 — no parallel hardcoded hint layer.
+  non_goals: Does not preserve scaffold comments across subsequent saves; comments are first-fill hints only. Does not enforce anything — enforcement is the validator's job (see constraint:35 Profile Enforcement Coverage). Does not perform Profile scaffolding for `shapes create profile` — that path uses StarterKit::to_profile_yaml directly.
+  rationale: 'Before the consolidation, scaffolds were driven by a parallel hardcoded Template layer that duplicated 4 of 8 Profile responsibilities (constraint:34). The consolidation collapsed the two layers: the scaffolder now reads from the active Profile, which is also what the validator reads. Single source of truth, no silent divergence.'
 constraints:
-  - 17
-  - 18
-  - 34
+- 17
+- 18
+- 34
 realization:
-  - bindings:
-      - scheme: path
-        value: src/commands/scaffold.rs
-        metadata:
-          summary: >-
-            scaffold_shape and scaffold_constraint take &Profile and
-            read intent fields from
-            profile.fields.{shape,constraint}.intent.fields plus kind
-            suggestions from intent.kinds. Helpers: write_intent_fields,
-            write_optional_kinds_comment, write_parents_stub,
-            write_children_stub, write_constraints_stub,
-            write_realization_stub, write_evidence_stub, yaml_string,
-            yaml_block.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/templates.rs
-        metadata:
-          summary: >-
-            pub(crate) StarterKit factory used only by FileStore::init
-            and `shapes create profile` to generate Profile YAML.
-            KitKind clap enum (--kit flag), four built-in kits
-            (SOFTWARE/RESEARCH/EDITORIAL/MINIMAL),
-            StarterKit::build_profile + ::to_profile_yaml. Never
-            imported from create shape/constraint paths per
-            constraint:34.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: >-
-            41 integration tests covering all four kits, --from
-            regression, scaffold snapshots via insta, and the full
-            profile_enforcement module (INV-012..INV-016).
-    role: supporting
+- bindings:
+  - scheme: path
+    value: src/commands/scaffold.rs
+    metadata:
+      summary: 'scaffold_shape and scaffold_constraint take &Profile and read intent fields from profile.fields.{shape,constraint}.intent.fields plus kind suggestions from intent.kinds. Helpers: write_intent_fields, write_optional_kinds_comment, write_parents_stub, write_children_stub, write_constraints_stub, write_realization_stub, write_evidence_stub, yaml_string, yaml_block.'
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/templates.rs
+    metadata:
+      summary: pub(crate) StarterKit factory used only by FileStore::init and `shapes create profile` to generate Profile YAML. KitKind clap enum (--kit flag), four built-in kits (SOFTWARE/RESEARCH/EDITORIAL/MINIMAL), StarterKit::build_profile + ::to_profile_yaml. Never imported from create shape/constraint paths per constraint:34.
+  role: primary
+- bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '41 integration tests covering all four kits, --from regression, scaffold snapshots via insta, and the full profile_enforcement module (INV-012..INV-016).'
+  role: supporting
+amendment_log:
+- 26
 parents:
-  - id: 4
-    role: feature
+- id: 4
+  role: feature

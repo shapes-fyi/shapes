@@ -1,42 +1,22 @@
 id: 11
 name: Main Branch Protection
-description: >-
-  GitHub repository ruleset (ID 14424271) on shapes-fyi/shapes enforcing
-  contribution workflow on the main branch. All changes must go through pull
-  requests with review, commits must be cryptographically signed, and history
-  must stay linear. Repository admins can bypass for owner-initiated merges.
+description: GitHub repository ruleset (ID 14424271) on shapes-fyi/shapes enforcing contribution workflow on the main branch. All changes must go through pull requests with review, commits must be cryptographically signed, and history must stay linear. Repository admins can bypass for owner-initiated merges.
 kind: policy
-rule: >-
-  All changes to main must arrive via pull request with at least 1 approval,
-  signed commits (GPG/SSH), and linear history. Force pushes and branch
-  deletion are blocked. Repository admins can bypass.
+rule: All changes to main must arrive via pull request with at least 1 approval, signed commits (GPG/SSH), and linear history. Force pushes and branch deletion are blocked. Repository admins can bypass.
 enforcement: machine
 status: canonical
 intent:
   kind: requirement
   summary: GitHub ruleset enforcing PR reviews, signed commits, and linear history on main
   source: human
-  rationale: >-
-    As a public MIT-licensed repository, the codebase must be protected from
-    accidental force-pushes, unsigned commits, and unreviewed changes landing
-    on main. A GitHub ruleset was chosen over legacy branch protection because
-    rulesets support layering, apply uniformly (no admin bypass by default),
-    and can be audited or toggled without destroying configuration.
-  impact_if_violated: >-
-    Unsigned or unreviewed code could land on main. Force pushes could rewrite
-    public history, breaking forks and downstream consumers. Branch deletion
-    would destroy the default branch.
-  verification_method: >-
-    Run: gh api repos/shapes-fyi/shapes/rulesets — confirm ruleset
-    "main-protection" exists with enforcement "active" and all 5 rules present.
+  impact_if_violated: Unsigned or unreviewed code could land on main. Force pushes could rewrite public history, breaking forks and downstream consumers. Branch deletion would destroy the default branch.
+  rationale: As a public MIT-licensed repository, the codebase must be protected from accidental force-pushes, unsigned commits, and unreviewed changes landing on main. A GitHub ruleset was chosen over legacy branch protection because rulesets support layering, apply uniformly (no admin bypass by default), and can be audited or toggled without destroying configuration.
+  verification_method: 'Run: gh api repos/shapes-fyi/shapes/rulesets — confirm ruleset "main-protection" exists with enforcement "active" and all 5 rules present.'
 evidence:
-  - id: github-ruleset-14424271
-    type: implementation
-    bindings:
-      - scheme: url
-        value: https://github.com/shapes-fyi/shapes/rules/14424271
-        metadata:
-          summary: >-
-            GitHub ruleset "main-protection" — deletion, non_fast_forward,
-            pull_request (1 approval, dismiss stale, resolve threads),
-            required_signatures, required_linear_history
+- id: github-ruleset-14424271
+  type: implementation
+  bindings:
+  - scheme: url
+    value: https://github.com/shapes-fyi/shapes/rules/14424271
+    metadata:
+      summary: GitHub ruleset "main-protection" — deletion, non_fast_forward, pull_request (1 approval, dismiss stale, resolve threads), required_signatures, required_linear_history

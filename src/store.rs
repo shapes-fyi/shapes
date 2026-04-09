@@ -219,7 +219,7 @@ impl FileStore {
         Ok(files)
     }
 
-    fn find_file(&self, node_type: NodeType, id: u64) -> Result<PathBuf> {
+    pub(crate) fn find_file(&self, node_type: NodeType, id: u64) -> Result<PathBuf> {
         for path in self.yaml_files(node_type)? {
             let content = fs::read_to_string(&path)
                 .with_context(|| format!("failed to read {}", path.display()))?;

@@ -1,72 +1,52 @@
 id: 5
 name: DAG Engine
-description: >-
-  Graph algorithms operating on the Shape and Constraint DAGs. Includes BFS
-  ancestor/descendant traversal, effective-constraint collection (walks shape
-  ancestors gathering all referenced constraints), ASCII tree rendering with
-  Unicode box-drawing characters, and comprehensive validation (cycle detection
-  via three-color DFS, dangling reference checks, reciprocal link verification,
-  amendment target validation, and Profile field requirement enforcement).
+description: Graph algorithms operating on the Shape and Constraint DAGs. Includes BFS ancestor/descendant traversal, effective-constraint collection (walks shape ancestors gathering all referenced constraints), ASCII tree rendering with Unicode box-drawing characters, and comprehensive validation (cycle detection via three-color DFS, dangling reference checks, reciprocal link verification, amendment target validation, and Profile field requirement enforcement).
 profile: 1
 status: canonical
 intent:
   kind: module
-  summary: >-
-    Graph algorithms for traversal, tree visualization, constraint inheritance,
-    and validation
+  summary: Graph algorithms for traversal, tree visualization, constraint inheritance, and validation
   source: human
-  goals: >-
-    Provide correct, spec-compliant graph operations that agents rely on for
-    context discovery. The effective-constraints query is the most critical —
-    it must correctly collect all constraints that apply to a shape, including
-    those inherited from ancestors. Validation must catch all graph integrity
-    issues.
-  rationale: >-
-    DAG algorithms are isolated in their own module because they are the most
-    complex code in the CLI and benefit from independent testing. The DagType
-    enum allows the same algorithms to operate on both Shape and Constraint
-    graphs without duplication.
-  non_goals: >-
-    Does not handle file I/O — operates on in-memory node collections provided
-    by callers. Does not enforce constraints at write time — validation is a
-    separate read-only operation invoked explicitly.
+  goals: Provide correct, spec-compliant graph operations that agents rely on for context discovery. The effective-constraints query is the most critical — it must correctly collect all constraints that apply to a shape, including those inherited from ancestors. Validation must catch all graph integrity issues.
+  non_goals: Does not handle file I/O — operates on in-memory node collections provided by callers. Does not enforce constraints at write time — validation is a separate read-only operation invoked explicitly.
+  rationale: DAG algorithms are isolated in their own module because they are the most complex code in the CLI and benefit from independent testing. The DagType enum allows the same algorithms to operate on both Shape and Constraint graphs without duplication.
   spec_section: DAG traversal and constraint inheritance semantics
 constraints:
-  - 1
-  - 2
-  - 3
-parents:
-  - id: 1
-    role: component
-children:
-  - shape: 9
-    role: pattern
-  - shape: 12
-    role: feature
-  - shape: 13
-    role: feature
-  - shape: 29
-    role: feature
+- 1
+- 2
+- 3
 realization:
-  - bindings:
-      - scheme: path
-        value: src/commands/dag/mod.rs
-        metadata:
-          summary: Module root — re-exports public API for walk, tree, validate submodules
-      - scheme: path
-        value: src/commands/dag/walk.rs
-        metadata:
-          summary: Graph traversal — ancestors, descendants, effective_constraints, shapes_for_constraint with typed ConstraintWithSource and ShapeForConstraint outputs
-      - scheme: path
-        value: src/commands/dag/tree.rs
-        metadata:
-          summary: ASCII tree visualization — print_tree with find_roots, get_node_info, recursive print_subtree
-      - scheme: path
-        value: src/commands/dag/validate.rs
-        metadata:
-          summary: Graph validation — validate with load_all_or_warn, detect_cycles_in (generic over ID), check_required_fields, validate_profile_fields. Severity enum and ValidationIssue output type.
-      - scheme: path
-        value: src/commands/dag/tests.rs
-        metadata:
-          summary: MockStore (HashMap-based NodeStore impl) and validation tests
-    role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/dag/mod.rs
+    metadata:
+      summary: Module root — re-exports public API for walk, tree, validate submodules
+  - scheme: path
+    value: src/commands/dag/walk.rs
+    metadata:
+      summary: Graph traversal — ancestors, descendants, effective_constraints, shapes_for_constraint with typed ConstraintWithSource and ShapeForConstraint outputs
+  - scheme: path
+    value: src/commands/dag/tree.rs
+    metadata:
+      summary: ASCII tree visualization — print_tree with find_roots, get_node_info, recursive print_subtree
+  - scheme: path
+    value: src/commands/dag/validate.rs
+    metadata:
+      summary: Graph validation — validate with load_all_or_warn, detect_cycles_in (generic over ID), check_required_fields, validate_profile_fields. Severity enum and ValidationIssue output type.
+  - scheme: path
+    value: src/commands/dag/tests.rs
+    metadata:
+      summary: MockStore (HashMap-based NodeStore impl) and validation tests
+  role: primary
+parents:
+- id: 1
+  role: component
+children:
+- shape: 9
+  role: pattern
+- shape: 12
+  role: feature
+- shape: 13
+  role: feature
+- shape: 29
+  role: feature

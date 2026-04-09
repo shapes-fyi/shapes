@@ -1,30 +1,15 @@
 id: 21
 name: Public Symbol Documentation
-description: >-
-  Every public symbol (functions, types, traits, methods, fields, consts,
-  macros) carries a /// doc comment that explains its role and, where
-  non-obvious, how it is used. Re-exports are exempt; pub(crate) is included.
+description: Every public symbol (functions, types, traits, methods, fields, consts, macros) carries a /// doc comment that explains its role and, where non-obvious, how it is used. Re-exports are exempt; pub(crate) is included.
 kind: requirement
-rule: >-
-  Every pub item (fn, struct, enum, trait, trait method, type alias, const,
-  static, macro, and pub fields on pub structs) carries a /// doc comment
-  stating what it is and, where non-obvious, how it is used. Re-exports
-  (pub use) are exempt. Applies to pub(crate) items as well.
+rule: Every pub item (fn, struct, enum, trait, trait method, type alias, const, static, macro, and pub fields on pub structs) carries a /// doc comment stating what it is and, where non-obvious, how it is used. Re-exports (pub use) are exempt. Applies to pub(crate) items as well.
 enforcement: manual
-status: proposed
 profile: 1
+status: proposed
 intent:
   kind: requirement
   summary: Every pub / pub(crate) item is documented with /// doc comments
   source: ai
-  rationale: >-
-    The CLI crate is the canonical reference implementation of the Shapes
-    protocol. Agents and contributors read its public surface as ground
-    truth, including the NodeStore trait (src/store.rs:17) and every
-    command function — none of which are documented today.
-  impact_if_violated: >-
-    Public APIs require source-diving to understand. rustdoc is missing
-    coverage. Future contributors infer intent instead of reading it.
-  verification_method: >-
-    Enable #![warn(missing_docs)] (eventually deny) at the crate root and
-    verify cargo doc + cargo clippy emit zero missing-docs warnings.
+  impact_if_violated: Public APIs require source-diving to understand. rustdoc is missing coverage. Future contributors infer intent instead of reading it.
+  rationale: The CLI crate is the canonical reference implementation of the Shapes protocol. Agents and contributors read its public surface as ground truth, including the NodeStore trait (src/store.rs:17) and every command function — none of which are documented today.
+  verification_method: 'Enable #![warn(missing_docs)] (eventually deny) at the crate root and verify cargo doc + cargo clippy emit zero missing-docs warnings.'

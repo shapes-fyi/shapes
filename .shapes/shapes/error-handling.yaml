@@ -1,47 +1,25 @@
 id: 27
 name: Error Handling
-description: >-
-  Layered error strategy using thiserror plus anyhow. Two domain-specific
-  error types — CreateError (currently one variant: InvalidKind) and
-  ValidationError (currently one variant: IssuesFound) — encode failures
-  the CLI maps to typed exit codes via CliError::exit_code.
-  CliError::Other(anyhow::Error) is the primary catch-all for everything
-  else; this is the intended architecture, not a transitional shim.
-status: canonical
+description: 'Layered error strategy using thiserror plus anyhow. Two domain-specific error types — CreateError (currently one variant: InvalidKind) and ValidationError (currently one variant: IssuesFound) — encode failures the CLI maps to typed exit codes via CliError::exit_code. CliError::Other(anyhow::Error) is the primary catch-all for everything else; this is the intended architecture, not a transitional shim.'
 profile: 1
-amendment_log:
-  - 26
+status: canonical
 intent:
   kind: module
-  summary: >-
-    Layered error strategy: typed error variants where they unlock typed
-    exit codes, anyhow propagation for everything else.
+  summary: 'Layered error strategy: typed error variants where they unlock typed exit codes, anyhow propagation for everything else.'
   source: human
-  goals: >-
-    Provide typed errors exactly where the CLI needs to map them onto
-    process exit codes. Keep anyhow as the universal carrier so command
-    handlers do not have to invent variants for every failure mode.
-  rationale: >-
-    Validate exits with code 2 specifically for "issues found", which
-    means we need a typed error variant the binary entry point can
-    pattern-match on. Same logic for InvalidKind. Everywhere else,
-    anyhow strings are richer than hand-rolled variant trees, and the
-    back-compat strip removed an unused store-layer error enum that
-    had been staged for an aborted full migration from anyhow.
+  goals: Provide typed errors exactly where the CLI needs to map them onto process exit codes. Keep anyhow as the universal carrier so command handlers do not have to invent variants for every failure mode.
+  rationale: Validate exits with code 2 specifically for "issues found", which means we need a typed error variant the binary entry point can pattern-match on. Same logic for InvalidKind. Everywhere else, anyhow strings are richer than hand-rolled variant trees, and the back-compat strip removed an unused store-layer error enum that had been staged for an aborted full migration from anyhow.
 constraints:
-  - 14
-parents:
-  - id: 1
-    role: component
+- 14
 realization:
-  - bindings:
-      - scheme: path
-        value: src/error.rs
-        metadata:
-          summary: >-
-            CreateError + ValidationError typed enums (one variant each),
-            CliError wrapper with #[from] for both plus anyhow::Error,
-            and CliError::exit_code mapping
-            ValidationError::IssuesFound to ExitCode::from(2) and
-            everything else to ExitCode::from(1).
-    role: primary
+- bindings:
+  - scheme: path
+    value: src/error.rs
+    metadata:
+      summary: 'CreateError + ValidationError typed enums (one variant each), CliError wrapper with #[from] for both plus anyhow::Error, and CliError::exit_code mapping ValidationError::IssuesFound to ExitCode::from(2) and everything else to ExitCode::from(1).'
+  role: primary
+amendment_log:
+- 26
+parents:
+- id: 1
+  role: component

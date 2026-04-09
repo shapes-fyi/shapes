@@ -1,39 +1,23 @@
 id: 8
 name: Zero External Dependencies at Runtime
-description: >-
-  The CLI operates entirely on the local filesystem. It requires no database
-  server, network connectivity, or running background service. This makes it
-  work in any environment where cargo can build it — CI, containers, air-gapped
-  systems, or developer laptops.
-profile: 1
+description: The CLI operates entirely on the local filesystem. It requires no database server, network connectivity, or running background service. This makes it work in any environment where cargo can build it — CI, containers, air-gapped systems, or developer laptops.
 kind: boundary
-rule: >-
-  The CLI requires only the filesystem — no database, network, or running
-  service dependencies at runtime
+rule: The CLI requires only the filesystem — no database, network, or running service dependencies at runtime
 enforcement: manual
+profile: 1
 status: canonical
 intent:
   kind: requirement
   summary: Zero External Dependencies at Runtime
   source: human
-  rationale: >-
-    Three factors drove this decision: YAML files diff well in git (enabling
-    collaborative workflows), there are zero setup steps for new users (just
-    install and run), and agents can invoke the CLI as a subprocess without
-    managing connections or authentication.
-  impact_if_violated: >-
-    Users would need to set up and maintain additional infrastructure.
-    CI pipelines would need database services. Agents would need connection
-    configuration. Offline development would be blocked.
-  exceptions: >-
-    Future features like remote shape registries or MCP server mode would
-    add optional network capabilities, but the core CLI must always work
-    offline with just the filesystem.
+  exceptions: Future features like remote shape registries or MCP server mode would add optional network capabilities, but the core CLI must always work offline with just the filesystem.
+  impact_if_violated: Users would need to set up and maintain additional infrastructure. CI pipelines would need database services. Agents would need connection configuration. Offline development would be blocked.
+  rationale: 'Three factors drove this decision: YAML files diff well in git (enabling collaborative workflows), there are zero setup steps for new users (just install and run), and agents can invoke the CLI as a subprocess without managing connections or authentication.'
 evidence:
-  - id: cargo-dependency-audit
-    type: structural
-    bindings:
-      - scheme: path
-        value: Cargo.toml
-        metadata:
-          summary: Dependencies are clap (CLI parsing), serde/serde_yaml/serde_json (serialization), anyhow (error handling) — all compile-time libraries, none require network/database/service at runtime
+- id: cargo-dependency-audit
+  type: structural
+  bindings:
+  - scheme: path
+    value: Cargo.toml
+    metadata:
+      summary: Dependencies are clap (CLI parsing), serde/serde_yaml/serde_json (serialization), anyhow (error handling) — all compile-time libraries, none require network/database/service at runtime

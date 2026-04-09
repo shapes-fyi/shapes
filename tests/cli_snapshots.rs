@@ -577,3 +577,96 @@ mod validate_snapshots {
         insta::assert_snapshot!(stdout);
     }
 }
+
+mod fmt_tests {
+    use super::*;
+
+    /// Files created via `shapes create --from -` are already serde
+    /// canonical, so `shapes fmt --check` should pass immediately.
+    #[test]
+    fn fmt_check_passes_on_fresh_fixture() {
+        let dir = seed_rich_fixture();
+        shapes_in(&dir).args(["fmt", "--check"]).assert().success();
+    }
+
+    /// Hand-written YAML with block scalars and reordered fields is
+    /// detected by `--check` and normalized by a plain `shapes fmt`.
+    #[test]
+    fn fmt_normalizes_non_canonical_yaml() {
+        let dir = fresh_store("software");
+
+        // Create a shape via --from so serde assigns the ID, then
+        // overwrite the file with non-canonical YAML (block scalar,
+        // reordered fields).
+        create_from_stdin(
+            &dir,
+            "shape",
+            r#"id: 0
+name: Test
+description: A test shape.
+status: proposed
+intent:
+  kind: module
+  summary: test
+  source: ai
+"#,
+        );
+
+        let shape_path = dir.path().join(".shapes/shapes/1-test.yaml");
+        std::fs::write(
+            &shape_path,
+            "name: Test\nid: 1\ndescription: >-\n  A test shape.\nstatus: proposed\nintent:\n  kind: module\n  summary: test\n  source: ai\n",
+        )
+        .unwrap();
+
+        // --check should fail.
+        shapes_in(&dir)
+            .args(["fmt", "--check"])
+            .assert()
+            .failure();
+
+        // fmt should normalize.
+        shapes_in(&dir).arg("fmt").assert().success();
+
+        // --check should now pass.
+        shapes_in(&dir).args(["fmt", "--check"]).assert().success();
+
+        // Validate still clean.
+        shapes_in(&dir).arg("validate").assert().success();
+    }
+
+    /// After `shapes fmt`, archiving an amendment should produce only
+    /// the `archived` field change — no formatting diff.
+    #[test]
+    fn archive_after_fmt_is_minimal_diff() {
+        let dir = seed_rich_fixture();
+
+        // Ensure canonical.
+        shapes_in(&dir).arg("fmt").assert().success();
+
+        // Read the raw file before archive.
+        let amend_path = dir.path().join(".shapes/amendments/1-fixture-edit.yaml");
+        let before = std::fs::read_to_string(&amend_path).unwrap();
+        assert!(!before.contains("archived: true"));
+
+        // Archive.
+        shapes_in(&dir)
+            .args(["amendment", "archive", "1"])
+            .assert()
+            .success();
+
+        // Read after — only the `archived: true` line should differ.
+        let after = std::fs::read_to_string(&amend_path).unwrap();
+        assert!(after.contains("archived: true"));
+
+        // Strip the archived line from both and compare — they should
+        // be identical.
+        let strip = |s: &str| -> String {
+            s.lines()
+                .filter(|l| !l.starts_with("archived:"))
+                .collect::<Vec<_>>()
+                .join("\n")
+        };
+        assert_eq!(strip(&before), strip(&after));
+    }
+}

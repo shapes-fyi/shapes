@@ -1,39 +1,24 @@
 id: 13
 name: Tree Visualization
-description: >-
-  ASCII tree rendering of Shape and Constraint DAGs. Finds root nodes
-  automatically (nodes with no parents) or accepts a fixed root via --root flag.
-  Uses Unicode box-drawing characters for the tree structure. Each node line
-  shows ID, name, status badge, kind tag, and inline constraint reference count.
-  Supports both Shape and Constraint trees via the tree subcommand.
+description: ASCII tree rendering of Shape and Constraint DAGs. Finds root nodes automatically (nodes with no parents) or accepts a fixed root via --root flag. Uses Unicode box-drawing characters for the tree structure. Each node line shows ID, name, status badge, kind tag, and inline constraint reference count. Supports both Shape and Constraint trees via the tree subcommand.
 profile: 1
 status: canonical
 intent:
   kind: feature
-  summary: >-
-    ASCII tree rendering of Shape and Constraint DAGs using Unicode box-drawing
-    characters, showing status, kind, and inline constraint references
+  summary: ASCII tree rendering of Shape and Constraint DAGs using Unicode box-drawing characters, showing status, kind, and inline constraint references
   source: human
-  goals: >-
-    Give agents and humans a quick overview of project structure. The tree
-    command is typically the first thing an agent runs to orient itself in a
-    new project — it must be readable and informative at a glance.
-  rationale: >-
-    A visual tree is faster to scan than a flat list. Unicode box-drawing
-    characters work in all modern terminals and look better than ASCII dashes.
-    Inline constraint counts help agents decide which shapes to query further.
-  non_goals: >-
-    Not a graph visualization tool — produces text output only, not interactive
-    diagrams. Does not show full node details — use get for that.
-parents:
-  - id: 4
-    role: feature
-  - id: 5
-    role: feature
+  goals: Give agents and humans a quick overview of project structure. The tree command is typically the first thing an agent runs to orient itself in a new project — it must be readable and informative at a glance.
+  non_goals: Not a graph visualization tool — produces text output only, not interactive diagrams. Does not show full node details — use get for that.
+  rationale: A visual tree is faster to scan than a flat list. Unicode box-drawing characters work in all modern terminals and look better than ASCII dashes. Inline constraint counts help agents decide which shapes to query further.
 realization:
-  - bindings:
-      - scheme: path
-        value: src/commands/dag/tree.rs
-        metadata:
-          summary: print_tree() — find_roots(), print_subtree() recursive descent, Unicode box-drawing, inline constraint refs
-    role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/dag/tree.rs
+    metadata:
+      summary: print_tree() — find_roots(), print_subtree() recursive descent, Unicode box-drawing, inline constraint refs
+  role: primary
+parents:
+- id: 4
+  role: feature
+- id: 5
+  role: feature

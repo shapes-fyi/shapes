@@ -1,46 +1,32 @@
 id: 2
 name: Reciprocal Links
-description: >-
-  Parent-child relationships must be declared on both sides. If shape A lists
-  shape B as a child, then B must list A as a parent. This ensures the DAG is
-  traversable in both directions and prevents orphaned or dangling edges.
-  Enforced as a warning by the validate command.
-profile: 1
+description: Parent-child relationships must be declared on both sides. If shape A lists shape B as a child, then B must list A as a parent. This ensures the DAG is traversable in both directions and prevents orphaned or dangling edges. Enforced as a warning by the validate command.
 kind: invariant
-rule: >-
-  If node A lists node B as a child, then B must list A as a parent, and
-  vice versa
+rule: If node A lists node B as a child, then B must list A as a parent, and vice versa
 enforcement: machine
+profile: 1
 status: canonical
 intent:
   kind: requirement
   summary: Reciprocal Links
   source: human
-  rationale: >-
-    One-sided links create inconsistent traversal results — walking down from
-    a parent would find a child, but walking up from that child would not find
-    the parent. Agents rely on bidirectional traversal for context discovery.
-  impact_if_violated: >-
-    Ancestor queries would miss parents. Effective-constraints would skip
-    constraints from unlinked ancestors. Tree visualization would show
-    incomplete hierarchies.
-  verification_method: >-
-    Validation iterates all parent/child references and checks the reciprocal
-    exists. Produces a warning-level ValidationIssue for each missing reciprocal.
+  impact_if_violated: Ancestor queries would miss parents. Effective-constraints would skip constraints from unlinked ancestors. Tree visualization would show incomplete hierarchies.
+  rationale: One-sided links create inconsistent traversal results — walking down from a parent would find a child, but walking up from that child would not find the parent. Agents rely on bidirectional traversal for context discovery.
   spec_section: DAG edge consistency requirements
+  verification_method: Validation iterates all parent/child references and checks the reciprocal exists. Produces a warning-level ValidationIssue for each missing reciprocal.
 realization:
-  - bindings:
-      - scheme: path
-        value: src/commands/dag/validate.rs
-        metadata:
-          summary: Reciprocal link checks inside validate() — iterates parent/child refs across both DAGs, emits INV-008/INV-009 issues for missing back-links
-    role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/dag/validate.rs
+    metadata:
+      summary: Reciprocal link checks inside validate() — iterates parent/child refs across both DAGs, emits INV-008/INV-009 issues for missing back-links
+  role: primary
 evidence:
-  - id: reciprocal-check-impl
-    type: implementation
-    bindings:
-      - scheme: path
-        value: src/commands/dag/validate.rs
-        metadata:
-          summary: Reciprocal link checks inside validate() — iterates shape and constraint children, verifies parent back-links exist
-    trusted: true
+- id: reciprocal-check-impl
+  type: implementation
+  bindings:
+  - scheme: path
+    value: src/commands/dag/validate.rs
+    metadata:
+      summary: Reciprocal link checks inside validate() — iterates shape and constraint children, verifies parent back-links exist
+  trusted: true

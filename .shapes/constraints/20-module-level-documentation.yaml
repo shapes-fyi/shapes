@@ -1,30 +1,15 @@
 id: 20
 name: Module-Level Documentation
-description: >-
-  Every Rust source file in the CLI crate opens with a //! comment that
-  states the module's purpose, its place in the crate, and what kind of code
-  belongs in it. This is the agent-and-human entry point for the file.
+description: Every Rust source file in the CLI crate opens with a //! comment that states the module's purpose, its place in the crate, and what kind of code belongs in it. This is the agent-and-human entry point for the file.
 kind: requirement
-rule: >-
-  Every .rs file under src/ begins with a //! doc comment (after any inner
-  attributes) explaining the module's purpose, its role in the crate, and what
-  belongs in it. One sentence minimum; no empty //! lines as placeholders.
+rule: Every .rs file under src/ begins with a //! doc comment (after any inner attributes) explaining the module's purpose, its role in the crate, and what belongs in it. One sentence minimum; no empty //! lines as placeholders.
 enforcement: manual
-status: proposed
 profile: 1
+status: proposed
 intent:
   kind: requirement
   summary: Every src/**/*.rs file opens with a //! purpose statement
   source: ai
-  rationale: >-
-    A reader landing in any file (human, agent, or rustdoc) should understand
-    in one sentence what that file is for without having to read its
-    declarations. Today only commands/scaffold.rs and templates.rs satisfy
-    this — every other file forces inference from contents.
-  impact_if_violated: >-
-    Files become opaque from the top; agents must read 50+ lines to recover
-    intent that one //! line could state directly. rustdoc output for the
-    crate is also missing module summaries.
-  verification_method: >-
-    For every file under src/, the first non-blank, non-attribute line must
-    be `//!`. Empty //! lines or boilerplate placeholders do not count.
+  impact_if_violated: Files become opaque from the top; agents must read 50+ lines to recover intent that one //! line could state directly. rustdoc output for the crate is also missing module summaries.
+  rationale: A reader landing in any file (human, agent, or rustdoc) should understand in one sentence what that file is for without having to read its declarations. Today only commands/scaffold.rs and templates.rs satisfy this — every other file forces inference from contents.
+  verification_method: For every file under src/, the first non-blank, non-attribute line must be `//!`. Empty //! lines or boilerplate placeholders do not count.

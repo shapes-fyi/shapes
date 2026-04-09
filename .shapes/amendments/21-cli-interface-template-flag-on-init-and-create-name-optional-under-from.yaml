@@ -1,98 +1,53 @@
 id: 21
 name: 'CLI Interface: --template flag on init and create; --name optional under --from'
-description: >-
-  Adds `--template <software|research|editorial|minimal>` to `shapes init`
-  (default software) and as a per-call override on `shapes create
-  {shape,constraint,profile}`. Marks `--name` as `required_unless_present
-  = "from"` on shape/constraint/amendment/profile create so heredoc
-  authoring no longer requires a redundant --name flag. Fixes pre-existing
-  kebab-case clap arg-id bugs in conflicts_with_all (intent_kind,
-  amendment_model, target_shapes, target_constraints, version_impact).
+description: Adds `--template <software|research|editorial|minimal>` to `shapes init` (default software) and as a per-call override on `shapes create {shape,constraint,profile}`. Marks `--name` as `required_unless_present = "from"` on shape/constraint/amendment/profile create so heredoc authoring no longer requires a redundant --name flag. Fixes pre-existing kebab-case clap arg-id bugs in conflicts_with_all (intent_kind, amendment_model, target_shapes, target_constraints, version_impact).
 targets:
   shape_ids:
-    - 10
+  - 10
 status: canonical
 intent:
   kind: amendment
-  summary: >-
-    `--template` flag on init + create; --name optional when --from is
-    used; clap arg-id strings normalized to snake_case for conflicts_with.
+  summary: '`--template` flag on init + create; --name optional when --from is used; clap arg-id strings normalized to snake_case for conflicts_with.'
   source: ai
-  goals: >-
-    Provide a discoverable, declarative way to pick a scaffolding template.
-    Make `--from -` heredoc creation ergonomic. Keep all other CLI surfaces
-    unchanged so existing agents still work.
-  non_goals: >-
-    Does not change exit codes. Does not add new top-level commands. Does
-    not change --format json output. Does not change `shapes init`'s
-    behavior when invoked with no flags (defaults to software template).
-  rationale: >-
-    Templates need a way to be selected at init time and overridden per
-    call. The previous CLI rejected `shapes create shape --from -` because
-    --name was structurally required even though the from path provides
-    it in YAML; this is fixed by required_unless_present. Several
-    pre-existing clap conflicts_with kebab-case bugs only surfaced once
-    the new --template flag triggered clap's debug_assert validation; all
-    are normalized to snake_case in this change.
+  goals: Provide a discoverable, declarative way to pick a scaffolding template. Make `--from -` heredoc creation ergonomic. Keep all other CLI surfaces unchanged so existing agents still work.
+  non_goals: Does not change exit codes. Does not add new top-level commands. Does not change --format json output. Does not change `shapes init`'s behavior when invoked with no flags (defaults to software template).
+  rationale: Templates need a way to be selected at init time and overridden per call. The previous CLI rejected `shapes create shape --from -` because --name was structurally required even though the from path provides it in YAML; this is fixed by required_unless_present. Several pre-existing clap conflicts_with kebab-case bugs only surfaced once the new --template flag triggered clap's debug_assert validation; all are normalized to snake_case in this change.
   spec_section: N/A — CLI surface extension
 realization:
-  - bindings:
-      - scheme: path
-        value: src/main.rs
-        metadata:
-          summary: >-
-            Init takes --template TemplateKind. CreateCommand::Shape/
-            Constraint/Profile take Option<TemplateKind> --template.
-            Shape/Constraint/Amendment/Profile `name` fields become
-            Option<String> with required_unless_present = "from".
-            conflicts_with_all strings normalized to snake_case
-            (intent_kind, amendment_model, target_shapes,
-            target_constraints, version_impact). New TemplateKind
-            re-exported from the templates module.
-    role: primary
+- bindings:
+  - scheme: path
+    value: src/main.rs
+    metadata:
+      summary: Init takes --template TemplateKind. CreateCommand::Shape/ Constraint/Profile take Option<TemplateKind> --template. Shape/Constraint/Amendment/Profile `name` fields become Option<String> with required_unless_present = "from". conflicts_with_all strings normalized to snake_case (intent_kind, amendment_model, target_shapes, target_constraints, version_impact). New TemplateKind re-exported from the templates module.
+  role: primary
 evidence:
-  - id: init-template-tests
-    type: test
-    bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: >-
-            `init_refuses_to_overwrite_existing_store` and
-            `init_rejects_unknown_template` cover the init flag surface;
-            the four template-shape tests cover `init --template <name>`
-            for every supported value.
-  - id: name-optional-under-from
-    type: test
-    bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: >-
-            `from_stdin_path_still_works_without_name_flag` confirms
-            shape create works without --name; `create_shape_without_name_
-            or_from_fails_with_clap_error` confirms the missing --name
-            error path is still helpful.
-  - id: amendment-from-stdin-regression
-    type: test
-    bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: >-
-            `amendment_create_via_flags_succeeds` and
-            `amendment_create_via_from_stdin_succeeds` are the regression
-            tests for the kebab-case conflicts_with bug — they would have
-            panicked clap's debug_assert before this change.
-  - id: per-call-override
-    type: test
-    bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: >-
-            `per_call_template_override_does_not_modify_meta` proves
-            `--template` works as a per-call override on shape create
-            without mutating meta.yaml.
+- id: init-template-tests
+  type: test
+  bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '`init_refuses_to_overwrite_existing_store` and `init_rejects_unknown_template` cover the init flag surface; the four template-shape tests cover `init --template <name>` for every supported value.'
+- id: name-optional-under-from
+  type: test
+  bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '`from_stdin_path_still_works_without_name_flag` confirms shape create works without --name; `create_shape_without_name_ or_from_fails_with_clap_error` confirms the missing --name error path is still helpful.'
+- id: amendment-from-stdin-regression
+  type: test
+  bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '`amendment_create_via_flags_succeeds` and `amendment_create_via_from_stdin_succeeds` are the regression tests for the kebab-case conflicts_with bug — they would have panicked clap''s debug_assert before this change.'
+- id: per-call-override
+  type: test
+  bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '`per_call_template_override_does_not_modify_meta` proves `--template` works as a per-call override on shape create without mutating meta.yaml.'
 initiated_by:
   type: ai

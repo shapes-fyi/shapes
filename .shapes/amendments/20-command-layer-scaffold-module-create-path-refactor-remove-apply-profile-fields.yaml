@@ -1,95 +1,52 @@
 id: 20
 name: 'Command Layer: scaffold module, create-path refactor, remove apply_profile_fields'
-description: >-
-  Rewrites the create() match arms for Shape, Constraint, and Profile to
-  delegate to the new scaffold writer when --from is not provided. Adds the
-  `scaffold` submodule. Removes the now-superseded apply_profile_fields and
-  apply_field_group helpers. Adds resolve_template() to pick the right
-  template per call (per-call --template wins over meta.yaml).
+description: Rewrites the create() match arms for Shape, Constraint, and Profile to delegate to the new scaffold writer when --from is not provided. Adds the `scaffold` submodule. Removes the now-superseded apply_profile_fields and apply_field_group helpers. Adds resolve_template() to pick the right template per call (per-call --template wins over meta.yaml).
 targets:
   shape_ids:
-    - 4
+  - 4
 status: canonical
 intent:
   kind: amendment
-  summary: >-
-    create() now delegates to scaffold::scaffold_{shape,constraint,profile}
-    when --from is absent; --from path unchanged. Profile-driven intent
-    pre-population via apply_profile_fields is removed in favor of
-    template-driven scaffolding.
+  summary: create() now delegates to scaffold::scaffold_{shape,constraint,profile} when --from is absent; --from path unchanged. Profile-driven intent pre-population via apply_profile_fields is removed in favor of template-driven scaffolding.
   source: ai
-  goals: >-
-    Replace skeleton-then-Write with create-then-Edit. Make Profiles fully
-    optional in the create flow (constraint 17). Keep --from -, --from
-    <path>, and --from <stdin> working unchanged. Honor the active template
-    from meta.yaml unless overridden per-call.
-  non_goals: >-
-    Does not change the create command's flag names other than making
-    --name optional under --from and adding --template. Does not touch
-    get/list/tree/query/validate.
-  rationale: >-
-    The previous create() skeleton produced near-empty YAML and the
-    apply_profile_fields helper only fired when a Profile was attached AND
-    had fields declared — which was almost never on first use because
-    `shapes create profile` itself produced a blank Profile. Moving
-    scaffolding into the CLI via templates makes the scaffold work
-    immediately on `shapes init && shapes create shape`, with no Profile
-    required.
+  goals: Replace skeleton-then-Write with create-then-Edit. Make Profiles fully optional in the create flow (constraint 17). Keep --from -, --from <path>, and --from <stdin> working unchanged. Honor the active template from meta.yaml unless overridden per-call.
+  non_goals: Does not change the create command's flag names other than making --name optional under --from and adding --template. Does not touch get/list/tree/query/validate.
+  rationale: The previous create() skeleton produced near-empty YAML and the apply_profile_fields helper only fired when a Profile was attached AND had fields declared — which was almost never on first use because `shapes create profile` itself produced a blank Profile. Moving scaffolding into the CLI via templates makes the scaffold work immediately on `shapes init && shapes create shape`, with no Profile required.
   spec_section: N/A — internal command refactor
 realization:
-  - bindings:
-      - scheme: path
-        value: src/commands/mod.rs
-        metadata:
-          summary: >-
-            Registers the scaffold submodule. Adds resolve_template() which
-            picks the active template from meta.yaml or per-call override.
-            Rewrites Shape/Constraint/Profile create arms to delegate to
-            scaffold::scaffold_{shape,constraint,profile} when --from is
-            absent. Removes apply_profile_fields and apply_field_group.
-            Adds report_created helper for the --from path.
-    role: primary
-  - bindings:
-      - scheme: path
-        value: src/commands/scaffold.rs
-        metadata:
-          summary: >-
-            New module — full scope is captured by shape 32 (Scaffold System).
-            Listed here so this amendment surfaces when querying which
-            amendments touched the scaffold writer.
-    role: supporting
+- bindings:
+  - scheme: path
+    value: src/commands/mod.rs
+    metadata:
+      summary: Registers the scaffold submodule. Adds resolve_template() which picks the active template from meta.yaml or per-call override. Rewrites Shape/Constraint/Profile create arms to delegate to scaffold::scaffold_{shape,constraint,profile} when --from is absent. Removes apply_profile_fields and apply_field_group. Adds report_created helper for the --from path.
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/scaffold.rs
+    metadata:
+      summary: New module — full scope is captured by shape 32 (Scaffold System). Listed here so this amendment surfaces when querying which amendments touched the scaffold writer.
+  role: supporting
 evidence:
-  - id: scaffold-shape-test
-    type: test
-    bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: >-
-            `software_shape_scaffold_has_required_fields_and_stubs` and the
-            three other template-shape tests prove the scaffold path produces
-            valid YAML with TODO blocks and stub sections, and that the
-            result round-trips through `shapes get` and `shapes validate`.
-  - id: from-stdin-regression
-    type: test
-    bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: >-
-            `from_stdin_path_still_works_without_name_flag` proves the
-            create-path refactor preserved the heredoc/stdin path
-            unchanged for shapes (no --name required when --from is used).
-  - id: profile-pass-through
-    type: test
-    bindings:
-      - scheme: path
-        value: tests/cli_scaffold.rs
-        metadata:
-          summary: >-
-            `profile_kind_validation_accepts_allowed_kind` and
-            `profile_kind_validation_rejects_disallowed_kind` confirm
-            --profile is still honored for kind validation after the
-            apply_profile_fields removal.
+- id: scaffold-shape-test
+  type: test
+  bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '`software_shape_scaffold_has_required_fields_and_stubs` and the three other template-shape tests prove the scaffold path produces valid YAML with TODO blocks and stub sections, and that the result round-trips through `shapes get` and `shapes validate`.'
+- id: from-stdin-regression
+  type: test
+  bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '`from_stdin_path_still_works_without_name_flag` proves the create-path refactor preserved the heredoc/stdin path unchanged for shapes (no --name required when --from is used).'
+- id: profile-pass-through
+  type: test
+  bindings:
+  - scheme: path
+    value: tests/cli_scaffold.rs
+    metadata:
+      summary: '`profile_kind_validation_accepts_allowed_kind` and `profile_kind_validation_rejects_disallowed_kind` confirm --profile is still honored for kind validation after the apply_profile_fields removal.'
 initiated_by:
   type: ai
