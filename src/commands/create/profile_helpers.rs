@@ -5,8 +5,9 @@
 use anyhow::{Context, Result};
 
 use crate::error::CreateError;
+use crate::model::NodeType;
 use crate::model::profile::FieldSection;
-use crate::model::{NodeType, Profile, ProfileId};
+use crate::model::{Profile, ProfileId};
 use crate::store::{FileStore, NodeStore};
 
 /// Resolves the profile governing a `shapes create` call.
@@ -37,23 +38,23 @@ pub fn resolve_active_profile(store: &FileStore, override_id: Option<u64>) -> Re
 }
 
 /// Validates that `kind` is in the profile's allowed-kinds list for
-/// the given `node_type_str` (`"shape"` or `"constraint"`). Profiles
-/// without a kinds list always accept the kind.
+/// the given `node_type` (`Shape` or `Constraint`). Profiles without a
+/// kinds list always accept the kind.
 pub fn validate_kind_against_profile(
     profile: &Profile,
-    node_type_str: &str,
+    node_type: NodeType,
     kind: &str,
 ) -> Result<(), CreateError> {
     let fields = match &profile.fields {
         Some(f) => f,
         None => return Ok(()),
     };
-    let section: &FieldSection = match node_type_str {
-        "shape" => match &fields.shape {
+    let section: &FieldSection = match node_type {
+        NodeType::Shape => match &fields.shape {
             Some(s) => s,
             None => return Ok(()),
         },
-        "constraint" => match &fields.constraint {
+        NodeType::Constraint => match &fields.constraint {
             Some(s) => s,
             None => return Ok(()),
         },

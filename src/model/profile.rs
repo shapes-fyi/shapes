@@ -45,6 +45,26 @@ pub struct Profile {
     pub metadata: BTreeMap<String, serde_yml::Value>,
 }
 
+impl super::traits::GraphNode for Profile {
+    type Id = ProfileId;
+
+    fn raw_id(&self) -> u64 {
+        self.id.get()
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn status(&self) -> &Status {
+        &self.status
+    }
+
+    fn intent(&self) -> &Intent {
+        &self.intent
+    }
+}
+
 /// Lifecycle definition: the named statuses a node may take and the
 /// gates between them.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

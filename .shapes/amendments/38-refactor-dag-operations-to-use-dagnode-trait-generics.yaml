@@ -1,0 +1,14 @@
+id: 38
+name: Refactor DAG operations to use DagNode trait generics
+description: Refactor DAG operations to use DagNode trait generics
+targets:
+  shape_ids:
+  - 5
+status: proposed
+version_impact: minor
+intent:
+  kind: amendment
+  summary: 'walk.rs collapses ancestors/descendants into generic walk_dag<N: DagNode>. tree.rs makes find_roots/get_node_info generic. validate.rs extracts check_dag_refs<N> and check_amendment_log_reciprocity<N>.'
+  source: ai
+initiated_by:
+  type: ai

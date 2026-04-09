@@ -1,0 +1,14 @@
+id: 37
+name: Add type-level trait hierarchy and define_id! macro
+description: Add type-level trait hierarchy and define_id! macro
+targets:
+  shape_ids:
+  - 2
+status: proposed
+version_impact: minor
+intent:
+  kind: amendment
+  summary: Add traits.rs with NodeId/GraphNode/DagNode traits, refactor ids.rs with define_id! macro, add shape:37 as child of shape:2
+  source: ai
+initiated_by:
+  type: ai

@@ -100,6 +100,26 @@ impl Amendment {
     }
 }
 
+impl super::traits::GraphNode for Amendment {
+    type Id = super::AmendmentId;
+
+    fn raw_id(&self) -> u64 {
+        self.id.get()
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn status(&self) -> &super::Status {
+        &self.status
+    }
+
+    fn intent(&self) -> &super::Intent {
+        &self.intent
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct AmendmentTargets {
     #[serde(

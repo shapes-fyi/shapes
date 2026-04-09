@@ -107,6 +107,66 @@ impl Constraint {
     }
 }
 
+impl super::traits::GraphNode for Constraint {
+    type Id = ConstraintId;
+
+    fn raw_id(&self) -> u64 {
+        self.id.get()
+    }
+
+    fn name(&self) -> &str {
+        &self.name
+    }
+
+    fn status(&self) -> &Status {
+        &self.status
+    }
+
+    fn intent(&self) -> &Intent {
+        &self.intent
+    }
+}
+
+impl super::traits::DagNode for Constraint {
+    fn parent_ids(&self) -> Vec<ConstraintId> {
+        self.parent_ids()
+    }
+
+    fn child_ids(&self) -> Vec<ConstraintId> {
+        self.child_ids()
+    }
+
+    fn profile_id(&self) -> Option<super::ProfileId> {
+        self.profile
+    }
+
+    fn realization(&self) -> &[super::Realization] {
+        &self.realization
+    }
+
+    fn evidence(&self) -> &[super::Evidence] {
+        &self.evidence
+    }
+
+    fn provenance(&self) -> &[super::Provenance] {
+        &self.provenance
+    }
+
+    fn metadata(&self) -> &std::collections::BTreeMap<String, serde_yml::Value> {
+        &self.metadata
+    }
+
+    fn tree_label(&self) -> String {
+        format!(
+            "constraint:{} {} [{}] kind={}",
+            self.id,
+            self.name,
+            self.status.name(),
+            self.kind,
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ConstraintChildRef {
     pub constraint: ConstraintRef,

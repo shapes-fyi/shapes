@@ -78,6 +78,8 @@ realization:
   role: primary
 amendment_log:
 - 29
+- 37
+- 41
 parents:
 - id: 1
   role: component
@@ -85,4 +87,6 @@ children:
 - shape: 7
   role: pattern
 - shape: 8
+  role: pattern
+- shape: 37
   role: pattern

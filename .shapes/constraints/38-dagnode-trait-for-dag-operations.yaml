@@ -1,0 +1,34 @@
+id: 38
+name: DagNode Trait for DAG Operations
+description: Generic DAG operations (ancestor/descendant walks, tree rendering, graph validation) must be written once as trait-generic functions over DagNode, not duplicated per concrete node type. The DagType runtime dispatch occurs only at the thin public API boundary where the CLI's runtime enum value selects Shape or Constraint.
+kind: invariant
+rule: Generic DAG operations (ancestor/descendant walks, tree rendering, graph validation) MUST accept DagNode trait bounds and use trait methods rather than matching on DagType to access concrete Shape/Constraint fields. The DagType enum dispatch MUST occur only at the public API boundary.
+enforcement: machine
+profile: 1
+status: proposed
+intent:
+  kind: invariant
+  summary: DAG operations use DagNode trait generics, not duplicated match blocks
+  source: ai
+  impact_if_violated: New DAG invariant checks must be duplicated for Shape and Constraint, increasing maintenance burden and risk of divergence between the two implementations.
+  rationale: walk.rs, tree.rs, and validate.rs accumulated ~216 lines of near-identical Shape/Constraint match blocks across ~12 sites. Every new invariant check that applies to both DAGs had to be written twice. The DagNode trait targets this proven duplication — justified against constraint 9 (Minimal Complexity) because the three-similar-lines threshold is far exceeded.
+  verification_method: Compile-time enforcement — generic functions require DagNode trait methods; dead match arms trigger clippy warnings.
+realization:
+- bindings:
+  - scheme: path
+    value: src/model/traits.rs
+    metadata:
+      summary: DagNode trait definition with parent_ids, child_ids, constraint_ids, and binding accessors
+  - scheme: path
+    value: src/commands/dag/walk.rs
+    metadata:
+      summary: Generic walk_dag replacing duplicated ancestors/descendants match blocks
+  - scheme: path
+    value: src/commands/dag/tree.rs
+    metadata:
+      summary: Generic find_roots_of and get_node_info_of replacing duplicated tree match blocks
+  - scheme: path
+    value: src/commands/dag/validate.rs
+    metadata:
+      summary: Generic check_dag_refs and check_amendment_log_reciprocity replacing duplicated validation blocks
+  role: primary

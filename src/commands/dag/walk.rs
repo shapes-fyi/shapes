@@ -13,25 +13,24 @@ use crate::DagType;
 use crate::model::*;
 use crate::store::NodeStore;
 
-/// Returns all ancestor IDs of `id` in the chosen DAG, breadth-first.
-pub fn ancestors(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result<Vec<u64>> {
+/// Generic BFS walk over a DAG, parameterized on direction.
+///
+/// `get_neighbors` extracts either parent or child IDs from a node,
+/// selecting the traversal direction. The walker loads nodes via
+/// `N::Id::NODE_TYPE` so it works for both Shape and Constraint DAGs
+/// without match blocks.
+fn walk_dag<N: DagNode>(
+    store: &impl NodeStore,
+    id: u64,
+    get_neighbors: fn(&N) -> Vec<N::Id>,
+) -> Result<Vec<u64>> {
     let mut result = Vec::new();
     let mut visited = HashSet::new();
     let mut queue = VecDeque::new();
 
-    let parents: Vec<u64> = match dag_type {
-        DagType::Shape => {
-            let shape: Shape = store.load(NodeType::Shape, id)?;
-            shape.parent_ids().into_iter().map(|p| p.get()).collect()
-        }
-        DagType::Constraint => {
-            let c: Constraint = store.load(NodeType::Constraint, id)?;
-            c.parent_ids().into_iter().map(|p| p.get()).collect()
-        }
-    };
-
-    for p in parents {
-        queue.push_back(p);
+    let start: N = store.load(N::Id::NODE_TYPE, id)?;
+    for n in get_neighbors(&start) {
+        queue.push_back(n.get());
     }
 
     while let Some(current) = queue.pop_front() {
@@ -40,79 +39,30 @@ pub fn ancestors(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result<V
         }
         result.push(current);
 
-        let parents: Vec<u64> = match dag_type {
-            DagType::Shape => {
-                if let Ok(s) = store.load::<Shape>(NodeType::Shape, current) {
-                    s.parent_ids().into_iter().map(|p| p.get()).collect()
-                } else {
-                    vec![]
-                }
+        if let Ok(node) = store.load::<N>(N::Id::NODE_TYPE, current) {
+            for n in get_neighbors(&node) {
+                queue.push_back(n.get());
             }
-            DagType::Constraint => {
-                if let Ok(c) = store.load::<Constraint>(NodeType::Constraint, current) {
-                    c.parent_ids().into_iter().map(|p| p.get()).collect()
-                } else {
-                    vec![]
-                }
-            }
-        };
-        for p in parents {
-            queue.push_back(p);
         }
     }
 
     Ok(result)
 }
 
+/// Returns all ancestor IDs of `id` in the chosen DAG, breadth-first.
+pub fn ancestors(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result<Vec<u64>> {
+    match dag_type {
+        DagType::Shape => walk_dag::<Shape>(store, id, DagNode::parent_ids),
+        DagType::Constraint => walk_dag::<Constraint>(store, id, DagNode::parent_ids),
+    }
+}
+
 /// Returns all descendant IDs of `id` in the chosen DAG, breadth-first.
 pub fn descendants(store: &impl NodeStore, dag_type: DagType, id: u64) -> Result<Vec<u64>> {
-    let mut result = Vec::new();
-    let mut visited = HashSet::new();
-    let mut queue = VecDeque::new();
-
-    let children: Vec<u64> = match dag_type {
-        DagType::Shape => {
-            let shape: Shape = store.load(NodeType::Shape, id)?;
-            shape.child_ids().into_iter().map(|c| c.get()).collect()
-        }
-        DagType::Constraint => {
-            let c: Constraint = store.load(NodeType::Constraint, id)?;
-            c.child_ids().into_iter().map(|c| c.get()).collect()
-        }
-    };
-
-    for ch in children {
-        queue.push_back(ch);
+    match dag_type {
+        DagType::Shape => walk_dag::<Shape>(store, id, DagNode::child_ids),
+        DagType::Constraint => walk_dag::<Constraint>(store, id, DagNode::child_ids),
     }
-
-    while let Some(current) = queue.pop_front() {
-        if !visited.insert(current) {
-            continue;
-        }
-        result.push(current);
-
-        let children: Vec<u64> = match dag_type {
-            DagType::Shape => {
-                if let Ok(s) = store.load::<Shape>(NodeType::Shape, current) {
-                    s.child_ids().into_iter().map(|c| c.get()).collect()
-                } else {
-                    vec![]
-                }
-            }
-            DagType::Constraint => {
-                if let Ok(c) = store.load::<Constraint>(NodeType::Constraint, current) {
-                    c.child_ids().into_iter().map(|c| c.get()).collect()
-                } else {
-                    vec![]
-                }
-            }
-        };
-        for ch in children {
-            queue.push_back(ch);
-        }
-    }
-
-    Ok(result)
 }
 
 /// Returns every constraint that applies to `shape_id`, including the

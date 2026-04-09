@@ -167,89 +167,9 @@ pub fn validate(
         &mut issues,
     );
 
-    // Dangling references
-    for (&id, shape) in &shapes {
-        for &cid in &shape.constraints {
-            if !constraints.contains_key(&cid) {
-                issues.push(ValidationIssue {
-                    invariant: "INV-003".into(),
-                    severity: Severity::Error,
-                    node_type: "shape".into(),
-                    node_id: id.to_string(),
-                    message: format!("references non-existent constraint {cid}"),
-                });
-            }
-        }
-        for p in &shape.parents {
-            if !shapes.contains_key(&p.id) {
-                issues.push(ValidationIssue {
-                    invariant: "INV-004".into(),
-                    severity: Severity::Error,
-                    node_type: "shape".into(),
-                    node_id: id.to_string(),
-                    message: format!("references non-existent parent shape {}", p.id),
-                });
-            }
-        }
-        for child_id in shape.child_ids() {
-            if !shapes.contains_key(&child_id) {
-                issues.push(ValidationIssue {
-                    invariant: "INV-005".into(),
-                    severity: Severity::Error,
-                    node_type: "shape".into(),
-                    node_id: id.to_string(),
-                    message: format!("references non-existent child shape {child_id}"),
-                });
-            }
-        }
-        if let Some(pid) = shape.profile
-            && !profiles.contains_key(&pid)
-        {
-            issues.push(ValidationIssue {
-                invariant: "INV-006".into(),
-                severity: Severity::Error,
-                node_type: "shape".into(),
-                node_id: id.to_string(),
-                message: format!("references non-existent profile {pid}"),
-            });
-        }
-    }
-
-    for (&id, constraint) in &constraints {
-        for p in &constraint.parents {
-            if !constraints.contains_key(&p.id) {
-                issues.push(ValidationIssue {
-                    invariant: "INV-004".into(),
-                    severity: Severity::Error,
-                    node_type: "constraint".into(),
-                    node_id: id.to_string(),
-                    message: format!("references non-existent parent constraint {}", p.id),
-                });
-            }
-        }
-        for child_id in constraint.child_ids() {
-            if !constraints.contains_key(&child_id) {
-                issues.push(ValidationIssue {
-                    invariant: "INV-005".into(),
-                    severity: Severity::Error,
-                    node_type: "constraint".into(),
-                    node_id: id.to_string(),
-                    message: format!("references non-existent child constraint {child_id}"),
-                });
-            }
-        }
-        if let Some(pid) = constraint.profile
-            && !profiles.contains_key(&pid)
-        {
-            issues.push(ValidationIssue {
-                invariant: "INV-006".into(),
-                severity: Severity::Error,
-                node_type: "constraint".into(),
-                node_id: id.to_string(),
-                message: format!("references non-existent profile {pid}"),
-            });
-        }
-    }
+    // Dangling references and constraint refs (INV-003/004/005/006)
+    check_dag_refs(&shapes, &constraints, &profiles, &mut issues);
+    check_dag_refs(&constraints, &constraints, &profiles, &mut issues);
 
     // Amendment validation
     for (&id, amendment) in &amendments {
@@ -298,73 +218,8 @@ pub fn validate(
     }
 
     // Reciprocal parent/child link checks (INV-009 — both directions).
-    // Forward: if A lists B as child, B must list A as parent.
-    // Reverse: if A lists B as parent, B must list A as child.
-    for (&id, shape) in &shapes {
-        for child_id in shape.child_ids() {
-            if let Some(child) = shapes.get(&child_id)
-                && !child.parents.iter().any(|p| p.id == id)
-            {
-                issues.push(ValidationIssue {
-                    invariant: "INV-009".into(),
-                    severity: Severity::Error,
-                    node_type: "shape".into(),
-                    node_id: id.to_string(),
-                    message: format!(
-                        "lists shape {child_id} as child, but child does not list {id} as parent"
-                    ),
-                });
-            }
-        }
-        for parent_id in shape.parent_ids() {
-            if let Some(parent) = shapes.get(&parent_id)
-                && !parent.child_ids().contains(&id)
-            {
-                issues.push(ValidationIssue {
-                    invariant: "INV-009".into(),
-                    severity: Severity::Error,
-                    node_type: "shape".into(),
-                    node_id: id.to_string(),
-                    message: format!(
-                        "lists shape {parent_id} as parent, but parent does not list {id} as child"
-                    ),
-                });
-            }
-        }
-    }
-
-    for (&id, constraint) in &constraints {
-        for child_id in constraint.child_ids() {
-            if let Some(child) = constraints.get(&child_id)
-                && !child.parents.iter().any(|p| p.id == id)
-            {
-                issues.push(ValidationIssue {
-                    invariant: "INV-009".into(),
-                    severity: Severity::Error,
-                    node_type: "constraint".into(),
-                    node_id: id.to_string(),
-                    message: format!(
-                        "lists constraint {child_id} as child, but child does not list {id} as parent"
-                    ),
-                });
-            }
-        }
-        for parent_id in constraint.parent_ids() {
-            if let Some(parent) = constraints.get(&parent_id)
-                && !parent.child_ids().contains(&id)
-            {
-                issues.push(ValidationIssue {
-                    invariant: "INV-009".into(),
-                    severity: Severity::Error,
-                    node_type: "constraint".into(),
-                    node_id: id.to_string(),
-                    message: format!(
-                        "lists constraint {parent_id} as parent, but parent does not list {id} as child"
-                    ),
-                });
-            }
-        }
-    }
+    check_reciprocal_links(&shapes, &mut issues);
+    check_reciprocal_links(&constraints, &mut issues);
 
     // Amendment-log reciprocity (INV-019 — both directions).
     // Forward: if amendment A targets node N, N.amendment_log must contain A.
@@ -470,41 +325,8 @@ pub fn validate(
     }
 
     // Profile field validation (INV-010, INV-012, INV-013, INV-014, INV-015)
-    for (&id, shape) in &shapes {
-        if let Some(pid) = shape.profile
-            && let Some(profile) = profiles.get(&pid)
-        {
-            validate_profile_fields(
-                profile,
-                "shape",
-                id.get(),
-                &shape.intent,
-                &shape.metadata,
-                &shape.realization,
-                &shape.evidence,
-                &shape.provenance,
-                &mut issues,
-            );
-        }
-    }
-
-    for (&id, constraint) in &constraints {
-        if let Some(pid) = constraint.profile
-            && let Some(profile) = profiles.get(&pid)
-        {
-            validate_profile_fields(
-                profile,
-                "constraint",
-                id.get(),
-                &constraint.intent,
-                &constraint.metadata,
-                &constraint.realization,
-                &constraint.evidence,
-                &constraint.provenance,
-                &mut issues,
-            );
-        }
-    }
+    validate_profile_fields_for(&shapes, &profiles, &mut issues);
+    validate_profile_fields_for(&constraints, &profiles, &mut issues);
 
     // Profile self-consistency (INV-016)
     for profile in profiles.values() {
@@ -515,28 +337,8 @@ pub fn validate(
     // shape, constraint, and amendment binding holder. Path checks are
     // skipped when the caller did not supply a workspace_root (in-memory
     // test stores), since there is no on-disk repo to resolve against.
-    for (&id, shape) in &shapes {
-        check_node_bindings(
-            "shape",
-            id.get(),
-            &shape.realization,
-            &shape.evidence,
-            &shape.provenance,
-            workspace_root,
-            &mut issues,
-        );
-    }
-    for (&id, constraint) in &constraints {
-        check_node_bindings(
-            "constraint",
-            id.get(),
-            &constraint.realization,
-            &constraint.evidence,
-            &constraint.provenance,
-            workspace_root,
-            &mut issues,
-        );
-    }
+    check_dag_bindings(&shapes, workspace_root, &mut issues);
+    check_dag_bindings(&constraints, workspace_root, &mut issues);
     for (&id, amendment) in &amendments {
         check_node_bindings(
             "amendment",
@@ -550,6 +352,157 @@ pub fn validate(
     }
 
     Ok(issues)
+}
+
+/// Checks dangling references (INV-003/004/005/006) for a set of DAG
+/// nodes. Validates that parent/child/constraint/profile references all
+/// point to existing nodes.
+fn check_dag_refs<N: DagNode>(
+    nodes: &BTreeMap<N::Id, N>,
+    constraints: &BTreeMap<ConstraintId, Constraint>,
+    profiles: &BTreeMap<ProfileId, Profile>,
+    issues: &mut Vec<ValidationIssue>,
+) {
+    let type_name = N::Id::NODE_TYPE.to_string();
+    for (id, node) in nodes {
+        // INV-003: constraint references (only meaningful for shapes)
+        for cid in node.constraint_ids() {
+            if !constraints.contains_key(&cid) {
+                issues.push(ValidationIssue {
+                    invariant: "INV-003".into(),
+                    severity: Severity::Error,
+                    node_type: type_name.clone(),
+                    node_id: id.to_string(),
+                    message: format!("references non-existent constraint {cid}"),
+                });
+            }
+        }
+        // INV-004: parent references
+        for parent_id in node.parent_ids() {
+            if !nodes.contains_key(&parent_id) {
+                issues.push(ValidationIssue {
+                    invariant: "INV-004".into(),
+                    severity: Severity::Error,
+                    node_type: type_name.clone(),
+                    node_id: id.to_string(),
+                    message: format!("references non-existent parent {} {}", type_name, parent_id),
+                });
+            }
+        }
+        // INV-005: child references
+        for child_id in node.child_ids() {
+            if !nodes.contains_key(&child_id) {
+                issues.push(ValidationIssue {
+                    invariant: "INV-005".into(),
+                    severity: Severity::Error,
+                    node_type: type_name.clone(),
+                    node_id: id.to_string(),
+                    message: format!("references non-existent child {} {}", type_name, child_id),
+                });
+            }
+        }
+        // INV-006: profile references
+        if let Some(pid) = node.profile_id()
+            && !profiles.contains_key(&pid)
+        {
+            issues.push(ValidationIssue {
+                invariant: "INV-006".into(),
+                severity: Severity::Error,
+                node_type: type_name.clone(),
+                node_id: id.to_string(),
+                message: format!("references non-existent profile {pid}"),
+            });
+        }
+    }
+}
+
+/// Checks reciprocal parent/child links (INV-009) for a set of DAG
+/// nodes. If A lists B as child, B must list A as parent, and vice
+/// versa.
+fn check_reciprocal_links<N: DagNode>(
+    nodes: &BTreeMap<N::Id, N>,
+    issues: &mut Vec<ValidationIssue>,
+) {
+    let type_name = N::Id::NODE_TYPE.to_string();
+    for (id, node) in nodes {
+        // Forward: child must list this node as parent
+        for child_id in node.child_ids() {
+            if let Some(child) = nodes.get(&child_id)
+                && !child.parent_ids().contains(id)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-009".into(),
+                    severity: Severity::Error,
+                    node_type: type_name.clone(),
+                    node_id: id.to_string(),
+                    message: format!(
+                        "lists {type_name} {child_id} as child, but child does not list {id} as parent"
+                    ),
+                });
+            }
+        }
+        // Reverse: parent must list this node as child
+        for parent_id in node.parent_ids() {
+            if let Some(parent) = nodes.get(&parent_id)
+                && !parent.child_ids().contains(id)
+            {
+                issues.push(ValidationIssue {
+                    invariant: "INV-009".into(),
+                    severity: Severity::Error,
+                    node_type: type_name.clone(),
+                    node_id: id.to_string(),
+                    message: format!(
+                        "lists {type_name} {parent_id} as parent, but parent does not list {id} as child"
+                    ),
+                });
+            }
+        }
+    }
+}
+
+/// Validates profile-driven field requirements for a set of DAG nodes.
+fn validate_profile_fields_for<N: DagNode>(
+    nodes: &BTreeMap<N::Id, N>,
+    profiles: &BTreeMap<ProfileId, Profile>,
+    issues: &mut Vec<ValidationIssue>,
+) {
+    for (id, node) in nodes {
+        if let Some(pid) = node.profile_id()
+            && let Some(profile) = profiles.get(&pid)
+        {
+            validate_profile_fields(
+                profile,
+                N::Id::NODE_TYPE,
+                id.get(),
+                node.intent(),
+                node.metadata(),
+                node.realization(),
+                node.evidence(),
+                node.provenance(),
+                issues,
+            );
+        }
+    }
+}
+
+/// Checks bindings (INV-017/018) for a set of DAG nodes.
+fn check_dag_bindings<N: DagNode>(
+    nodes: &BTreeMap<N::Id, N>,
+    workspace_root: Option<&Path>,
+    issues: &mut Vec<ValidationIssue>,
+) {
+    let type_name = N::Id::NODE_TYPE.to_string();
+    for (id, node) in nodes {
+        check_node_bindings(
+            &type_name,
+            id.get(),
+            node.realization(),
+            node.evidence(),
+            node.provenance(),
+            workspace_root,
+            issues,
+        );
+    }
 }
 
 /// Walks every binding-holding array on a node (realization, evidence,
@@ -673,7 +626,7 @@ fn detect_cycles_in<Id: Copy + Eq + Ord + std::hash::Hash + fmt::Display, T>(
 #[allow(clippy::too_many_arguments)]
 fn validate_profile_fields(
     profile: &Profile,
-    node_type: &str,
+    node_type: NodeType,
     node_id: u64,
     intent: &Intent,
     metadata: &BTreeMap<String, serde_yml::Value>,
@@ -686,11 +639,14 @@ fn validate_profile_fields(
         return;
     };
     let section = match node_type {
-        "shape" => &fields.shape,
-        "constraint" => &fields.constraint,
-        _ => return,
+        NodeType::Shape => &fields.shape,
+        NodeType::Constraint => &fields.constraint,
+        NodeType::Amendment | NodeType::Profile => return,
     };
     let Some(section) = section else { return };
+    // Convert to &str once for downstream display helpers.
+    let type_str = node_type.to_string();
+    let node_type = type_str.as_str();
 
     if let Some(ref group) = section.intent {
         // INV-010: required intent fields.

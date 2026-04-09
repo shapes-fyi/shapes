@@ -1,0 +1,14 @@
+id: 41
+name: Remove amendment_log from GraphNode trait
+description: Remove amendment_log from GraphNode trait
+targets:
+  shape_ids:
+  - 2
+status: proposed
+version_impact: minor
+intent:
+  kind: amendment
+  summary: GraphNode no longer exposes amendment_log — it was a design smell where Amendment used an empty default stub. The field is now accessed via direct struct field on Shape/Constraint/Profile only.
+  source: ai
+initiated_by:
+  type: ai

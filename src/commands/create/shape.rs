@@ -8,7 +8,6 @@ use crate::commands::scaffold;
 use crate::commands::shared::{read_from, report_created};
 use crate::model::{NodeType, Shape, ShapeId};
 use crate::store::{FileStore, NodeStore};
-use crate::templates::KitKind;
 
 use super::profile_helpers::{
     resolve_active_profile, shape_default_kind, validate_kind_against_profile,
@@ -29,10 +28,6 @@ pub struct CreateShapeArgs {
     pub profile: Option<u64>,
     /// Optional `--description`.
     pub description: Option<String>,
-    /// Optional per-call `--kit`. Reserved for future use when
-    /// re-scaffolding against a non-active kit; currently ignored
-    /// because the Profile owns scaffold content.
-    pub kit: Option<KitKind>,
     /// Optional `--from` path or `-` for stdin.
     pub from: Option<String>,
 }
@@ -64,10 +59,6 @@ pub fn create_shape(
     // The active profile (or caller-chosen override) is the sole
     // source of field hints, kind allow-lists, and default kinds.
     let profile = resolve_active_profile(store, args.profile)?;
-    // `_kit` is accepted on the CLI for symmetry and future use; it
-    // does not currently influence the scaffold because the Profile
-    // owns every hint.
-    let _ = args.kit;
 
     let kind_str = match args.kind {
         Some(k) => k,
@@ -81,7 +72,7 @@ pub fn create_shape(
             .to_owned(),
     };
 
-    validate_kind_against_profile(&profile, "shape", &kind_str)?;
+    validate_kind_against_profile(&profile, crate::model::NodeType::Shape, &kind_str)?;
 
     let yaml = scaffold::scaffold_shape(&scaffold::ShapeScaffold {
         id,

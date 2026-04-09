@@ -24,14 +24,16 @@ pub mod refs;
 pub mod serde_helpers;
 pub mod shape;
 pub mod status;
+pub mod traits;
 
 pub use amendment::{Amendment, AmendmentTargets, InitiatedBy, InitiatedType, VersionImpact};
 pub use bindings::{Evidence, Provenance, Realization};
 pub use constraint::{Constraint, Enforcement};
-pub use ids::{AmendmentId, ConstraintId, ProfileId, ShapeId};
+pub use ids::{AmendmentId, ConstraintId, NodeId, ProfileId, ShapeId};
 pub use intent::Intent;
 pub use node_type::NodeType;
 pub use profile::{FieldGroup, Profile};
 pub use refs::ParentRef;
 pub use shape::Shape;
 pub use status::Status;
+pub use traits::{DagNode, GraphNode};
