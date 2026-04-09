@@ -5,6 +5,7 @@ name: CI
 # chain, and dead-dep gates.
 
 on:
+  workflow_call:
   push:
     branches: [main]
   pull_request:
