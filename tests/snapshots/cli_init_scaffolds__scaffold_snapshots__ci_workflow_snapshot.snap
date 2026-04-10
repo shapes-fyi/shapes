@@ -1,0 +1,20 @@
+---
+source: tests/cli_init_scaffolds.rs
+expression: content
+---
+name: Shapes
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  shapes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # Pins to main until shapes-cli cuts v1; will move to a tagged release.
+      - uses: shapes-fyi/shapes/.github/actions/shapes-validate@main

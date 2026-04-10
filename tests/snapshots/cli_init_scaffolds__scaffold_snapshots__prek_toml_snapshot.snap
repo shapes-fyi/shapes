@@ -1,0 +1,22 @@
+---
+source: tests/cli_init_scaffolds.rs
+expression: content
+---
+[[repos]]
+repo = "local"
+
+[[repos.hooks]]
+id = "shapes-validate"
+name = "Shapes validate"
+language = "system"
+entry = "shapes validate"
+pass_filenames = false
+always_run = true
+
+[[repos.hooks]]
+id = "shapes-fmt-check"
+name = "Shapes format check"
+language = "system"
+entry = "shapes fmt --check"
+pass_filenames = false
+always_run = true

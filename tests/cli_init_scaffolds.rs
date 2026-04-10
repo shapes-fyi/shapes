@@ -29,26 +29,26 @@ fn init_without_flags_creates_no_extras() {
     assert!(!dir.path().join("prek.toml").exists());
 }
 
-#[test]
-fn init_with_ci_creates_workflow() {
-    let dir = init_with(&["--ci"]);
-    let workflow = dir.path().join(".github/workflows/shapes.yml");
-    assert!(workflow.is_file(), "workflow file should exist");
-    let content = fs::read_to_string(&workflow).unwrap();
-    assert!(content.contains("shapes-fyi/shapes/.github/actions/shapes-validate@main"));
-    assert!(content.contains("require-shapes-changes: 'false'"));
-}
+mod scaffold_snapshots {
+    use super::*;
 
-#[test]
-fn init_with_hooks_creates_prek_toml() {
-    let dir = init_with(&["--hooks"]);
-    let prek = dir.path().join("prek.toml");
-    assert!(prek.is_file(), "prek.toml should exist");
-    let content = fs::read_to_string(&prek).unwrap();
-    assert!(content.contains("shapes-validate"));
-    assert!(content.contains("shapes-fmt-check"));
-    assert!(content.contains("shapes validate"));
-    assert!(content.contains("shapes fmt --check"));
+    #[test]
+    fn ci_workflow_snapshot() {
+        let dir = init_with(&["--ci"]);
+        let workflow = dir.path().join(".github/workflows/shapes.yml");
+        assert!(workflow.is_file(), "workflow file should exist");
+        let content = fs::read_to_string(&workflow).unwrap();
+        insta::assert_snapshot!(content);
+    }
+
+    #[test]
+    fn prek_toml_snapshot() {
+        let dir = init_with(&["--hooks"]);
+        let prek = dir.path().join("prek.toml");
+        assert!(prek.is_file(), "prek.toml should exist");
+        let content = fs::read_to_string(&prek).unwrap();
+        insta::assert_snapshot!(content);
+    }
 }
 
 #[test]
@@ -96,4 +96,19 @@ fn init_hooks_skips_existing_prek() {
     // File should be unchanged.
     let content = fs::read_to_string(&target).unwrap();
     assert_eq!(content, "# existing config\n");
+}
+
+mod help_snapshots {
+    use assert_cmd::Command;
+
+    #[test]
+    fn init_help_output() {
+        let cmd = Command::cargo_bin("shapes")
+            .unwrap()
+            .args(["init", "--help"])
+            .output()
+            .unwrap();
+        let stdout = String::from_utf8(cmd.stdout).unwrap();
+        insta::assert_snapshot!(stdout);
+    }
 }

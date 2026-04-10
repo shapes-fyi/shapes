@@ -13,7 +13,6 @@
 mod commands;
 mod error;
 mod model;
-mod scaffolds;
 mod store;
 mod templates;
 
@@ -73,7 +72,8 @@ enum Command {
         #[arg(long)]
         ci: bool,
         /// Scaffold a prek.toml pre-commit hook config with shapes validate
-        /// and shapes fmt --check hooks.
+        /// and shapes fmt --check hooks. Runs `prek install` automatically
+        /// if prek is on PATH.
         #[arg(long)]
         hooks: bool,
     },
