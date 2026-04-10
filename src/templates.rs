@@ -129,7 +129,7 @@ impl StarterKit {
                     "Domain governance seeded from the {} starter kit",
                     self.name
                 ),
-                source: serde_yml::Value::String("system".to_owned()),
+                source: serde_yaml_ng::Value::String("system".to_owned()),
                 uris: vec![],
                 extra: BTreeMap::new(),
             },
@@ -162,7 +162,7 @@ impl StarterKit {
     /// `FileStore::init` to write the seeded profile to disk, and by
     /// `shapes create profile --kit <name>` to scaffold a new profile.
     pub(crate) fn to_profile_yaml(self, id: ProfileId, name: &str) -> String {
-        serde_yml::to_string(&self.build_profile(id, name))
+        serde_yaml_ng::to_string(&self.build_profile(id, name))
             // Serializing a hand-built Profile struct cannot fail:
             // every field is an owned, serde-ready value with no
             // dynamic key collisions.

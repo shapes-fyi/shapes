@@ -88,7 +88,7 @@ pub struct Amendment {
         deserialize_with = "crate::model::serde_helpers::null_to_default",
         skip_serializing_if = "BTreeMap::is_empty"
     )]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
+    pub metadata: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 impl Amendment {

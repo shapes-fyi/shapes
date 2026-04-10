@@ -1,8 +1,8 @@
 id: 18
 name: Scaffold YAML Round-Trips Through Serde
-description: Every YAML document the scaffold writer emits must parse cleanly back into the corresponding model struct via serde_yml, and the resulting node must pass `shapes validate`. This guarantees that subsequent CLI commands (`shapes get`, `shapes validate`, `shapes tree`, etc.) work against freshly-scaffolded files without requiring the agent to first edit them.
+description: Every YAML document the scaffold writer emits must parse cleanly back into the corresponding model struct via serde_yaml_ng, and the resulting node must pass `shapes validate`. This guarantees that subsequent CLI commands (`shapes get`, `shapes validate`, `shapes tree`, etc.) work against freshly-scaffolded files without requiring the agent to first edit them.
 kind: invariant
-rule: For every scaffold writer (scaffold_shape, scaffold_constraint, scaffold_profile), `serde_yml::from_str::<Node>(scaffold_output)` succeeds and `shapes validate` exits 0 against a store containing only that node.
+rule: For every scaffold writer (scaffold_shape, scaffold_constraint, scaffold_profile), `serde_yaml_ng::from_str::<Node>(scaffold_output)` succeeds and `shapes validate` exits 0 against a store containing only that node.
 enforcement: machine
 profile: 1
 status: canonical

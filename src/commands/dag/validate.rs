@@ -629,7 +629,7 @@ fn validate_profile_fields(
     node_type: NodeType,
     node_id: u64,
     intent: &Intent,
-    metadata: &BTreeMap<String, serde_yml::Value>,
+    metadata: &BTreeMap<String, serde_yaml_ng::Value>,
     realization: &[Realization],
     evidence: &[Evidence],
     provenance: &[Provenance],
@@ -764,7 +764,7 @@ fn validate_profile_fields(
 /// field whose name is missing from `map`.
 fn check_required_fields(
     group: &FieldGroup,
-    map: &BTreeMap<String, serde_yml::Value>,
+    map: &BTreeMap<String, serde_yaml_ng::Value>,
     node_type: &str,
     node_id: u64,
     location: &str,
@@ -791,7 +791,7 @@ fn check_required_fields(
 /// that the corresponding value in `map` (if present) matches.
 fn check_field_types(
     fields: &[FieldDef],
-    map: &BTreeMap<String, serde_yml::Value>,
+    map: &BTreeMap<String, serde_yaml_ng::Value>,
     node_type: &str,
     node_id: u64,
     location: &str,
@@ -826,16 +826,16 @@ fn check_field_types(
 /// `map` / `mapping` / `object`. Unknown type tags are accepted —
 /// profiles may use arbitrary type strings as documentation hints
 /// without tripping the validator.
-fn value_matches_type(value: &serde_yml::Value, expected_type: &str) -> bool {
+fn value_matches_type(value: &serde_yaml_ng::Value, expected_type: &str) -> bool {
     match expected_type {
-        "string" => matches!(value, serde_yml::Value::String(_)),
-        "bool" | "boolean" => matches!(value, serde_yml::Value::Bool(_)),
+        "string" => matches!(value, serde_yaml_ng::Value::String(_)),
+        "bool" | "boolean" => matches!(value, serde_yaml_ng::Value::Bool(_)),
         "integer" | "int" => {
-            matches!(value, serde_yml::Value::Number(n) if n.is_i64() || n.is_u64())
+            matches!(value, serde_yaml_ng::Value::Number(n) if n.is_i64() || n.is_u64())
         }
-        "number" | "float" => matches!(value, serde_yml::Value::Number(_)),
-        "list" | "sequence" | "array" => matches!(value, serde_yml::Value::Sequence(_)),
-        "map" | "mapping" | "object" => matches!(value, serde_yml::Value::Mapping(_)),
+        "number" | "float" => matches!(value, serde_yaml_ng::Value::Number(_)),
+        "list" | "sequence" | "array" => matches!(value, serde_yaml_ng::Value::Sequence(_)),
+        "map" | "mapping" | "object" => matches!(value, serde_yaml_ng::Value::Mapping(_)),
         // Unknown type tag — accept silently.
         _ => true,
     }
@@ -843,15 +843,15 @@ fn value_matches_type(value: &serde_yml::Value, expected_type: &str) -> bool {
 
 /// Returns a short human-readable name for a YAML value's variant.
 /// Used in INV-015 messages.
-fn yaml_value_kind(value: &serde_yml::Value) -> &'static str {
+fn yaml_value_kind(value: &serde_yaml_ng::Value) -> &'static str {
     match value {
-        serde_yml::Value::Null => "null",
-        serde_yml::Value::Bool(_) => "bool",
-        serde_yml::Value::Number(_) => "number",
-        serde_yml::Value::String(_) => "string",
-        serde_yml::Value::Sequence(_) => "sequence",
-        serde_yml::Value::Mapping(_) => "mapping",
-        serde_yml::Value::Tagged(_) => "tagged",
+        serde_yaml_ng::Value::Null => "null",
+        serde_yaml_ng::Value::Bool(_) => "bool",
+        serde_yaml_ng::Value::Number(_) => "number",
+        serde_yaml_ng::Value::String(_) => "string",
+        serde_yaml_ng::Value::Sequence(_) => "sequence",
+        serde_yaml_ng::Value::Mapping(_) => "mapping",
+        serde_yaml_ng::Value::Tagged(_) => "tagged",
     }
 }
 
@@ -888,7 +888,7 @@ fn check_kind_in_allow_list(
 /// allow-list is declared, sources must be strings).
 fn check_source_in_allow_list(
     sources: &[FieldDef],
-    actual_source: &serde_yml::Value,
+    actual_source: &serde_yaml_ng::Value,
     node_type: &str,
     node_id: u64,
     issues: &mut Vec<ValidationIssue>,
@@ -897,7 +897,7 @@ fn check_source_in_allow_list(
         return;
     }
     let source_str = match actual_source {
-        serde_yml::Value::String(s) => s.as_str(),
+        serde_yaml_ng::Value::String(s) => s.as_str(),
         _ => {
             issues.push(ValidationIssue {
                 invariant: "INV-013".into(),

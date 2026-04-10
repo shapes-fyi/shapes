@@ -19,7 +19,7 @@ use crate::store::FileStore;
 pub fn output<T: Serialize>(value: &T, format: OutputFormat) -> Result<()> {
     match format {
         OutputFormat::Yaml => {
-            print!("{}", serde_yml::to_string(value)?);
+            print!("{}", serde_yaml_ng::to_string(value)?);
         }
         OutputFormat::Json => {
             println!("{}", serde_json::to_string_pretty(value)?);
