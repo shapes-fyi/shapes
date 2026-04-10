@@ -174,7 +174,7 @@ fn collect_satisfied_targets(
 
     // Load base amendments by id via git ls-tree + git show.
     let base_map: BTreeMap<u64, Amendment> =
-        load_base_map::<Amendment>(base, shapes_dir, NodeType::Amendment)?;
+        load_base_map::<Amendment>(base, shapes_dir, NodeType::Amendment, issues)?;
 
     let all_ids: BTreeSet<u64> = head_map.keys().chain(base_map.keys()).copied().collect();
     for id in all_ids {
@@ -266,7 +266,7 @@ where
     } else {
         BTreeMap::new()
     };
-    let base_map: BTreeMap<u64, T> = load_base_map::<T>(base, shapes_dir, node_type)?;
+    let base_map: BTreeMap<u64, T> = load_base_map::<T>(base, shapes_dir, node_type, issues)?;
 
     // Pair by id: handles renames, slug churn, and moves between
     // sibling files automatically.
@@ -374,6 +374,7 @@ fn load_base_map<T: DeserializeOwned>(
     base: &str,
     shapes_dir: &Path,
     node_type: NodeType,
+    issues: &mut Vec<ValidationIssue>,
 ) -> Result<BTreeMap<u64, T>> {
     let type_dir = shapes_dir.join(node_type.dir_name());
     // git ls-tree wants a path with trailing slash to list directory
@@ -428,19 +429,26 @@ fn load_base_map<T: DeserializeOwned>(
         };
         let id = parse_id(&text)
             .with_context(|| format!("failed to read id from {}", path.display()))?;
-        let Ok(node) = serde_yaml_ng::from_str::<T>(&text) else {
-            // Base node uses an older schema the current binary
-            // doesn't understand (e.g. a field type changed between
-            // base and HEAD). Skip it — ci-check won't detect
-            // CI-003 violations on this node, but that's preferable
-            // to crashing the entire check.
-            eprintln!(
-                "warning: skipping base {}: schema incompatible with current binary",
-                path.display()
-            );
-            continue;
-        };
-        map.insert(id, node);
+        match serde_yaml_ng::from_str::<T>(&text) {
+            Ok(node) => {
+                map.insert(id, node);
+            }
+            Err(err) => {
+                issues.push(ValidationIssue {
+                    invariant: "BASE-PARSE".into(),
+                    severity: Severity::Warning,
+                    node_type: node_type.to_string(),
+                    node_id: id.to_string(),
+                    message: format!(
+                        "{node_type} {id} on base ref could not be parsed: {err}. \
+                         CI-003 immutability cannot be checked for this node. \
+                         If this PR migrates the schema, this warning is expected; \
+                         otherwise ensure the YAML at {} is valid for the current binary.",
+                        path.display()
+                    ),
+                });
+            }
+        }
     }
     Ok(map)
 }
