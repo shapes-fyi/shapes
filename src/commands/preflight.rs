@@ -23,10 +23,10 @@ pub fn preflight(init: bool) -> Result<()> {
     let latest = check_latest_version();
 
     println!("Shapes CLI v{version}");
-    if let Some(ref latest) = latest {
-        if latest != version {
-            println!("UPDATE AVAILABLE: v{latest} — run: cargo install shapes-cli");
-        }
+    if let Some(ref latest) = latest
+        && latest != version
+    {
+        println!("UPDATE AVAILABLE: v{latest} — run: cargo install shapes-cli");
     }
 
     let store_exists = Path::new(".shapes/meta.yaml").is_file();
