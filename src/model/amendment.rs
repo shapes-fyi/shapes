@@ -77,12 +77,12 @@ pub struct Amendment {
     )]
     pub provenance: Vec<Provenance>,
     pub initiated_by: InitiatedBy,
-    /// When `true`, this amendment has decayed in value and should be
-    /// hidden from listing output by default. Display-only: validation,
-    /// reciprocity (INV-019), and CI-002 enforcement always see the
-    /// full set regardless of this flag.
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
-    pub archived: bool,
+    /// Display-only archival state. When present, the amendment is
+    /// hidden from listing output by default. Validation, reciprocity
+    /// (INV-019), and CI-002 enforcement always see the full set
+    /// regardless of this field.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archived: Option<ArchivedDetail>,
     #[serde(
         default,
         deserialize_with = "crate::model::serde_helpers::null_to_default",
@@ -96,7 +96,7 @@ impl Amendment {
     /// be hidden from default listing output.
     #[must_use]
     pub fn is_archived(&self) -> bool {
-        self.archived
+        self.archived.is_some()
     }
 }
 
@@ -158,4 +158,81 @@ pub struct InitiatedBy {
     pub identity: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub provenance: Option<String>,
+}
+
+/// Detail attached when an amendment is archived.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct ArchivedDetail {
+    /// Required explanation of why this amendment was archived.
+    pub reason: String,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn archived_object_roundtrips() {
+        let detail = ArchivedDetail {
+            reason: "Changes integrated".into(),
+        };
+        let yaml = serde_yaml_ng::to_string(&detail).unwrap();
+        assert!(yaml.contains("reason"));
+        assert!(yaml.contains("Changes integrated"));
+        let parsed: ArchivedDetail = serde_yaml_ng::from_str(&yaml).unwrap();
+        assert_eq!(parsed, detail);
+    }
+
+    #[test]
+    fn amendment_with_archived_roundtrips() {
+        let yaml = r#"
+id: 1
+name: test
+description: test amendment
+targets:
+  shape_ids:
+  - 1
+status: proposed
+intent:
+  kind: amendment
+  summary: test
+  source: ai
+initiated_by:
+  type: ai
+archived:
+  reason: Changes fully integrated
+"#;
+        let amendment: Amendment = serde_yaml_ng::from_str(yaml).unwrap();
+        assert!(amendment.is_archived());
+        assert_eq!(
+            amendment.archived.as_ref().map(|d| d.reason.as_str()),
+            Some("Changes fully integrated")
+        );
+
+        let reserialized = serde_yaml_ng::to_string(&amendment).unwrap();
+        let reparsed: Amendment = serde_yaml_ng::from_str(&reserialized).unwrap();
+        assert_eq!(reparsed.archived, amendment.archived);
+    }
+
+    #[test]
+    fn amendment_without_archived_roundtrips() {
+        let yaml = r#"
+id: 1
+name: test
+description: test amendment
+targets:
+  shape_ids:
+  - 1
+status: proposed
+intent:
+  kind: amendment
+  summary: test
+  source: ai
+initiated_by:
+  type: ai
+"#;
+        let amendment: Amendment = serde_yaml_ng::from_str(yaml).unwrap();
+        assert!(!amendment.is_archived());
+        assert!(amendment.archived.is_none());
+    }
 }

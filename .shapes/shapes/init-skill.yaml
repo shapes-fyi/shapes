@@ -15,10 +15,11 @@ realization:
   - scheme: path
     value: skills/shapes-init/SKILL.md
     metadata:
-      summary: Bootstrap workflow — 7-step process from init (with --template selection) through exploration, interview, create-then-Edit-TODO for shapes and constraints, optional Profile authoring, and validation. No hand-authored YAML; the CLI scaffold writer produces self-documenting files with TODO placeholders.
+      summary: Bootstrap workflow — 7-step process from init (with --kit selection) through exploration, interview, create-then-Edit-TODO for shapes and constraints, optional Profile authoring, and validation. No hand-authored YAML; the CLI scaffold writer produces self-documenting files with TODO placeholders.
   role: primary
 amendment_log:
 - 22
+- 47
 parents:
 - id: 6
   role: feature

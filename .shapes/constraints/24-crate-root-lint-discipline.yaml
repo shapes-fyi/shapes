@@ -5,7 +5,7 @@ kind: invariant
 rule: 'src/main.rs declares the crate-wide lint baseline via inner attributes: #![deny(unsafe_code)], #![warn(missing_docs)], #![warn(rust_2018_idioms)]. Clippy stays on its default group (no clippy::all, no clippy::pedantic). cargo clippy --all-targets -- -D warnings must pass.'
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: Fixed lint baseline at the crate root, enforced via cargo clippy

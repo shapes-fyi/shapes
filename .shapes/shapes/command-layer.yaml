@@ -37,6 +37,12 @@ realization:
   role: primary
 - bindings:
   - scheme: path
+    value: src/commands/ci_check.rs
+    metadata:
+      summary: 'CI gating logic using GraphNode trait bounds. Loads nodes generically via where T: DeserializeOwned + GraphNode, eliminating the old StatusedNode trait and stringly-typed dispatch. Checks CI-002 (amendment-on-promoted-change) and CI-003 (modified-amendment-immutability with archive-only carve-out).'
+  role: primary
+- bindings:
+  - scheme: path
     value: src/commands/shared.rs
     metadata:
       summary: Cross-verb helpers — output(yaml/json), read_from(stdin/path), open_store, report_created.
@@ -47,11 +53,84 @@ realization:
     metadata:
       summary: shapes fmt — normalizes all .shapes/ YAML files to serde canonical format. Walks all node types, deserializes each file, re-serializes through serde, writes back if different. Supports --check flag for CI enforcement.
   role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/get.rs
+    metadata:
+      summary: Handler for shapes get — loads a single node by type and ID, renders YAML or JSON
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/list.rs
+    metadata:
+      summary: Handler for shapes list — lists nodes across types with optional status, kind, and archived filters
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/query.rs
+    metadata:
+      summary: Handler for shapes query — DAG queries for ancestors, descendants, inherited constraints, and reverse lookups
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/validate.rs
+    metadata:
+      summary: Handler for shapes validate — runs graph integrity checks and emits validation issues
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/tree.rs
+    metadata:
+      summary: Handler for shapes tree — prints hierarchical tree view of the shape or constraint DAG
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/amendment.rs
+    metadata:
+      summary: Handler for shapes amendment archive/unarchive — toggles display-only archived flag on amendments
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/preflight.rs
+    metadata:
+      summary: Handler for shapes preflight — prints skill preamble with version, update check, and shape tree
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/init.rs
+    metadata:
+      summary: Handler for shapes init — creates .shapes/ directory, seeds starter profile from selected kit
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/create/amendment.rs
+    metadata:
+      summary: Handler for shapes create amendment — records a new Amendment node with targets and metadata
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/create/profile.rs
+    metadata:
+      summary: Handler for shapes create profile — scaffolds new Profile node from a starter kit
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/create/shape.rs
+    metadata:
+      summary: Handler for shapes create shape — scaffolds a new Shape node with profile-governed fields
+  role: primary
+- bindings:
+  - scheme: path
+    value: src/commands/create/constraint.rs
+    metadata:
+      summary: Handler for shapes create constraint — scaffolds a new Constraint node with profile-governed fields
+  role: primary
 amendment_log:
 - 20
 - 26
 - 32
 - 39
+- 47
 parents:
 - id: 1
   role: component

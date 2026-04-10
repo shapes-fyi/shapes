@@ -17,3 +17,5 @@ intent:
   verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual narrow-viewport test at 375px and 320px — minimap is gone, page reads cleanly, TOC at top is the only navigation. Touch device test (or Chrome DevTools touch emulation with pointer:coarse) — copy button is visible by default on every code block. Desktop test — copy button still uses hover reveal, minimap is visible from md and up.
 initiated_by:
   type: ai
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

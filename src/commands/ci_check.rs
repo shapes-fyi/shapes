@@ -174,7 +174,7 @@ fn collect_satisfied_targets(
 
     // Load base amendments by id via git ls-tree + git show.
     let base_map: BTreeMap<u64, Amendment> =
-        load_base_map::<Amendment>(base, shapes_dir, NodeType::Amendment)?;
+        load_base_map::<Amendment>(base, shapes_dir, NodeType::Amendment, issues)?;
 
     let all_ids: BTreeSet<u64> = head_map.keys().chain(base_map.keys()).copied().collect();
     for id in all_ids {
@@ -232,16 +232,16 @@ fn collect_satisfied_targets(
 }
 
 /// Returns `true` when `base` and `head` differ only in their
-/// `archived` field. Toggling `archived` is the sole permitted
-/// mutation of a canonical amendment — it is display-only metadata, so
-/// CI-003 treats archive/unarchive edits as immutability-preserving.
-/// Every other field delta still trips CI-003.
+/// `archived` field. Toggling or updating `archived` is the sole
+/// permitted mutation of a canonical amendment — it is display-only
+/// metadata, so CI-003 treats archive/unarchive edits as
+/// immutability-preserving. Every other field delta still trips CI-003.
 fn is_archive_only_change(base: &Amendment, head: &Amendment) -> bool {
     if base.archived == head.archived {
         return false;
     }
     let mut normalized = head.clone();
-    normalized.archived = base.archived;
+    normalized.archived = base.archived.clone();
     base == &normalized
 }
 
@@ -266,7 +266,7 @@ where
     } else {
         BTreeMap::new()
     };
-    let base_map: BTreeMap<u64, T> = load_base_map::<T>(base, shapes_dir, node_type)?;
+    let base_map: BTreeMap<u64, T> = load_base_map::<T>(base, shapes_dir, node_type, issues)?;
 
     // Pair by id: handles renames, slug churn, and moves between
     // sibling files automatically.
@@ -374,6 +374,7 @@ fn load_base_map<T: DeserializeOwned>(
     base: &str,
     shapes_dir: &Path,
     node_type: NodeType,
+    issues: &mut Vec<ValidationIssue>,
 ) -> Result<BTreeMap<u64, T>> {
     let type_dir = shapes_dir.join(node_type.dir_name());
     // git ls-tree wants a path with trailing slash to list directory
@@ -428,9 +429,26 @@ fn load_base_map<T: DeserializeOwned>(
         };
         let id = parse_id(&text)
             .with_context(|| format!("failed to read id from {}", path.display()))?;
-        let node: T = serde_yaml_ng::from_str(&text)
-            .with_context(|| format!("failed to parse {}", path.display()))?;
-        map.insert(id, node);
+        match serde_yaml_ng::from_str::<T>(&text) {
+            Ok(node) => {
+                map.insert(id, node);
+            }
+            Err(err) => {
+                issues.push(ValidationIssue {
+                    invariant: "BASE-PARSE".into(),
+                    severity: Severity::Warning,
+                    node_type: node_type.to_string(),
+                    node_id: id.to_string(),
+                    message: format!(
+                        "{node_type} {id} on base ref could not be parsed: {err}. \
+                         CI-003 immutability cannot be checked for this node. \
+                         If this PR migrates the schema, this warning is expected; \
+                         otherwise ensure the YAML at {} is valid for the current binary.",
+                        path.display()
+                    ),
+                });
+            }
+        }
     }
     Ok(map)
 }
@@ -564,10 +582,15 @@ fn changed_paths_under(base: &str, shapes_dir: &Path) -> Result<Vec<PathBuf>> {
     Ok(paths)
 }
 
-/// Emits the issue list in the requested format and converts a
-/// non-empty list into the dedicated [`CiCheckError::IssuesFound`]
-/// error so the CLI returns exit code 2.
+/// Emits the issue list in the requested format. Only errors (not
+/// warnings) cause the dedicated [`CiCheckError::IssuesFound`] exit
+/// code 2. Warnings are printed but do not block the PR.
 fn report(issues: &[ValidationIssue], format: OutputFormat) -> Result<(), CliError> {
+    let error_count = issues
+        .iter()
+        .filter(|i| i.severity == Severity::Error)
+        .count();
+
     if issues.is_empty() {
         match format {
             OutputFormat::Json => println!("[]"),
@@ -585,11 +608,22 @@ fn report(issues: &[ValidationIssue], format: OutputFormat) -> Result<(), CliErr
             for issue in issues {
                 eprintln!("{issue}");
             }
-            eprintln!("{} ci-check issue(s) found", issues.len());
+            if error_count > 0 {
+                eprintln!("{error_count} ci-check error(s) found");
+            } else {
+                eprintln!(
+                    "{} ci-check warning(s) found (no errors — passing)",
+                    issues.len()
+                );
+            }
         }
     }
-    Err(CiCheckError::IssuesFound {
-        count: issues.len(),
+    if error_count > 0 {
+        Err(CiCheckError::IssuesFound {
+            count: error_count,
+        }
+        .into())
+    } else {
+        Ok(())
     }
-    .into())
 }

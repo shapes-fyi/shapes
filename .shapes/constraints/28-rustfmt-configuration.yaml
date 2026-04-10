@@ -5,7 +5,7 @@ kind: invariant
 rule: A rustfmt.toml exists at repo root pinning edition = "2024" and any project-wide formatting overrides. cargo fmt --check passes on every commit that touches src/.
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: Pinned rustfmt.toml at repo root, enforced by cargo fmt --check

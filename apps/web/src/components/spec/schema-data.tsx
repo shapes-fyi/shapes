@@ -507,8 +507,9 @@ export const AMENDMENT_SCHEMA: SchemaDefinition = {
       label: "archived",
       description: (
         <p>
-          Display-only flag. When{" "}
-          <code className="text-foreground">true</code>, this Amendment is
+          Display-only archival state. An object containing a required{" "}
+          <code className="text-foreground">reason</code> string explaining
+          why the amendment was archived. When present, this Amendment is
           hidden from default listing output &mdash;{" "}
           <code className="text-foreground">shapes list amendment</code> drops
           it, and <code className="text-foreground">shapes get &lt;parent&gt;</code>{" "}
@@ -518,11 +519,12 @@ export const AMENDMENT_SCHEMA: SchemaDefinition = {
           Archiving is not deletion: the record stays on disk, reciprocity
           (INV-019) still applies, and CI-002 continues to count the
           amendment toward satisfying changes on promoted or canonical
-          targets. Toggling this field is the sole permitted mutation of a
-          canonical amendment under CI-003.
+          targets. Setting or clearing this field is the sole permitted
+          mutation of a canonical amendment under CI-003.
         </p>
       ),
-      lines: "  archived: boolean?",
+      lines: `  archived?:
+    reason: string`,
     },
     {
       key: "metadata",

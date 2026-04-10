@@ -2,7 +2,7 @@ id: 35
 name: Archive Skill
 description: Standalone Claude Code skill for walking every unarchived amendment and deciding whether to archive it. Provides the full decision framework (when to archive, when not to), a step-by-step archival pass procedure, and the mechanics of toggling the display-only archived flag. Invoked explicitly via /shapes:shapes-archive or as part of a deep audit. Separated from the maintain skill so that routine graph maintenance and archival passes are independent concerns.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: Standalone skill for walking amendments and archiving stale ones

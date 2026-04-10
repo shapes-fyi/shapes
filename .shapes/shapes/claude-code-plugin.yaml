@@ -45,6 +45,12 @@ realization:
   role: primary
 - bindings:
   - scheme: path
+    value: .claude-plugin/marketplace.json
+    metadata:
+      summary: Marketplace catalog — single-plugin manifest so the repo is addable via the Claude Code marketplace
+  role: supporting
+- bindings:
+  - scheme: path
     value: CLAUDE.md
     metadata:
       summary: Agent instructions — context-first workflow, maintain-before-commit, CLI reference

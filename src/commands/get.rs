@@ -4,14 +4,14 @@
 //! surfaced (with an `archived: true` annotation) when `--archived` is
 //! passed.
 
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use anyhow::Result;
 use serde::Serialize;
 
 use crate::OutputFormat;
 use crate::commands::shared::{open_store, output};
-use crate::model::{Amendment, AmendmentId, NodeType};
+use crate::model::{Amendment, AmendmentId, ArchivedDetail, NodeType};
 use crate::store::{FileStore, NodeStore};
 
 /// Loads a single node and prints it. When `archived` is `false` (the
@@ -56,7 +56,8 @@ fn emit_with_amendment_log<T: Serialize>(
     show_archived: bool,
     format: OutputFormat,
 ) -> Result<()> {
-    let archived_ids = collect_archived_ids(store, amendment_log);
+    let archived_map = collect_archived_info(store, amendment_log);
+    let archived_ids: BTreeSet<u64> = archived_map.keys().copied().collect();
 
     // Always go through the patching path when an amendment_log exists
     // so that serialization format (key ordering) is consistent
@@ -64,34 +65,34 @@ fn emit_with_amendment_log<T: Serialize>(
     match format {
         OutputFormat::Yaml => {
             let mut value = serde_yaml_ng::to_value(node)?;
-            patch_yaml_amendment_log(&mut value, &archived_ids, show_archived);
+            patch_yaml_amendment_log(&mut value, &archived_ids, &archived_map, show_archived);
             print!("{}", serde_yaml_ng::to_string(&value)?);
             Ok(())
         }
         OutputFormat::Json => {
             let mut value = serde_json::to_value(node)?;
-            patch_json_amendment_log(&mut value, &archived_ids, show_archived);
+            patch_json_amendment_log(&mut value, &archived_ids, &archived_map, show_archived);
             println!("{}", serde_json::to_string_pretty(&value)?);
             Ok(())
         }
     }
 }
 
-/// Loads each referenced amendment and returns the set of IDs that
-/// carry `archived: true`. Amendments that fail to load are treated as
-/// not-archived — `shapes validate` is the source of truth for dangling
-/// references; `get` must not refuse to render a node just because one
-/// amendment file is missing.
-fn collect_archived_ids(store: &FileStore, amendment_log: &[AmendmentId]) -> BTreeSet<u64> {
+/// Loads each referenced amendment and returns a map of ID → archived
+/// state for those that are archived. Amendments that fail to load are
+/// treated as not-archived — `shapes validate` is the source of truth
+/// for dangling references; `get` must not refuse to render a node
+/// just because one amendment file is missing.
+fn collect_archived_info(
+    store: &FileStore,
+    amendment_log: &[AmendmentId],
+) -> BTreeMap<u64, ArchivedDetail> {
     amendment_log
         .iter()
         .filter_map(|id| {
             let a: Amendment = store.load(NodeType::Amendment, id.get()).ok()?;
-            if a.is_archived() {
-                Some(id.get())
-            } else {
-                None
-            }
+            let detail = a.archived?;
+            Some((id.get(), detail))
         })
         .collect()
 }
@@ -99,6 +100,7 @@ fn collect_archived_ids(store: &FileStore, amendment_log: &[AmendmentId]) -> BTr
 fn patch_yaml_amendment_log(
     value: &mut serde_yaml_ng::Value,
     archived_ids: &BTreeSet<u64>,
+    archived_map: &BTreeMap<u64, ArchivedDetail>,
     show_archived: bool,
 ) {
     let Some(mapping) = value.as_mapping_mut() else {
@@ -114,16 +116,16 @@ fn patch_yaml_amendment_log(
     if show_archived {
         for entry in seq.iter_mut() {
             let Some(id) = entry.as_u64() else { continue };
-            if archived_ids.contains(&id) {
-                let mut map = serde_yaml_ng::Mapping::new();
-                map.insert("id".into(), serde_yaml_ng::Value::Number(id.into()));
+            let mut map = serde_yaml_ng::Mapping::new();
+            map.insert("id".into(), serde_yaml_ng::Value::Number(id.into()));
+            if let Some(detail) = archived_map.get(&id) {
                 map.insert("archived".into(), serde_yaml_ng::Value::Bool(true));
-                *entry = serde_yaml_ng::Value::Mapping(map);
-            } else {
-                let mut map = serde_yaml_ng::Mapping::new();
-                map.insert("id".into(), serde_yaml_ng::Value::Number(id.into()));
-                *entry = serde_yaml_ng::Value::Mapping(map);
+                map.insert(
+                    "archived_reason".into(),
+                    serde_yaml_ng::Value::String(detail.reason.clone()),
+                );
             }
+            *entry = serde_yaml_ng::Value::Mapping(map);
         }
     } else {
         seq.retain(|entry| match entry.as_u64() {
@@ -139,6 +141,7 @@ fn patch_yaml_amendment_log(
 fn patch_json_amendment_log(
     value: &mut serde_json::Value,
     archived_ids: &BTreeSet<u64>,
+    archived_map: &BTreeMap<u64, ArchivedDetail>,
     show_archived: bool,
 ) {
     let Some(obj) = value.as_object_mut() else {
@@ -155,8 +158,12 @@ fn patch_json_amendment_log(
             let Some(id) = entry.as_u64() else { continue };
             let mut map = serde_json::Map::new();
             map.insert("id".into(), serde_json::Value::from(id));
-            if archived_ids.contains(&id) {
+            if let Some(detail) = archived_map.get(&id) {
                 map.insert("archived".into(), serde_json::Value::Bool(true));
+                map.insert(
+                    "archived_reason".into(),
+                    serde_json::Value::from(detail.reason.as_str()),
+                );
             }
             *entry = serde_json::Value::Object(map);
         }

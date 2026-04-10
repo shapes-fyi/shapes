@@ -5,7 +5,7 @@ kind: guideline
 rule: 'Pure functions and methods whose only purpose is to return a value carry #[must_use]. Applies to: ID newtype accessors (ShapeId::get etc.), CliError::exit_code, is_empty-style predicates, and any pub fn whose return value being dropped would indicate a caller bug.'
 enforcement: manual
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: guideline
   summary: '#[must_use] on pure getters and predicates'

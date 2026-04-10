@@ -238,6 +238,9 @@ enum AmendmentCommand {
     Archive {
         /// Numeric amendment ID
         id: u64,
+        /// Reason explaining why this amendment is being archived
+        #[arg(long)]
+        reason: String,
     },
     /// Clear the archived flag on an amendment, bringing it back into
     /// default listings.
@@ -467,7 +470,9 @@ fn run(cli: Cli) -> Result<(), CliError> {
         } => commands::ci_check(&base, &shapes_dir, require_shapes_changes, cli.format)?,
 
         Command::Amendment { operation } => match operation {
-            AmendmentCommand::Archive { id } => commands::amendment_archive(id, cli.format)?,
+            AmendmentCommand::Archive { id, reason } => {
+                commands::amendment_archive(id, reason, cli.format)?
+            }
             AmendmentCommand::Unarchive { id } => commands::amendment_unarchive(id, cli.format)?,
         },
 

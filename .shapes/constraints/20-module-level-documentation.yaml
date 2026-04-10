@@ -5,7 +5,7 @@ kind: requirement
 rule: Every .rs file under src/ begins with a //! doc comment (after any inner attributes) explaining the module's purpose, its role in the crate, and what belongs in it. One sentence minimum; no empty //! lines as placeholders.
 enforcement: manual
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: requirement
   summary: Every src/**/*.rs file opens with a //! purpose statement

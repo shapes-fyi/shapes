@@ -25,3 +25,5 @@ intent:
   verification: 'cargo nextest run clean. cargo fmt, cargo clippy --all-targets clean. shapes validate on the repo .shapes graph clean. Manual smoke test: shapes list amendment (hides archived), --archived (shows), shapes amendment archive/unarchive toggle, shapes get shape <id> with and without --archived, shapes ci-check on an archive-only diff (passes CI-003), shapes ci-check on an archive-plus-other-field diff (fails CI-003).'
 initiated_by:
   type: ai
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

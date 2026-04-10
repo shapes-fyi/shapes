@@ -5,7 +5,7 @@ kind: invariant
 rule: '`shapes validate` and `shapes ci-check` MUST load and apply their checks to every amendment regardless of `archived` state. `shapes list amendment` and `shapes get <parent>` MUST hide archived amendments by default and surface them only when `--archived` is passed. No invariant, CI rule, or agent workflow may short-circuit on `amendment.archived == true`.'
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: Archiving is display-only; validation and CI always see the full amendment set
@@ -39,3 +39,4 @@ realization:
   role: primary
 amendment_log:
 - 29
+- 48

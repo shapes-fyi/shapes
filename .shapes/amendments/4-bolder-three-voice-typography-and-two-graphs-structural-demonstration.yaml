@@ -18,3 +18,5 @@ intent:
   verification: 'bun run format clean. bun run typecheck clean. shapes validate clean. Manual check in light and dark modes: wordmark does not clip, Two Graphs columns align, Geist renders in SectionLabel without a font-load flash (Geist Variable is already in the app bundle via packages/ui dependency), numbered labels read correctly in both serif body and sans label voices. Slop check from /impeccable:critique: no new gradients, no glassmorphism, no pill-card grid, no symmetric 2x2 — verify the redesigned primitives section is asymmetric and information-carrying.'
 initiated_by:
   type: ai
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

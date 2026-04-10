@@ -17,4 +17,5 @@ intent:
   verification: bun run format clean. bun run typecheck clean. bun run build clean. shapes validate clean. Manual browser check at 375 px, 768 px, 1024 px, and 1440 px. At 375 nav and footer clear the viewport edges. At 768 nav and footer wordmarks visibly offset from the vertical rails; In Practice and Install h2 render cleanly without mid-word breaks; Two Graphs h2 fits cleanly; minimap hidden on spec page. At 1024 minimap visible on spec and does not overlap text column. At 1440 nav footer and hero wordmarks align vertically at the same x position.
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

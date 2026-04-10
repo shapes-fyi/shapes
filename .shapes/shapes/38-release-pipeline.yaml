@@ -3,7 +3,7 @@ name: Release Pipeline
 description: |
   GitHub Actions workflow that automates the full release cycle for shapes-cli. Triggered on v* tag push, it reuses the existing CI workflow as a gate, builds cross-platform binaries for 5 targets (linux x86_64/aarch64, macOS x86_64/aarch64, windows x86_64), publishes to crates.io with an idempotency guard that skips already-published versions, and creates GitHub releases with Claude Code-drafted release notes. Binary assets are packaged as tar.gz (unix) or zip (windows) with the naming convention shapes-{tag}-{target}.{ext}.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: 'Cross-platform release workflow: CI gate, 5-target binary builds, idempotent crates.io publish, and Claude Code-drafted GitHub releases'

@@ -79,7 +79,7 @@ pub fn create_amendment(
                 identity: None,
                 provenance: None,
             },
-            archived: false,
+            archived: None,
             metadata: BTreeMap::new(),
         }
     };

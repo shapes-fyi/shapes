@@ -5,7 +5,7 @@ kind: invariant
 rule: 'Every mod.rs file contains only: (a) module declarations (mod x;, pub mod x;), (b) re-exports (pub use), (c) a //! module-level doc comment, and (d) cfg/test gates. No type definitions, no functions, no impl blocks, no constants.'
 enforcement: manual
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: mod.rs is wiring only — no logic, no type definitions

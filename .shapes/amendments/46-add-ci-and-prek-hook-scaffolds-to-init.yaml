@@ -25,3 +25,5 @@ realization:
   role: supporting
 initiated_by:
   type: ai
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

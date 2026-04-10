@@ -5,7 +5,7 @@ kind: guideline
 rule: '.unwrap() and .expect() in non-test code (outside #[cfg(test)], #[test], and tests/ modules) require an adjacent comment documenting the invariant that makes the call infallible. expect() messages alone do not satisfy this — the comment must explain why the invariant holds.'
 enforcement: manual
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: guideline
   summary: Non-test unwrap/expect must be accompanied by an invariant comment

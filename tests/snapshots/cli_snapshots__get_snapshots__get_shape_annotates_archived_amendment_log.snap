@@ -20,6 +20,7 @@ amendment_log:
 - id: 1
 - id: 2
   archived: true
+  archived_reason: test archival reason for fixture
 children:
 - shape: 2
   role: feature

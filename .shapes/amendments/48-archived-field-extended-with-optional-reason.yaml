@@ -1,0 +1,13 @@
+id: 48
+name: Archived field extended with optional reason
+description: Archived field extended with optional reason
+targets:
+  constraint_ids:
+  - 37
+status: proposed
+intent:
+  kind: amendment
+  summary: 'Replace the boolean archived field with an object-only form containing a required reason string. No backward compatibility — all existing archived: true entries must be migrated to archived: {reason: "..."}.'
+  source: ai
+initiated_by:
+  type: ai

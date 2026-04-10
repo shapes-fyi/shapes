@@ -1,0 +1,13 @@
+id: 49
+name: Add traits.rs binding and update ids.rs summary
+description: Add traits.rs binding and update ids.rs summary
+targets:
+  shape_ids:
+  - 2
+status: proposed
+intent:
+  kind: amendment
+  summary: Add realization binding for src/model/traits.rs (GraphNode/DagNode traits) and update ids.rs summary to reflect define_id! macro.
+  source: ai
+initiated_by:
+  type: ai
