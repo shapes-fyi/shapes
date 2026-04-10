@@ -98,7 +98,6 @@ impl Amendment {
     pub fn is_archived(&self) -> bool {
         self.archived.is_some()
     }
-
 }
 
 impl super::traits::GraphNode for Amendment {
