@@ -5,7 +5,7 @@ kind: invariant
 rule: Generic DAG operations (ancestor/descendant walks, tree rendering, graph validation) MUST accept DagNode trait bounds and use trait methods rather than matching on DagType to access concrete Shape/Constraint fields. The DagType enum dispatch MUST occur only at the public API boundary.
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: DAG operations use DagNode trait generics, not duplicated match blocks

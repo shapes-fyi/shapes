@@ -5,7 +5,7 @@ kind: guideline
 rule: CI runs the test suite via `cargo nextest run --all-targets`, not `cargo test`. Developers may use `cargo test` locally, but the CI gate is nextest. Add `--doc` as a companion job only if doc tests are introduced.
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: guideline
   summary: CI test gate runs cargo nextest, not cargo test

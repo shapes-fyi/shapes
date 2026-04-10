@@ -2,7 +2,7 @@ id: 33
 name: Rust Idioms Refactor
 description: 'Whole-crate refactor that brings src/ into strict alignment with idiomatic Rust and consolidates the domain-schema layer onto Profiles. Enforces architectural constraints 19–34: lean mod.rs files, module-level //! docs, /// docs on every public symbol, removal of ASCII section dividers, &str-over-String discipline, a fixed crate-root lint baseline, justified #[allow] attributes, no silent unwrap/expect, #[must_use] on pure getters, a pinned rustfmt.toml, a cargo-deny supply chain gate, cargo-machete dead-dep enforcement, insta snapshot coverage of CLI output, rustdoc warnings promoted to errors, a GitHub Actions workflow wiring the whole lot into CI, and the Template→Profile consolidation that makes Profile the sole source of truth for intent field hints, kind allow-lists, default kinds, and required-field enforcement.'
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: Whole-crate Rust idioms refactor enforcing constraints 19–28 across src/
@@ -46,7 +46,7 @@ realization:
   - scheme: path
     value: src/commands/mod.rs
     metadata:
-      summary: 514-line bag of command implementations to be split into commands/{create,get,list}/{shape,constraint,amendment,profile}.rs
+      summary: Pure wiring — mod declarations and pub use re-exports for all eleven verb handlers plus shared, scaffold, and dag helpers (48 lines)
   role: supporting
 - bindings:
   - scheme: path
@@ -58,19 +58,19 @@ realization:
   - scheme: path
     value: src/model/mod.rs
     metadata:
-      summary: Currently declares newtype ID wrappers inline; the wrappers move to a sibling file so mod.rs is pure wiring per constraint 19
+      summary: Pure wiring — submodule declarations and pub use re-exports for all domain types (ids, node_type, status, intent, refs, bindings, serde_helpers, traits, and the four node kinds)
   role: supporting
 - bindings:
   - scheme: path
     value: src/error.rs
     metadata:
-      summary: Heavy section-divider usage (lines 7-9, 39-41, 60-62, 71-73) to be replaced with item-level /// docs
+      summary: Layered domain error types — CreateError, ValidationError, CiCheckError, CliError wrapper with exit_code dispatch; all with /// docs, no section dividers
   role: supporting
 - bindings:
   - scheme: path
     value: src/store.rs
     metadata:
-      summary: NodeStore trait at line 17 needs /// docs; section dividers at 13-15 and 243-245 to be removed
+      summary: NodeStore trait + FileStore implementation — read-side abstraction, YAML persistence, Meta document, filename slugifier; fully documented, no section dividers
   role: supporting
 - bindings:
   - scheme: path

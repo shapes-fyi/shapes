@@ -5,7 +5,7 @@ kind: guideline
 rule: Function and method parameters take &str unless the function must take ownership, store the value, or mutate it. .to_string() is forbidden on &'static str literals and on values already typed as String — use .to_owned() or pass a reference. Same principle applies to &[T] vs Vec<T> and &Path vs PathBuf.
 enforcement: manual
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: guideline
   summary: Prefer &str / &[T] / &Path in parameters; no needless allocations

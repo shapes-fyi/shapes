@@ -5,7 +5,7 @@ kind: invariant
 rule: The active Profile is the one source of truth for shape and constraint intent field hints, kind allow-lists, default kinds, and required-field enforcement at validate time. No parallel hardcoded schema (Template, hint table, etc.) may be consulted by `shapes create shape/constraint` or `shapes validate`. The `src/templates.rs` StarterKit module is used only by `shapes init` and `shapes create profile` to generate Profile YAML; it must not be imported from `src/commands/create/shape.rs`, `src/commands/create/constraint.rs`, or `src/commands/scaffold.rs`.
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: Profile is the one source of truth for domain schema

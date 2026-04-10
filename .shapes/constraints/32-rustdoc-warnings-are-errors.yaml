@@ -5,7 +5,7 @@ kind: invariant
 rule: cargo doc --no-deps runs with RUSTDOCFLAGS='-D warnings' in CI. Broken intra-doc links, missing code blocks, and any other rustdoc warning fails the build. Pairs with constraint 21 (Public Symbol Documentation) to keep rustdoc output trustworthy.
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: cargo doc fails on any rustdoc warning in CI

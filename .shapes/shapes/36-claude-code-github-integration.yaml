@@ -2,7 +2,7 @@ id: 36
 name: Claude Code GitHub Integration
 description: GitHub Actions workflows that give Claude Code a repo-native entry point — interactive via @claude mentions in issues, PRs, and reviews, and automated via PR auto-review on every push. Both workflows are gated to the snowmead user via github.actor checks.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: GitHub Actions workflows that give Claude Code a repo-native entry point — interactive via @claude mentions and automated via PR auto-review. Restricted to the snowmead user.

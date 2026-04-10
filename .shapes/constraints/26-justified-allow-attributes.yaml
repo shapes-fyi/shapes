@@ -5,7 +5,7 @@ kind: guideline
 rule: 'Every #[allow(...)] in src/ is accompanied by a // line comment explaining why the lint is suppressed and, where applicable, the condition under which the allow can be removed. Unexplained #[allow] is a violation.'
 enforcement: manual
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: guideline
   summary: Every

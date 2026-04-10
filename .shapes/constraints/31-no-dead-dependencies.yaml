@@ -5,7 +5,7 @@ kind: invariant
 rule: cargo machete runs clean in CI — every dependency in Cargo.toml must be imported somewhere in the crate. Optional deps behind feature flags are exempt only when the feature is declared in Cargo.toml [features].
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: cargo machete clean — no unused dependencies

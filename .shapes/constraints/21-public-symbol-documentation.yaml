@@ -5,7 +5,7 @@ kind: requirement
 rule: Every pub item (fn, struct, enum, trait, trait method, type alias, const, static, macro, and pub fields on pub structs) carries a /// doc comment stating what it is and, where non-obvious, how it is used. Re-exports (pub use) are exempt. Applies to pub(crate) items as well.
 enforcement: manual
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: requirement
   summary: Every pub / pub(crate) item is documented with /// doc comments

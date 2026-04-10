@@ -5,7 +5,7 @@ kind: invariant
 rule: 'Block comments used as visual section dividers inside a file are prohibited. A file that needs sections must be split into submodules, or use /// docs on the items themselves. Specifically forbidden: runs of // ---, // ===, or // ### lines that are not attached to a single item as documentation.'
 enforcement: manual
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: No ASCII-art section dividers — split into submodules instead

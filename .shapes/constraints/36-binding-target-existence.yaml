@@ -5,7 +5,7 @@ kind: invariant
 rule: 'Every `scheme: path` binding must be a non-empty repo-relative slash-separated path that lexically stays under the workspace root and resolves to an existing file or directory. Every `scheme: url` binding must be a non-empty well-formed absolute URL with scheme in `{http, https, git, ssh}`.'
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: Every binding value must point at something real — paths must exist on disk under the workspace root, URLs must be well-formed

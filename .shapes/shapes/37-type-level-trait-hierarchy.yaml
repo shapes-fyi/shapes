@@ -2,7 +2,7 @@ id: 37
 name: Type-Level Trait Hierarchy
 description: Three-layer trait hierarchy that encodes the structural relationships between the four node types at the Rust type level. NodeId unifies the four ID newtypes behind a common trait with a NODE_TYPE constant. GraphNode captures the universally shared fields (raw_id, name, status, intent) — only fields that every node type genuinely has. DagNode captures the DAG-navigable subset shared by Shape and Constraint (parent/child links, constraint references, binding accessors). Together with a define_id! macro, this eliminates ~200 lines of duplicated match blocks in the DAG engine while preserving compile-time type safety. Fields like amendment_log that only some node types have are accessed via direct struct fields, not the trait.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: pattern
   summary: Three-layer trait hierarchy (NodeId, GraphNode, DagNode) encoding structural relationships between node types at the type level

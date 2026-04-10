@@ -2,7 +2,7 @@ id: 34
 name: Shape Graph CI Action
 description: Reusable GitHub Action and `shapes ci-check` CLI subcommand that police shape-graph PRs in any repository using a `.shapes/` directory. The CLI subcommand contains the logic — base-vs-working- tree diffing, monitored field projections per node type, and the three CI-* checks. The composite action at `.github/actions/shapes-validate/action.yml` is a thin wrapper that installs the binary, runs `shapes validate`, and runs the subcommand on pull-request events.
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: feature
   summary: Reusable GitHub Action and `shapes ci-check` CLI subcommand that enforce graph integrity, amendment-required-on-promoted-or- canonical-change, amendment immutability, and an opt-in PR-must- touch-shapes rule on every PR

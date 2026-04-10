@@ -5,7 +5,7 @@ kind: invariant
 rule: cargo deny check must pass in CI on every commit that touches Cargo.toml or Cargo.lock. Covers advisories (RustSec), license allow-list, duplicate dependency versions, banned crates, and source provenance. Config lives in /deny.toml.
 enforcement: machine
 profile: 1
-status: proposed
+status: canonical
 intent:
   kind: invariant
   summary: cargo deny check gates every Cargo.toml/lock change in CI
