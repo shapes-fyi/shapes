@@ -50,7 +50,9 @@ mod tests {
             uris: vec![],
             extra: BTreeMap::from([(
                 "goals".into(),
-                serde_yaml_ng::Value::Sequence(vec![serde_yaml_ng::Value::String("SSO support".into())]),
+                serde_yaml_ng::Value::Sequence(vec![serde_yaml_ng::Value::String(
+                    "SSO support".into(),
+                )]),
             )]),
         };
         let yaml = serde_yaml_ng::to_string(&intent).unwrap();

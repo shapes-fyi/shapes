@@ -36,7 +36,9 @@ pub fn fmt(check: bool) -> Result<()> {
             let original = fs::read_to_string(&path)?;
 
             let canonical = match node_type {
-                NodeType::Shape => serde_yaml_ng::to_string(&serde_yaml_ng::from_str::<Shape>(&original)?)?,
+                NodeType::Shape => {
+                    serde_yaml_ng::to_string(&serde_yaml_ng::from_str::<Shape>(&original)?)?
+                }
                 NodeType::Constraint => {
                     serde_yaml_ng::to_string(&serde_yaml_ng::from_str::<Constraint>(&original)?)?
                 }

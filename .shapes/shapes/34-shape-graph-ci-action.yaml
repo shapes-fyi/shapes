@@ -33,11 +33,11 @@ realization:
   role: primary
 - bindings:
   - scheme: path
-    value: '.github/actions/shapes-validate/action.yml'
+    value: .github/actions/shapes-validate/action.yml
     metadata:
       summary: 'Composite action consumed as `uses: shapes-fyi/shapes/.github/actions/shapes-validate@main` while shapes-cli is pre-stable — installs the CLI via `cargo install --locked --git --branch <ref>` (default `main`) and runs validate + ci-check. Defaults move to `--tag v1` once the first stable release ships.'
   - scheme: path
-    value: '.github/actions/shapes-validate/README.md'
+    value: .github/actions/shapes-validate/README.md
     metadata:
       summary: Usage docs — the pre-stable main-tracking note, the `fetch-depth` zero requirement, the four CI-* / INV-* check families, and three worked examples (code-only opt-out, custom shapes dir, reuse on-PATH binary)
   role: primary
@@ -45,7 +45,7 @@ realization:
   - scheme: path
     value: tests/cli_ci_check.rs
     metadata:
-      summary: '16 integration tests — git-init tempdir helpers, CI-001 positive/negative/control, CI-002 promoted-shape and canonical-constraint scenarios, realization-only strict (every binding edit requires an amendment), canonical-profile scenarios (--target-profile satisfying path), per-node deletion, full-shapes-dir deletion, new-node addition, CI-003 amendment-immutability (both modification and deletion)'
+      summary: 16 integration tests — git-init tempdir helpers, CI-001 positive/negative/control, CI-002 promoted-shape and canonical-constraint scenarios, realization-only strict (every binding edit requires an amendment), canonical-profile scenarios (--target-profile satisfying path), per-node deletion, full-shapes-dir deletion, new-node addition, CI-003 amendment-immutability (both modification and deletion)
   role: test
 parents:
 - id: 33

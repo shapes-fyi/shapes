@@ -19,13 +19,13 @@ constraints:
 realization:
 - bindings:
   - scheme: path
-    value: '.github/workflows/release.yml'
+    value: .github/workflows/release.yml
     metadata:
       summary: Full release workflow — CI gate, binary matrix build, crates.io publish, GitHub release with Claude-drafted notes
   role: primary
 - bindings:
   - scheme: path
-    value: '.github/workflows/ci.yml'
+    value: .github/workflows/ci.yml
     metadata:
       summary: CI workflow with workflow_call trigger for reuse by release pipeline
   role: supporting

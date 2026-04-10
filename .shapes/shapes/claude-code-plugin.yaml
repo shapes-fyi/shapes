@@ -15,7 +15,7 @@ constraints:
 realization:
 - bindings:
   - scheme: path
-    value: '.claude-plugin/plugin.json'
+    value: .claude-plugin/plugin.json
     metadata:
       summary: Plugin registration — name, description, version, repository URL
   role: primary
