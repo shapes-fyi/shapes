@@ -1,0 +1,27 @@
+id: 46
+name: Add CI and prek hook scaffolds to init
+description: Extends the Scaffold System with two opt-in init flags that write CI and pre-commit configuration files. The scaffold constants and functions live in src/commands/init.rs alongside the init command handler, keeping the module self-contained.
+targets:
+  shape_ids:
+  - 32
+status: proposed
+intent:
+  kind: amendment
+  summary: 'Extends the scaffold system with two opt-in init flags: --ci writes .github/workflows/shapes.yml (GitHub Actions using the shapes-validate composite action), --hooks writes prek.toml and auto-runs prek install. Both are non-destructive and skip if target files exist.'
+  source: ai
+  rationale: Projects adopting Shapes need CI and pre-commit validation out of the box. Rather than requiring users to hand-author workflow and hook files, shapes init can scaffold them with sensible defaults. The scaffolded workflow uses require-shapes-changes true to enforce the shapes-first principle from day one.
+realization:
+- bindings:
+  - scheme: path
+    value: src/commands/init.rs
+    metadata:
+      summary: scaffold_github_actions and scaffold_prek_hooks functions, plus GITHUB_ACTIONS_WORKFLOW and PREK_CONFIG constants. Called from init() when --ci / --hooks flags are set.
+  role: primary
+- bindings:
+  - scheme: path
+    value: tests/cli_init_scaffolds.rs
+    metadata:
+      summary: 7 integration tests covering --ci, --hooks, both flags, skip-on-existing, and insta snapshots for workflow, prek.toml, and help output.
+  role: supporting
+initiated_by:
+  type: ai

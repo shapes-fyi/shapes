@@ -1,0 +1,36 @@
+---
+source: tests/cli_init_scaffolds.rs
+expression: stdout
+---
+Initialize a new .shapes/ directory in the current working directory. Creates meta.yaml, subdirectories for shapes / constraints / amendments / profiles, and a starter Profile (id 1) seeded from the chosen kit. The seeded Profile becomes the store's active profile — every subsequent `shapes create` reads from it.
+
+Optional scaffolds: pass `--ci` to generate a GitHub Actions workflow, `--hooks` to generate a prek.toml pre-commit config (and auto-run `prek install` if prek is on PATH).
+
+Usage: shapes init [OPTIONS]
+
+Options:
+      --kit <KIT>
+          Starter kit for the seeded Profile — software (default), research, editorial, or minimal
+
+          Possible values:
+          - software:  Software engineering project — goals/rationale/non_goals, system/module/feature kinds
+          - research:  Research project — hypotheses/methodology/success criteria, experiment/dataset kinds
+          - editorial: Editorial / writing project — themes/audience/tone, chapter/section/character kinds
+          - minimal:   Bare minimum — just rationale, no kind enforcement
+          
+          [default: software]
+
+      --ci
+          Scaffold a GitHub Actions workflow (.github/workflows/shapes.yml) that runs shapes validate, fmt --check, and ci-check on every PR
+
+      --hooks
+          Scaffold a prek.toml pre-commit hook config with shapes validate and shapes fmt --check hooks. Runs `prek install` automatically if prek is on PATH
+
+      --format <FORMAT>
+          Output format (yaml or json)
+          
+          [default: yaml]
+          [possible values: yaml, json]
+
+  -h, --help
+          Print help (see a summary with '-h')

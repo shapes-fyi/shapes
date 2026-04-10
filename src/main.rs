@@ -59,10 +59,23 @@ enum Command {
     /// Creates meta.yaml, subdirectories for shapes / constraints / amendments / profiles,
     /// and a starter Profile (id 1) seeded from the chosen kit. The seeded Profile becomes
     /// the store's active profile — every subsequent `shapes create` reads from it.
+    ///
+    /// Optional scaffolds: pass `--ci` to generate a GitHub Actions workflow,
+    /// `--hooks` to generate a prek.toml pre-commit config (and auto-run
+    /// `prek install` if prek is on PATH).
     Init {
         /// Starter kit for the seeded Profile — software (default), research, editorial, or minimal
         #[arg(long, value_enum, default_value = "software")]
         kit: KitKind,
+        /// Scaffold a GitHub Actions workflow (.github/workflows/shapes.yml)
+        /// that runs shapes validate, fmt --check, and ci-check on every PR.
+        #[arg(long)]
+        ci: bool,
+        /// Scaffold a prek.toml pre-commit hook config with shapes validate
+        /// and shapes fmt --check hooks. Runs `prek install` automatically
+        /// if prek is on PATH.
+        #[arg(long)]
+        hooks: bool,
     },
 
     /// Create a new node from flags or a YAML file.
@@ -421,7 +434,7 @@ fn main() -> ExitCode {
 
 fn run(cli: Cli) -> Result<(), CliError> {
     match cli.command {
-        Command::Init { kit } => commands::init(kit)?,
+        Command::Init { kit, ci, hooks } => commands::init(kit, ci, hooks)?,
 
         Command::Create { node, id_only } => commands::create(node, id_only, cli.format)?,
 
