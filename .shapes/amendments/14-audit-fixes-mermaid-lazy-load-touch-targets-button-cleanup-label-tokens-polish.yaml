@@ -18,4 +18,5 @@ intent:
   verification: bun run format clean. bun run typecheck clean. bun run build succeeds. shapes validate clean. Spec page chunk measured before vs after — target reduction at least 50%. Manual home page check — labels and tracking unchanged visually. Manual icon button check — every icon button is 44x44px when measured in dev tools. Manual rounded-full check — every icon button still renders circular. Manual spec page check — Mermaid examples appear after a brief delay on first load and on every refresh. ExampleToggle YAML pane is visible immediately even before diagrams render. Touch test (or coarse-pointer emulation) — copy button still visible by default on coarse pointers.
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

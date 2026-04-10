@@ -143,10 +143,10 @@ fn yaml_path(dir: &TempDir, subdir: &str, id: u64) -> std::path::PathBuf {
     );
 }
 
-/// Appends `archived: true` to an amendment yaml.
+/// Appends an `archived` object to an amendment yaml.
 fn set_archived(path: &std::path::Path) {
     let text = fs::read_to_string(path).unwrap();
-    let updated = format!("{text}archived: true\n");
+    let updated = format!("{text}archived:\n  reason: test archival\n");
     fs::write(path, updated).unwrap();
 }
 

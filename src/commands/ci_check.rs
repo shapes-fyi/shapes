@@ -232,11 +232,10 @@ fn collect_satisfied_targets(
 }
 
 /// Returns `true` when `base` and `head` differ only in their
-/// `archived` field (including its `reason` sub-field). Toggling or
-/// updating `archived` is the sole permitted mutation of a canonical
-/// amendment — it is display-only metadata, so CI-003 treats
-/// archive/unarchive edits as immutability-preserving. Every other
-/// field delta still trips CI-003.
+/// `archived` field. Toggling or updating `archived` is the sole
+/// permitted mutation of a canonical amendment — it is display-only
+/// metadata, so CI-003 treats archive/unarchive edits as
+/// immutability-preserving. Every other field delta still trips CI-003.
 fn is_archive_only_change(base: &Amendment, head: &Amendment) -> bool {
     if base.archived == head.archived {
         return false;

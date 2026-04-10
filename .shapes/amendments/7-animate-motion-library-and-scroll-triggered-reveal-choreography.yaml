@@ -18,4 +18,5 @@ intent:
   verification: bun run format clean. bun run typecheck clean. bun install resolves motion successfully. shapes validate clean. Manual check with motion enabled (hero staggers in on first paint, sections reveal on scroll) and with prefers-reduced-motion set to reduce (content is fully visible with no transform or opacity transitions running). FPS should sit at 60 on a mid-range laptop during the hero entrance and each scroll reveal. No layout shift introduced — all motion uses transform and opacity only.
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

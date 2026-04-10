@@ -609,28 +609,25 @@ export const sections: Array<SpecSection> = [
           Because amendments are kept indefinitely for audit, the log
           grows with entries whose insight value decays over time.
           Each Amendment carries an optional display-only{" "}
-          <code className="text-foreground">archived</code> field. It
-          accepts either a bare boolean (
-          <code className="text-foreground">true</code>) or an object
-          with a reason (
-          <code className="text-foreground">
-            {"{"}reason: &quot;...&quot;{"}"}
-          </code>
-          ). When present and truthy, the amendment is hidden from
-          default listing output &mdash; it is dropped from{" "}
+          <code className="text-foreground">archived</code> object
+          containing a required{" "}
+          <code className="text-foreground">reason</code> string
+          explaining why the amendment was archived. When present, the
+          amendment is hidden from default listing output &mdash; it is
+          dropped from{" "}
           <code className="text-foreground">shapes list amendment</code>{" "}
           and from the rendered{" "}
           <code className="text-foreground">amendment_log</code> in{" "}
           <code className="text-foreground">shapes get &lt;parent&gt;</code>{" "}
           unless the caller passes{" "}
           <code className="text-foreground">--archived</code>, which
-          resurfaces archived entries annotated so readers can
-          distinguish them. Archiving is not deletion: the record stays
-          on disk, reciprocity (INV-019) still applies, and validation
-          and CI checks always see the full, unfiltered set. Toggling{" "}
-          <code className="text-foreground">archived</code> (including
-          adding or updating its reason) is the sole permitted mutation
-          of a canonical amendment under CI-003.
+          resurfaces archived entries annotated with their archival
+          reason so readers can distinguish them. Archiving is not
+          deletion: the record stays on disk, reciprocity (INV-019)
+          still applies, and validation and CI checks always see the
+          full, unfiltered set. Setting or clearing{" "}
+          <code className="text-foreground">archived</code> is the sole
+          permitted mutation of a canonical amendment under CI-003.
         </p>
 
         <p>

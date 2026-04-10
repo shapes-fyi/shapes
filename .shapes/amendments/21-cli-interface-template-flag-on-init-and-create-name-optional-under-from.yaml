@@ -51,4 +51,5 @@ evidence:
       summary: '`per_call_template_override_does_not_modify_meta` proves `--template` works as a per-call override on shape create without mutating meta.yaml.'
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

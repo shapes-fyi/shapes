@@ -19,4 +19,5 @@ intent:
   verification: bun run format clean. bun run typecheck clean. shapes validate clean. bun run build succeeds. Manual home page load — wordmark visible on first paint, supporting children still stagger in. React DevTools Profiler on the spec page — MermaidDiagram component renders without re-running renderMermaidSVG when an unrelated parent re-renders. No CLS regressions on hero (still min-h-svh). No visual change to motion timing on supporting children.
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

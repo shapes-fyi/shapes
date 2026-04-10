@@ -184,7 +184,8 @@ targets:
   constraint_ids:
     - 1
 status: proposed
-archived: true
+archived:
+  reason: test archival reason for fixture
 intent:
   kind: amendment
   summary: archived fixture amendment targeting shape 1 and constraint 1
@@ -376,29 +377,29 @@ mod get_snapshots {
         // Sanity check: amendment 1 starts unarchived.
         let before = stdout_of(shapes_in(&dir).args(["get", "amendment", "1"]));
         assert!(
-            !before.contains("archived: true"),
+            !before.contains("archived:"),
             "amendment 1 should start unarchived"
         );
 
-        // Archive amendment 1, then verify it now reports archived: true.
+        // Archive amendment 1 with a reason, then verify it reports archived.
         shapes_in(&dir)
-            .args(["amendment", "archive", "1"])
+            .args(["amendment", "archive", "1", "--reason", "test archival"])
             .assert()
             .success();
         let after_archive = stdout_of(shapes_in(&dir).args(["get", "amendment", "1"]));
         assert!(
-            after_archive.contains("archived: true"),
-            "amendment 1 should be archived after `amendment archive 1`"
+            after_archive.contains("archived:") && after_archive.contains("test archival"),
+            "amendment 1 should be archived with reason after archive command"
         );
 
-        // Unarchive and verify the flag is cleared (serialized as absent).
+        // Unarchive and verify the field is cleared (serialized as absent).
         shapes_in(&dir)
             .args(["amendment", "unarchive", "1"])
             .assert()
             .success();
         let after_unarchive = stdout_of(shapes_in(&dir).args(["get", "amendment", "1"]));
         assert!(
-            !after_unarchive.contains("archived: true"),
+            !after_unarchive.contains("archived:"),
             "amendment 1 should be unarchived after `amendment unarchive 1`"
         );
     }
@@ -644,23 +645,24 @@ intent:
         // Read the raw file before archive.
         let amend_path = dir.path().join(".shapes/amendments/1-fixture-edit.yaml");
         let before = std::fs::read_to_string(&amend_path).unwrap();
-        assert!(!before.contains("archived: true"));
+        assert!(!before.contains("archived:"));
 
         // Archive.
         shapes_in(&dir)
-            .args(["amendment", "archive", "1"])
+            .args(["amendment", "archive", "1", "--reason", "test archival"])
             .assert()
             .success();
 
-        // Read after — only the `archived: true` line should differ.
+        // Read after — only the `archived` block should differ.
         let after = std::fs::read_to_string(&amend_path).unwrap();
-        assert!(after.contains("archived: true"));
+        assert!(after.contains("archived:"));
+        assert!(after.contains("test archival"));
 
-        // Strip the archived line from both and compare — they should
+        // Strip the archived block from both and compare — they should
         // be identical.
         let strip = |s: &str| -> String {
             s.lines()
-                .filter(|l| !l.starts_with("archived:"))
+                .filter(|l| !l.starts_with("archived:") && !l.starts_with("  reason:"))
                 .collect::<Vec<_>>()
                 .join("\n")
         };

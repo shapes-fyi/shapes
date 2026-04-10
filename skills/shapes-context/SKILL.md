@@ -73,7 +73,7 @@ change between domains.
 |------|---------|
 | **Shape** | What to build and why — the primary work node |
 | **Constraint** | Rules that must be satisfied — strict invariants |
-| **Amendment** | Immutable change record — evolves the graph over time. Carries a display-only `archived` flag to hide decayed entries from default listings without losing the audit trail. |
+| **Amendment** | Immutable change record — evolves the graph over time. Carries an optional `archived` object with a required `reason` to hide decayed entries from default listings without losing the audit trail. |
 | **Profile** | Governance configuration — defines lifecycle, custom fields, amendment rules |
 
 ### Two DAGs
@@ -171,7 +171,7 @@ happen until the graph reflects what you intend to do.
    stay on disk for audit — pass `--archived` if you suspect the answer
    to a question lives in an archived entry. When reading a shape with
    `shapes get <parent> --archived`, archived entries in
-   `amendment_log` are annotated with `archived: true` so you can
+   `amendment_log` are annotated with their archival reason so you can
    recognize them and decide whether to read them.
 
 ### Step 2: Plan in the Graph

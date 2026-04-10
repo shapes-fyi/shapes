@@ -93,11 +93,15 @@ When uncertain, leave it.
 ### 3. Archive qualifying amendments
 
 ```bash
-shapes amendment archive <id>
+shapes amendment archive <id> --reason "Changes integrated into target shapes"
 ```
 
-After each archive, the command prints the full amendment so you can
-confirm the toggle landed correctly.
+The `--reason` flag is required — every archival decision must be
+explained so future readers understand why the entry was hidden.
+Write a reason that summarizes why the amendment no longer provides
+unique context (e.g., "Changes integrated into target shapes" or
+"Superseded by amendment 42"). After each archive, the command prints
+the full amendment so you can confirm the change landed correctly.
 
 ### 4. Validate integrity
 
@@ -117,22 +121,29 @@ user a reviewable record of the pass.
 
 ## Mechanics
 
-Toggling `archived` is the sole permitted mutation of a canonical
-amendment. CI-003 (modified-amendment-immutability) explicitly allows
-diffs whose only field delta is `archived`; every other field remains
-strictly immutable.
+Setting or clearing `archived` is the sole permitted mutation of a
+canonical amendment. CI-003 (modified-amendment-immutability) explicitly
+allows diffs whose only field delta is `archived`; every other field
+remains strictly immutable.
 
-The `shapes amendment archive` / `shapes amendment unarchive` commands
-are the sole write path for the field. Do not hand-edit amendment YAML
-to toggle archival — use the commands so the toggle is centralized
-in one code site.
+The `archived` field is an object with a required `reason` string:
+
+```yaml
+archived:
+  reason: Changes integrated into target shapes
+```
+
+When absent, the amendment is not archived. The `shapes amendment
+archive` / `shapes amendment unarchive` commands are the sole write
+path for the field. Do not hand-edit amendment YAML to toggle archival
+— use the commands so the toggle is centralized in one code site.
 
 ## CLI Quick Reference
 
 ```bash
 # Archival commands
-shapes amendment archive <id>            # hide from default listings
-shapes amendment unarchive <id>          # restore to default listings
+shapes amendment archive <id> --reason "..."  # hide from default listings
+shapes amendment unarchive <id>              # restore to default listings
 
 # Discovery (useful during archival passes)
 shapes list amendment                    # unarchived amendments only

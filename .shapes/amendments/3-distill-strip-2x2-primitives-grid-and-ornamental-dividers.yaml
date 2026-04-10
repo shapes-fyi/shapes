@@ -18,4 +18,5 @@ intent:
   verification: bun run format clean. bun run typecheck clean. shapes validate clean. Visually the home should become shorter and less cluttered without losing the hero, one concrete YAML example, or the install path. SectionDivider should render as a plain hairline in both light and dark modes.
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

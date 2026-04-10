@@ -7,8 +7,8 @@ use anyhow::Result;
 use crate::OutputFormat;
 use crate::commands::shared::{output, read_from};
 use crate::model::{
-    Amendment, AmendmentId, AmendmentTargets, Archived, ConstraintId, InitiatedBy, InitiatedType,
-    Intent, NodeType, ProfileId, ShapeId, Status, VersionImpact,
+    Amendment, AmendmentId, AmendmentTargets, ConstraintId, InitiatedBy, InitiatedType, Intent,
+    NodeType, ProfileId, ShapeId, Status, VersionImpact,
 };
 use crate::store::{FileStore, NodeStore};
 
@@ -79,7 +79,7 @@ pub fn create_amendment(
                 identity: None,
                 provenance: None,
             },
-            archived: Archived::No,
+            archived: None,
             metadata: BTreeMap::new(),
         }
     };

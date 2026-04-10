@@ -61,23 +61,16 @@
       "description": "Identity and context of the actor who initiated this amendment."
     },
     "archived": {
-      "oneOf": [
-        {
-          "type": "boolean"
-        },
-        {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "reason": {
-              "type": "string",
-              "description": "Free-form explanation of why this amendment was archived."
-            }
-          }
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason"],
+      "properties": {
+        "reason": {
+          "type": "string",
+          "description": "Required explanation of why this amendment was archived."
         }
-      ],
-      "default": false,
-      "description": "Display-only archival state. Accepts either a boolean (true/false) or an object with a reason field ({reason: \"...\"}). When true or present as an object, this amendment is hidden from listing output by default (shapes list amendment, amendment_log in shapes get <parent>) unless --archived is passed. Archived amendments remain on disk and are always seen by validation and CI checks — this flag only affects how listings are rendered, not reciprocity (INV-019) or CI-002 enforcement. Toggling this field (including adding or updating its reason) is the sole permitted mutation of a canonical amendment under CI-003."
+      },
+      "description": "Display-only archival state. When present, this amendment is hidden from listing output by default (shapes list amendment, amendment_log in shapes get <parent>) unless --archived is passed. The reason field is required — every archival decision must be explained. Archived amendments remain on disk and are always seen by validation and CI checks — this field only affects how listings are rendered, not reciprocity (INV-019) or CI-002 enforcement. Setting or clearing this field is the sole permitted mutation of a canonical amendment under CI-003."
     },
     "metadata": {
       "type": "object",

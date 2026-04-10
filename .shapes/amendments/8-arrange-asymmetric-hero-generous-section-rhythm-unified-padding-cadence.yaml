@@ -17,4 +17,5 @@ intent:
   verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual squint test — hero should feel weighted to the right (code), section breaks should feel like real intervals not seams, In Practice and Install should read as a matched pair. No content reflows beyond the intended changes. Mobile stack should still flow naturally (md:grid-cols-12 collapses to grid-cols-1 below md, same as the prior md:grid-cols-2).
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

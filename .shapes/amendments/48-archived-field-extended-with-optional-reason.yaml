@@ -7,7 +7,7 @@ targets:
 status: proposed
 intent:
   kind: amendment
-  summary: 'Extend the archived field from bare boolean to boolean-or-object, adding an optional reason sub-field. Backward-compatible: existing archived: true files are unaffected.'
+  summary: 'Replace the boolean archived field with an object-only form containing a required reason string. No backward compatibility — all existing archived: true entries must be migrated to archived: {reason: "..."}.'
   source: ai
 initiated_by:
   type: ai

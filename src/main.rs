@@ -238,9 +238,9 @@ enum AmendmentCommand {
     Archive {
         /// Numeric amendment ID
         id: u64,
-        /// Optional reason explaining why this amendment is being archived
+        /// Reason explaining why this amendment is being archived
         #[arg(long)]
-        reason: Option<String>,
+        reason: String,
     },
     /// Clear the archived flag on an amendment, bringing it back into
     /// default listings.

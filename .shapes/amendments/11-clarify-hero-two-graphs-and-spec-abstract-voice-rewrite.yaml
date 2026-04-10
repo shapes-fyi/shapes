@@ -17,4 +17,5 @@ intent:
   verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual claim-preservation check — the new hero paragraph still says (a) Shapes is an open specification, (b) it captures intent + invariants + change history, (c) the audience is agents and humans together. The new Two Graphs paragraph still says (a) Shapes and Constraints are independent DAGs, (b) Shapes compose work, (c) Constraints compose rules, (d) constraints inherit downward through the shape graph. The new abstract still says (a) the problem is context reconstruction from scattered artifacts, (b) the solution is one structured graph capturing intent / importance / invariants, (c) the graph is shared between agents and humans, (d) the spec is domain-agnostic. No claims added, no claims removed.
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

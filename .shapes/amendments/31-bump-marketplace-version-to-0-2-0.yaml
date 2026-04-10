@@ -11,4 +11,5 @@ intent:
   source: ai
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

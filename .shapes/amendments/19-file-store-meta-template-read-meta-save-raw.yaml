@@ -37,4 +37,5 @@ evidence:
       summary: '`init_rejects_unknown_template` confirms `shapes init --template bogus` exits non-zero and leaves no `.shapes/` behind.'
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

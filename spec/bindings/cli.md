@@ -116,7 +116,7 @@ shapes get <node_type> <id> [--archived]
 
 | Flag | Type | Description |
 |------|------|-------------|
-| `--archived` | boolean | Include archived amendments in the rendered `amendment_log`. By default they are filtered out. When set, each archived entry is annotated (rendered as `{id, archived: true}` instead of a bare ID) so readers can distinguish archived from unarchived entries. Has no effect when `node_type` is `amendment` — direct amendment fetch always returns the full record. |
+| `--archived` | boolean | Include archived amendments in the rendered `amendment_log`. By default they are filtered out. When set, each archived entry is annotated (rendered as `{id, archived: true, archived_reason: "..."}` instead of a bare ID) so readers can distinguish archived from unarchived entries and see why they were archived. Has no effect when `node_type` is `amendment` — direct amendment fetch always returns the full record. |
 
 **Output (stdout):** The full node object serialized in the selected format.
 All fields defined in the node's JSON Schema are included, with
@@ -164,7 +164,7 @@ shapes list [node_type] [--status <status>] [--kind <kind>] [--archived]
 |------|------|-------------|
 | `--status` | string | Filter by status name (e.g., `proposed`, `canonical`). |
 | `--kind` | string | Filter by kind (matched against `intent.kind` for shapes, amendments, and profiles; `kind` for constraints). |
-| `--archived` | boolean | Include archived amendments in the listing. By default, amendments with `archived: true` are hidden so decayed audit entries do not clutter agent context. Non-amendment node types are unaffected. |
+| `--archived` | boolean | Include archived amendments in the listing. By default, amendments with an `archived` field are hidden so decayed audit entries do not clutter agent context. Non-amendment node types are unaffected. |
 
 **Output (stdout):** A list of summary entries. Each entry contains:
 
@@ -466,7 +466,7 @@ $ shapes create shape --name "New Feature" --id-only
 **Command:**
 
 ```
-shapes amendment archive <id>
+shapes amendment archive <id> --reason <reason>
 shapes amendment unarchive <id>
 ```
 
@@ -476,19 +476,26 @@ shapes amendment unarchive <id>
 |----------|------|----------|-------------|
 | `id` | positional | yes | The numeric amendment ID to archive or unarchive. |
 
+**Flags (archive only):**
+
+| Flag | Type | Required | Description |
+|------|------|----------|-------------|
+| `--reason` | string | yes | Explanation of why this amendment is being archived. |
+
 **Description:**
-Toggles the display-only `archived` flag on an amendment. Archiving
-hides an amendment from default `shapes list` output and from the
-rendered `amendment_log` in `shapes get <parent>` unless `--archived`
-is passed. It is not a delete — the amendment YAML stays on disk,
-reciprocity still applies, and CI-002 continues to count the
-amendment.
+Sets or clears the display-only `archived` field on an amendment.
+Archiving hides an amendment from default `shapes list` output and
+from the rendered `amendment_log` in `shapes get <parent>` unless
+`--archived` is passed. It is not a delete — the amendment YAML stays
+on disk, reciprocity still applies, and CI-002 continues to count the
+amendment. A reason is required so future readers understand why the
+entry was archived.
 
 This is the sole permitted mutation of a canonical amendment. CI-003
 (modified-amendment-immutability) explicitly allows diffs whose only
 field delta is `archived`; every other field remains immutable.
 
-**Output (stdout):** The full amendment object after the toggle, so
+**Output (stdout):** The full amendment object after the change, so
 the caller can confirm the new state.
 
 **Exit codes:** 0 on success, 1 if the amendment does not exist.
@@ -496,7 +503,7 @@ the caller can confirm the new state.
 **Examples:**
 
 ```
-$ shapes amendment archive 17
+$ shapes amendment archive 17 --reason "Changes integrated into target shapes"
 $ shapes amendment unarchive 17
 ```
 

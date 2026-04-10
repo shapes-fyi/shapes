@@ -11,7 +11,7 @@ use serde::Serialize;
 
 use crate::OutputFormat;
 use crate::commands::shared::{open_store, output};
-use crate::model::{Amendment, AmendmentId, Archived, NodeType};
+use crate::model::{Amendment, AmendmentId, ArchivedDetail, NodeType};
 use crate::store::{FileStore, NodeStore};
 
 /// Loads a single node and prints it. When `archived` is `false` (the
@@ -56,8 +56,8 @@ fn emit_with_amendment_log<T: Serialize>(
     show_archived: bool,
     format: OutputFormat,
 ) -> Result<()> {
-    let archived_info = collect_archived_info(store, amendment_log);
-    let archived_ids: BTreeSet<u64> = archived_info.keys().copied().collect();
+    let archived_map = collect_archived_info(store, amendment_log);
+    let archived_ids: BTreeSet<u64> = archived_map.keys().copied().collect();
 
     // Always go through the patching path when an amendment_log exists
     // so that serialization format (key ordering) is consistent
@@ -65,13 +65,13 @@ fn emit_with_amendment_log<T: Serialize>(
     match format {
         OutputFormat::Yaml => {
             let mut value = serde_yaml_ng::to_value(node)?;
-            patch_yaml_amendment_log(&mut value, &archived_ids, &archived_info, show_archived);
+            patch_yaml_amendment_log(&mut value, &archived_ids, &archived_map, show_archived);
             print!("{}", serde_yaml_ng::to_string(&value)?);
             Ok(())
         }
         OutputFormat::Json => {
             let mut value = serde_json::to_value(node)?;
-            patch_json_amendment_log(&mut value, &archived_ids, &archived_info, show_archived);
+            patch_json_amendment_log(&mut value, &archived_ids, &archived_map, show_archived);
             println!("{}", serde_json::to_string_pretty(&value)?);
             Ok(())
         }
@@ -86,16 +86,13 @@ fn emit_with_amendment_log<T: Serialize>(
 fn collect_archived_info(
     store: &FileStore,
     amendment_log: &[AmendmentId],
-) -> BTreeMap<u64, Archived> {
+) -> BTreeMap<u64, ArchivedDetail> {
     amendment_log
         .iter()
         .filter_map(|id| {
             let a: Amendment = store.load(NodeType::Amendment, id.get()).ok()?;
-            if a.is_archived() {
-                Some((id.get(), a.archived))
-            } else {
-                None
-            }
+            let detail = a.archived?;
+            Some((id.get(), detail))
         })
         .collect()
 }
@@ -103,7 +100,7 @@ fn collect_archived_info(
 fn patch_yaml_amendment_log(
     value: &mut serde_yaml_ng::Value,
     archived_ids: &BTreeSet<u64>,
-    archived_info: &BTreeMap<u64, Archived>,
+    archived_map: &BTreeMap<u64, ArchivedDetail>,
     show_archived: bool,
 ) {
     let Some(mapping) = value.as_mapping_mut() else {
@@ -121,14 +118,12 @@ fn patch_yaml_amendment_log(
             let Some(id) = entry.as_u64() else { continue };
             let mut map = serde_yaml_ng::Mapping::new();
             map.insert("id".into(), serde_yaml_ng::Value::Number(id.into()));
-            if archived_ids.contains(&id) {
+            if let Some(detail) = archived_map.get(&id) {
                 map.insert("archived".into(), serde_yaml_ng::Value::Bool(true));
-                if let Some(reason) = archived_info.get(&id).and_then(|a| a.reason()) {
-                    map.insert(
-                        "archived_reason".into(),
-                        serde_yaml_ng::Value::String(reason.to_owned()),
-                    );
-                }
+                map.insert(
+                    "archived_reason".into(),
+                    serde_yaml_ng::Value::String(detail.reason.clone()),
+                );
             }
             *entry = serde_yaml_ng::Value::Mapping(map);
         }
@@ -146,7 +141,7 @@ fn patch_yaml_amendment_log(
 fn patch_json_amendment_log(
     value: &mut serde_json::Value,
     archived_ids: &BTreeSet<u64>,
-    archived_info: &BTreeMap<u64, Archived>,
+    archived_map: &BTreeMap<u64, ArchivedDetail>,
     show_archived: bool,
 ) {
     let Some(obj) = value.as_object_mut() else {
@@ -163,14 +158,12 @@ fn patch_json_amendment_log(
             let Some(id) = entry.as_u64() else { continue };
             let mut map = serde_json::Map::new();
             map.insert("id".into(), serde_json::Value::from(id));
-            if archived_ids.contains(&id) {
+            if let Some(detail) = archived_map.get(&id) {
                 map.insert("archived".into(), serde_json::Value::Bool(true));
-                if let Some(reason) = archived_info.get(&id).and_then(|a| a.reason()) {
-                    map.insert(
-                        "archived_reason".into(),
-                        serde_json::Value::from(reason),
-                    );
-                }
+                map.insert(
+                    "archived_reason".into(),
+                    serde_json::Value::from(detail.reason.as_str()),
+                );
             }
             *entry = serde_json::Value::Object(map);
         }

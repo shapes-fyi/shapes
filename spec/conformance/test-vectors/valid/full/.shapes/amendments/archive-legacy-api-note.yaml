@@ -11,7 +11,8 @@ targets:
   shape_ids:
     - 2
 status: canonical
-archived: true
+archived:
+  reason: Historical rollout note superseded by current shape intent
 intent:
   kind: feature
   summary: Historical rollout note — archived

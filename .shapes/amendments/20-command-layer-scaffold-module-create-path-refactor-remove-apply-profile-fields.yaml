@@ -50,4 +50,5 @@ evidence:
       summary: '`profile_kind_validation_accepts_allowed_kind` and `profile_kind_validation_rejects_disallowed_kind` confirm --profile is still honored for kind validation after the apply_profile_fields removal.'
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions

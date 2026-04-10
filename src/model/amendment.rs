@@ -8,11 +8,8 @@
 //! evidence + provenance fields.
 
 use std::collections::BTreeMap;
-use std::fmt;
 
-use serde::de::{self, MapAccess, Visitor};
-use serde::ser::SerializeMap;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Serialize};
 
 use clap::ValueEnum;
 
@@ -80,12 +77,12 @@ pub struct Amendment {
     )]
     pub provenance: Vec<Provenance>,
     pub initiated_by: InitiatedBy,
-    /// Display-only archival state. When archived, the amendment is
+    /// Display-only archival state. When present, the amendment is
     /// hidden from listing output by default. Validation, reciprocity
     /// (INV-019), and CI-002 enforcement always see the full set
-    /// regardless of this flag.
-    #[serde(default, skip_serializing_if = "Archived::is_no")]
-    pub archived: Archived,
+    /// regardless of this field.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub archived: Option<ArchivedDetail>,
     #[serde(
         default,
         deserialize_with = "crate::model::serde_helpers::null_to_default",
@@ -99,8 +96,9 @@ impl Amendment {
     /// be hidden from default listing output.
     #[must_use]
     pub fn is_archived(&self) -> bool {
-        self.archived.is_yes()
+        self.archived.is_some()
     }
+
 }
 
 impl super::traits::GraphNode for Amendment {
@@ -163,120 +161,11 @@ pub struct InitiatedBy {
     pub provenance: Option<String>,
 }
 
-/// Display-only archival state for an amendment.
-///
-/// Serializes as one of three forms:
-///
-/// - Field omitted entirely → `Archived::No` (the default)
-/// - `archived: true` → `Archived::Yes(ArchivedDetail { reason: None })`
-/// - `archived: { reason: "..." }` → `Archived::Yes(ArchivedDetail { reason: Some("...") })`
-///
-/// The `false` literal is accepted on deserialization but never emitted:
-/// the field is simply omitted via `skip_serializing_if`.
-#[derive(Debug, Clone, PartialEq)]
-pub enum Archived {
-    /// Not archived — amendment appears in default listings.
-    No,
-    /// Archived — hidden from default listings.
-    Yes(ArchivedDetail),
-}
-
-impl Default for Archived {
-    fn default() -> Self {
-        Archived::No
-    }
-}
-
-impl Archived {
-    /// Returns `true` when the amendment is archived.
-    #[must_use]
-    pub fn is_yes(&self) -> bool {
-        matches!(self, Archived::Yes(_))
-    }
-
-    /// Returns `true` when the amendment is not archived.
-    #[must_use]
-    pub fn is_no(&self) -> bool {
-        matches!(self, Archived::No)
-    }
-
-    /// Returns the archival reason, if any.
-    #[must_use]
-    pub fn reason(&self) -> Option<&str> {
-        match self {
-            Archived::No => None,
-            Archived::Yes(detail) => detail.reason.as_deref(),
-        }
-    }
-
-    /// Constructs an `Archived::Yes` with no reason.
-    #[must_use]
-    pub fn yes() -> Self {
-        Archived::Yes(ArchivedDetail::default())
-    }
-
-    /// Constructs an `Archived::Yes` with a reason.
-    #[must_use]
-    pub fn yes_with_reason(reason: impl Into<String>) -> Self {
-        Archived::Yes(ArchivedDetail {
-            reason: Some(reason.into()),
-        })
-    }
-}
-
-/// Optional detail attached to an archived amendment.
-#[derive(Debug, Clone, PartialEq, Default, Serialize, Deserialize)]
+/// Detail attached when an amendment is archived.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ArchivedDetail {
-    /// Free-form explanation of why this amendment was archived.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub reason: Option<String>,
-}
-
-impl Serialize for Archived {
-    /// Emits `true` when no detail is present, or `{reason: "..."}` when
-    /// a reason is attached. `Archived::No` is never serialized — the
-    /// parent struct's `skip_serializing_if` omits the field entirely.
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        match self {
-            Archived::No => serializer.serialize_bool(false),
-            Archived::Yes(detail) if detail.reason.is_none() => serializer.serialize_bool(true),
-            Archived::Yes(detail) => {
-                let mut map = serializer.serialize_map(Some(1))?;
-                map.serialize_entry("reason", detail.reason.as_ref().unwrap())?;
-                map.end()
-            }
-        }
-    }
-}
-
-impl<'de> Deserialize<'de> for Archived {
-    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        deserializer.deserialize_any(ArchivedVisitor)
-    }
-}
-
-struct ArchivedVisitor;
-
-impl<'de> Visitor<'de> for ArchivedVisitor {
-    type Value = Archived;
-
-    fn expecting(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str("a boolean or a map like {reason: \"...\"}")
-    }
-
-    fn visit_bool<E: de::Error>(self, v: bool) -> Result<Archived, E> {
-        if v {
-            Ok(Archived::Yes(ArchivedDetail::default()))
-        } else {
-            Ok(Archived::No)
-        }
-    }
-
-    fn visit_map<M: MapAccess<'de>>(self, map: M) -> Result<Archived, M::Error> {
-        let detail =
-            ArchivedDetail::deserialize(de::value::MapAccessDeserializer::new(map))?;
-        Ok(Archived::Yes(detail))
-    }
+    /// Required explanation of why this amendment was archived.
+    pub reason: String,
 }
 
 #[cfg(test)]
@@ -284,52 +173,19 @@ mod tests {
     use super::*;
 
     #[test]
-    fn archived_roundtrip_bare_true() {
-        let archived = Archived::yes();
-        let yaml = serde_yaml_ng::to_string(&archived).unwrap();
-        assert_eq!(yaml.trim(), "true");
-        let parsed: Archived = serde_yaml_ng::from_str(&yaml).unwrap();
-        assert_eq!(parsed, archived);
-    }
-
-    #[test]
-    fn archived_roundtrip_bare_false() {
-        let archived = Archived::No;
-        let yaml = serde_yaml_ng::to_string(&archived).unwrap();
-        assert_eq!(yaml.trim(), "false");
-        let parsed: Archived = serde_yaml_ng::from_str(&yaml).unwrap();
-        assert_eq!(parsed, archived);
-    }
-
-    #[test]
-    fn archived_roundtrip_with_reason() {
-        let archived = Archived::yes_with_reason("Changes integrated");
-        let yaml = serde_yaml_ng::to_string(&archived).unwrap();
+    fn archived_object_roundtrips() {
+        let detail = ArchivedDetail {
+            reason: "Changes integrated".into(),
+        };
+        let yaml = serde_yaml_ng::to_string(&detail).unwrap();
         assert!(yaml.contains("reason"));
         assert!(yaml.contains("Changes integrated"));
-        let parsed: Archived = serde_yaml_ng::from_str(&yaml).unwrap();
-        assert_eq!(parsed, archived);
+        let parsed: ArchivedDetail = serde_yaml_ng::from_str(&yaml).unwrap();
+        assert_eq!(parsed, detail);
     }
 
     #[test]
-    fn archived_deserialize_map_without_reason() {
-        let yaml = "{}";
-        let parsed: Archived = serde_yaml_ng::from_str(yaml).unwrap();
-        assert_eq!(parsed, Archived::Yes(ArchivedDetail { reason: None }));
-    }
-
-    #[test]
-    fn archived_reason_accessor() {
-        assert_eq!(Archived::No.reason(), None);
-        assert_eq!(Archived::yes().reason(), None);
-        assert_eq!(
-            Archived::yes_with_reason("test").reason(),
-            Some("test")
-        );
-    }
-
-    #[test]
-    fn amendment_with_archived_reason_roundtrips() {
+    fn amendment_with_archived_roundtrips() {
         let yaml = r#"
 id: 1
 name: test
@@ -349,7 +205,10 @@ archived:
 "#;
         let amendment: Amendment = serde_yaml_ng::from_str(yaml).unwrap();
         assert!(amendment.is_archived());
-        assert_eq!(amendment.archived.reason(), Some("Changes fully integrated"));
+        assert_eq!(
+            amendment.archived.as_ref().map(|d| d.reason.as_str()),
+            Some("Changes fully integrated")
+        );
 
         let reserialized = serde_yaml_ng::to_string(&amendment).unwrap();
         let reparsed: Amendment = serde_yaml_ng::from_str(&reserialized).unwrap();
@@ -357,7 +216,7 @@ archived:
     }
 
     #[test]
-    fn amendment_with_bare_archived_true_still_works() {
+    fn amendment_without_archived_roundtrips() {
         let yaml = r#"
 id: 1
 name: test
@@ -372,10 +231,9 @@ intent:
   source: ai
 initiated_by:
   type: ai
-archived: true
 "#;
         let amendment: Amendment = serde_yaml_ng::from_str(yaml).unwrap();
-        assert!(amendment.is_archived());
-        assert_eq!(amendment.archived.reason(), None);
+        assert!(!amendment.is_archived());
+        assert!(amendment.archived.is_none());
     }
 }

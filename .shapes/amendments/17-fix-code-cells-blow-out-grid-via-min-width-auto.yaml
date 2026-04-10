@@ -17,4 +17,5 @@ intent:
   verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual browser check at 768 px and 1024 px and 1440 px — In Practice YAML cell shows a bordered box with the YAML clipped at the right edge and a horizontal scrollbar appears at the bottom of the box. Install cargo command similarly clips inside its bordered box. Two Graphs DAG columns hold their 50 percent split. Hero code cell does not regress.
 initiated_by:
   type: ai
-archived: true
+archived:
+  reason: Stale — changes applied to target shapes; context captured in current definitions
