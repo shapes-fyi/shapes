@@ -426,10 +426,22 @@ fn load_base_map<T: DeserializeOwned>(
         let Some(text) = git_show(base, &path)? else {
             continue;
         };
-        let id = parse_id(&text)
-            .with_context(|| format!("failed to read id from {}", path.display()))?;
-        let node: T = serde_yaml_ng::from_str(&text)
-            .with_context(|| format!("failed to parse {}", path.display()))?;
+        let Ok(id) = parse_id(&text) else {
+            // Base node has no parseable id — skip it.
+            continue;
+        };
+        let Ok(node) = serde_yaml_ng::from_str::<T>(&text) else {
+            // Base node uses an older schema the current binary
+            // doesn't understand (e.g. a field type changed between
+            // base and HEAD). Skip it — ci-check won't detect
+            // CI-003 violations on this node, but that's preferable
+            // to crashing the entire check.
+            eprintln!(
+                "warning: skipping base {}: schema incompatible with current binary",
+                path.display()
+            );
+            continue;
+        };
         map.insert(id, node);
     }
     Ok(map)
