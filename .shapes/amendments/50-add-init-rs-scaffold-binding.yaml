@@ -1,0 +1,13 @@
+id: 50
+name: Add init.rs scaffold binding
+description: Add init.rs scaffold binding
+targets:
+  shape_ids:
+  - 32
+status: proposed
+intent:
+  kind: amendment
+  summary: Add realization binding for src/commands/init.rs covering --ci and --hooks infrastructure scaffolds.
+  source: ai
+initiated_by:
+  type: ai

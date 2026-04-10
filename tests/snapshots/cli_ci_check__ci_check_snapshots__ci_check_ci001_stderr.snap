@@ -3,5 +3,5 @@ source: tests/cli_ci_check.rs
 expression: stderr
 ---
 [error] [CI-001] pull-request:- — PR has no changes under .shapes (required by --require-shapes-changes)
-1 ci-check issue(s) found
+1 ci-check error(s) found
 Error: 1 ci-check issue(s) found

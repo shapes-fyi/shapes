@@ -582,10 +582,15 @@ fn changed_paths_under(base: &str, shapes_dir: &Path) -> Result<Vec<PathBuf>> {
     Ok(paths)
 }
 
-/// Emits the issue list in the requested format and converts a
-/// non-empty list into the dedicated [`CiCheckError::IssuesFound`]
-/// error so the CLI returns exit code 2.
+/// Emits the issue list in the requested format. Only errors (not
+/// warnings) cause the dedicated [`CiCheckError::IssuesFound`] exit
+/// code 2. Warnings are printed but do not block the PR.
 fn report(issues: &[ValidationIssue], format: OutputFormat) -> Result<(), CliError> {
+    let error_count = issues
+        .iter()
+        .filter(|i| i.severity == Severity::Error)
+        .count();
+
     if issues.is_empty() {
         match format {
             OutputFormat::Json => println!("[]"),
@@ -603,11 +608,22 @@ fn report(issues: &[ValidationIssue], format: OutputFormat) -> Result<(), CliErr
             for issue in issues {
                 eprintln!("{issue}");
             }
-            eprintln!("{} ci-check issue(s) found", issues.len());
+            if error_count > 0 {
+                eprintln!("{error_count} ci-check error(s) found");
+            } else {
+                eprintln!(
+                    "{} ci-check warning(s) found (no errors — passing)",
+                    issues.len()
+                );
+            }
         }
     }
-    Err(CiCheckError::IssuesFound {
-        count: issues.len(),
+    if error_count > 0 {
+        Err(CiCheckError::IssuesFound {
+            count: error_count,
+        }
+        .into())
+    } else {
+        Ok(())
     }
-    .into())
 }
