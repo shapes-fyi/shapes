@@ -74,7 +74,7 @@ intent that drives implementation.
 The `shapes` CLI must be installed. If `shapes --help` doesn't work, install it:
 
 ```bash
-cargo install --git https://github.com/shapes-fyi/shapes
+cargo install shapes-cli
 ```
 
 Run `shapes --help` and `shapes <command> --help` for all commands and flags.
@@ -309,8 +309,8 @@ shapes create constraint --name "Name" --kind invariant \
 shapes create amendment --name "Change description" \
   --target-shape 5 --summary "What changed and why"
 
-# Create a profile (required: --name, --summary)
-shapes create profile --name "Project Profile" --summary "Governance configuration"
+# Create a profile (required: --name)
+shapes create profile --name "Project Profile"
 ```
 
 ### Query commands

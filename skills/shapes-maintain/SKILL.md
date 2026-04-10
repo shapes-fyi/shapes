@@ -1,12 +1,10 @@
 ---
 name: shapes-maintain
 description: >
-  Keeps the shapes graph in sync with code changes. Triggers when planning
-  work in the graph, editing source files, creating new files, refactoring
-  code, preparing git commits, or completing coding tasks in a project with
-  a .shapes/ directory. Provides the decision framework for when to create
-  shapes, amendments, or constraints before writing code, how to bind
-  realizations after, and ensures the graph stays valid and current.
+  Keeps the shapes graph in sync with code changes. Triggers when editing
+  files, creating shapes, preparing commits, or completing tasks in a project
+  with .shapes/. Covers the decision framework for amendments, realizations,
+  and validation.
 user-invocable: true
 ---
 
@@ -235,7 +233,7 @@ shapes validate                          # Check integrity (exit 0 = clean)
 shapes create shape --name "X" --kind feature --summary "Y"
 shapes create constraint --name "X" --kind invariant --rule "Y" --enforcement machine
 shapes create amendment --name "X" --target-shape <id> --summary "Y"
-shapes create profile --name "X" --summary "Y"
+shapes create profile --name "X"
 ```
 
 There is no `shapes edit` command. Edit YAML files directly at

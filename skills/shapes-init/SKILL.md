@@ -10,7 +10,31 @@ user-invocable: true
 argument-hint: "[project-path]"
 ---
 
+```!
+if ! command -v shapes &>/dev/null; then
+  echo "Shapes CLI not found. Install it:"
+  echo "  cargo install shapes-cli"
+  echo ""
+  echo "See https://github.com/shapes-fyi/shapes#install-the-cli for more options."
+else
+  INSTALLED=$(shapes --version 2>/dev/null | awk '{print $2}')
+  LATEST=$(curl -sL "https://crates.io/api/v1/crates/shapes-cli" 2>/dev/null | grep -o '"max_version":"[^"]*"' | sed 's/"max_version":"//;s/"//')
+  echo "Shapes CLI v${INSTALLED:-unknown}"
+  if [ -n "$LATEST" ] && [ "$INSTALLED" != "$LATEST" ]; then
+    echo "UPDATE AVAILABLE: v${LATEST} — run: cargo install shapes-cli"
+  fi
+  if [ -f .shapes/meta.yaml ]; then
+    echo ""
+    echo "NOTE: .shapes/ already exists in this project."
+    shapes tree shape
+  fi
+fi
+```
+
 # Bootstrap Shapes for a Project
+
+If a project path was provided as an argument, change to that directory
+(`cd $ARGUMENTS`) before running `shapes init`.
 
 The goal is to capture not just what the code does, but the **meaning behind
 it** — the intent, the unwritten rules, the domain knowledge that lives in
@@ -32,7 +56,7 @@ Copy this checklist and track your progress:
 
 ```
 Bootstrap Progress:
-- [ ] Step 1: Store initialized (`shapes init --template <kind>`)
+- [ ] Step 1: Store initialized (`shapes init --kit <kind>`)
 - [ ] Step 2: Project explored (manifest, docs, structure, source, tests, CI)
 - [ ] Step 3: Engineer interviewed (all rounds complete, understanding confirmed)
 - [ ] Step 4: Shapes created and TODO placeholders filled in
@@ -43,16 +67,16 @@ Bootstrap Progress:
 
 ## Step 1: Initialize the Store
 
-Pick the template that matches the project's domain:
+Pick the kit that matches the project's domain:
 
 ```bash
-shapes init                       # software (default)
-shapes init --template research   # experiments, datasets, hypotheses
-shapes init --template editorial  # books, articles, narratives
-shapes init --template minimal    # only `rationale` is required
+shapes init                    # software (default)
+shapes init --kit research     # experiments, datasets, hypotheses
+shapes init --kit editorial    # books, articles, narratives
+shapes init --kit minimal      # only `rationale` is required
 ```
 
-The template controls what fields appear in scaffolded shapes and
+The kit controls what fields appear in scaffolded shapes and
 constraints — it is *guidance*, not enforcement. Enforcement is opt-in
 via Profiles (Step 6).
 
@@ -116,7 +140,7 @@ Continue with additional rounds if answers reveal unexplored areas.
 ## Step 4: Create Shapes
 
 Each call to `shapes create shape` writes a YAML file with `TODO:`
-placeholders for every field the active template expects, plus commented
+placeholders for every field the active kit expects, plus commented
 stub blocks for `parents`, `children`, `constraints`, and `realization`.
 Your job is to **`Read` the file and replace each `TODO:` with real
 content**, uncommenting the stub blocks you need and deleting the ones
@@ -128,7 +152,7 @@ shapes create shape --name "<ShapeName>" --kind <kind>
 
 Flags:
 - `--name` (required) — the shape's name.
-- `--kind` (optional) — defaults to the active template's default kind.
+- `--kind` (optional) — defaults to the active kit's default kind.
 - `--description`, `--summary` (optional) — pre-fill those fields instead
   of leaving TODOs.
 - `--profile <id>` (optional) — attach a Profile for enforcement (Step 6).
@@ -186,7 +210,7 @@ documenting intent and constraints, skip this step.
 shapes create profile --name "<ProjectName> Profile"
 ```
 
-The scaffold seeds the Profile with the active template's field and kind
+The scaffold seeds the Profile with the active kit's field and kind
 declarations as a sensible starting point. `Read` the file and edit:
 toggle `required: true|false` per field, add or remove kinds, adjust the
 lifecycle gates. Then attach the Profile to shapes/constraints by passing
@@ -213,3 +237,14 @@ shapes tree constraint
 
 Summarize what was created for the engineer — the key shapes, constraints,
 and how they relate.
+
+## Next Steps
+
+After bootstrapping, these skills handle ongoing work:
+
+- `/shapes:shapes-context` — teaches the shapes-first workflow; auto-triggers
+  when starting work in a project with `.shapes/`
+- `/shapes:shapes-maintain` — keeps the graph in sync with code changes;
+  auto-triggers when editing code, preparing commits, or completing tasks
+- `/shapes:shapes-archive` — archives stale amendments when their insight
+  value has decayed
