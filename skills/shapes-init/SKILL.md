@@ -11,24 +11,7 @@ argument-hint: "[project-path]"
 ---
 
 ```!
-if ! command -v shapes &>/dev/null; then
-  echo "Shapes CLI not found. Install it:"
-  echo "  cargo install shapes-cli"
-  echo ""
-  echo "See https://github.com/shapes-fyi/shapes#install-the-cli for more options."
-else
-  INSTALLED=$(shapes --version 2>/dev/null | awk '{print $2}')
-  LATEST=$(curl -sL "https://crates.io/api/v1/crates/shapes-cli" 2>/dev/null | grep -o '"max_version":"[^"]*"' | sed 's/"max_version":"//;s/"//')
-  echo "Shapes CLI v${INSTALLED:-unknown}"
-  if [ -n "$LATEST" ] && [ "$INSTALLED" != "$LATEST" ]; then
-    echo "UPDATE AVAILABLE: v${LATEST} — run: cargo install shapes-cli"
-  fi
-  if [ -f .shapes/meta.yaml ]; then
-    echo ""
-    echo "NOTE: .shapes/ already exists in this project."
-    shapes tree shape
-  fi
-fi
+shapes preflight --init 2>/dev/null || echo "Shapes CLI not found. Install it: cargo install shapes-cli"
 ```
 
 # Bootstrap Shapes for a Project
