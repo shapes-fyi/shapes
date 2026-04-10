@@ -188,6 +188,18 @@ enum Command {
         operation: AmendmentCommand,
     },
 
+    /// Print skill preamble: CLI version, update check, and shape tree.
+    ///
+    /// Designed for Claude Code skill preprocessing blocks where shell
+    /// expansions (`$(...)`, `${VAR}`) are forbidden. Encapsulates the
+    /// version check, crates.io update lookup, and `shapes tree shape`
+    /// output that skills previously inlined as bash.
+    Preflight {
+        /// Init mode: don't require .shapes/, show a note if it already exists
+        #[arg(long)]
+        init: bool,
+    },
+
     /// Normalize all `.shapes/` YAML files to serde canonical format.
     ///
     /// Ensures deterministic serialization: the same node values always
@@ -445,6 +457,8 @@ fn run(cli: Cli) -> Result<(), CliError> {
             AmendmentCommand::Archive { id } => commands::amendment_archive(id, cli.format)?,
             AmendmentCommand::Unarchive { id } => commands::amendment_unarchive(id, cli.format)?,
         },
+
+        Command::Preflight { init } => commands::preflight(init)?,
 
         Command::Fmt { check } => commands::fmt(check)?,
     }

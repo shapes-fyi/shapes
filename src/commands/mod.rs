@@ -14,6 +14,7 @@
 //! - [`mod@ci_check`] — `shapes ci-check`
 //! - [`mod@amendment`] — `shapes amendment {archive, unarchive}`
 //! - [`mod@fmt`] — `shapes fmt`
+//! - [`mod@preflight`] — `shapes preflight`
 //!
 //! Plus the verb-internal helper modules [`scaffold`] (YAML scaffold
 //! writers), [`shared`] (output helpers, store opening), and [`dag`]
@@ -27,6 +28,7 @@ mod fmt;
 mod get;
 mod init;
 mod list;
+mod preflight;
 mod query;
 mod scaffold;
 mod shared;
@@ -40,6 +42,7 @@ pub use fmt::fmt;
 pub use get::get;
 pub use init::init;
 pub use list::list;
+pub use preflight::preflight;
 pub use query::query;
 pub use tree::tree;
 pub use validate::validate;
