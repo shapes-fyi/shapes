@@ -77,6 +77,15 @@ runs:
         fi
         shapes validate
 
+    - name: shapes fmt --check
+      shell: bash
+      run: |
+        if [ ! -d "${{ inputs.shapes-dir }}" ]; then
+          echo "::warning::No shapes directory at '${{ inputs.shapes-dir }}' — skipping shapes fmt --check"
+          exit 0
+        fi
+        shapes fmt --check
+
     - name: shapes ci-check
       if: github.event_name == 'pull_request' || github.event_name == 'pull_request_target'
       shell: bash
