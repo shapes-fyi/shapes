@@ -1,6 +1,6 @@
 {
   "name": "shapes",
   "description": "Shapes Specification — structured intent, constraints, and boundaries for projects",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "repository": "https://github.com/shapes-fyi/shapes"
 }
