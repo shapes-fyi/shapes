@@ -11,26 +11,29 @@ use anyhow::Result;
 
 use crate::OutputFormat;
 use crate::commands::shared::{open_store, output};
-use crate::model::{Amendment, NodeType};
+use crate::model::{Amendment, Archived, NodeType};
 use crate::store::NodeStore;
 
-/// Sets `archived: true` on amendment `id` and writes it back.
-/// A no-op on already-archived amendments (still rewrites the file so
-/// the on-disk representation is canonical).
-pub fn archive(id: u64, format: OutputFormat) -> Result<()> {
-    set_archived(id, true, format)
-}
-
-/// Sets `archived: false` on amendment `id` and writes it back,
-/// bringing the amendment back into default listings.
-pub fn unarchive(id: u64, format: OutputFormat) -> Result<()> {
-    set_archived(id, false, format)
-}
-
-fn set_archived(id: u64, archived: bool, format: OutputFormat) -> Result<()> {
+/// Sets `archived` on amendment `id` with an optional reason and writes
+/// it back. A no-op on already-archived amendments (still rewrites the
+/// file so the on-disk representation is canonical).
+pub fn archive(id: u64, reason: Option<String>, format: OutputFormat) -> Result<()> {
     let store = open_store()?;
     let mut amendment: Amendment = store.load(NodeType::Amendment, id)?;
-    amendment.archived = archived;
+    amendment.archived = match reason {
+        Some(r) => Archived::yes_with_reason(r),
+        None => Archived::yes(),
+    };
+    store.save(NodeType::Amendment, id, &amendment)?;
+    output(&amendment, format)
+}
+
+/// Clears the archived flag on amendment `id`, bringing the amendment
+/// back into default listings.
+pub fn unarchive(id: u64, format: OutputFormat) -> Result<()> {
+    let store = open_store()?;
+    let mut amendment: Amendment = store.load(NodeType::Amendment, id)?;
+    amendment.archived = Archived::No;
     store.save(NodeType::Amendment, id, &amendment)?;
     output(&amendment, format)
 }

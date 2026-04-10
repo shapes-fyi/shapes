@@ -26,7 +26,9 @@ pub mod shape;
 pub mod status;
 pub mod traits;
 
-pub use amendment::{Amendment, AmendmentTargets, InitiatedBy, InitiatedType, VersionImpact};
+pub use amendment::{
+    Amendment, AmendmentTargets, Archived, InitiatedBy, InitiatedType, VersionImpact,
+};
 pub use bindings::{Evidence, Provenance, Realization};
 pub use constraint::{Constraint, Enforcement};
 pub use ids::{AmendmentId, ConstraintId, NodeId, ProfileId, ShapeId};
