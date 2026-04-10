@@ -66,16 +66,29 @@ always_run = true
 /// When `ci` is `true`, scaffolds a GitHub Actions workflow. When
 /// `hooks` is `true`, scaffolds a prek pre-commit config and attempts
 /// to run `prek install`.
+///
+/// Scaffold flags work on already-initialized projects: if `.shapes/`
+/// exists and `--ci` or `--hooks` is passed, the store init is skipped
+/// and only the requested scaffolds are written.
 pub fn init(kind: KitKind, ci: bool, hooks: bool) -> Result<()> {
     let dir = env::current_dir()?;
-    let kit = kind.kit();
-    FileStore::init(&dir, kit)?;
-    eprintln!(
-        "Initialized .shapes/ in {} (kit: {} — {}; active profile id 1 seeded)",
-        dir.display(),
-        kit.name,
-        kit.description,
-    );
+    let has_scaffolds = ci || hooks;
+    let shapes_exists = dir.join(".shapes").is_dir();
+
+    if shapes_exists && !has_scaffolds {
+        anyhow::bail!(".shapes/ directory already exists.");
+    }
+
+    if !shapes_exists {
+        let kit = kind.kit();
+        FileStore::init(&dir, kit)?;
+        eprintln!(
+            "Initialized .shapes/ in {} (kit: {} — {}; active profile id 1 seeded)",
+            dir.display(),
+            kit.name,
+            kit.description,
+        );
+    }
 
     if ci {
         scaffold_github_actions(&dir)?;

@@ -98,6 +98,50 @@ fn init_hooks_skips_existing_prek() {
     assert_eq!(content, "# existing config\n");
 }
 
+#[test]
+fn scaffold_hooks_on_existing_store() {
+    // First init creates .shapes/.
+    let dir = init_with(&[]);
+    assert!(dir.path().join(".shapes").is_dir());
+    assert!(!dir.path().join("prek.toml").exists());
+
+    // Second init with --hooks succeeds and creates prek.toml.
+    Command::cargo_bin("shapes")
+        .unwrap()
+        .current_dir(dir.path())
+        .args(["init", "--hooks"])
+        .assert()
+        .success();
+    assert!(dir.path().join("prek.toml").is_file());
+}
+
+#[test]
+fn scaffold_ci_on_existing_store() {
+    let dir = init_with(&[]);
+    assert!(!dir.path().join(".github").exists());
+
+    Command::cargo_bin("shapes")
+        .unwrap()
+        .current_dir(dir.path())
+        .args(["init", "--ci"])
+        .assert()
+        .success();
+    assert!(dir.path().join(".github/workflows/shapes.yml").is_file());
+}
+
+#[test]
+fn bare_init_on_existing_store_still_fails() {
+    let dir = init_with(&[]);
+
+    Command::cargo_bin("shapes")
+        .unwrap()
+        .current_dir(dir.path())
+        .args(["init"])
+        .assert()
+        .failure()
+        .stderr(predicates::str::contains("already exists"));
+}
+
 mod help_snapshots {
     use assert_cmd::Command;
 
