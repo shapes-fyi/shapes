@@ -29,7 +29,7 @@ pub struct Binding {
         deserialize_with = "null_to_default",
         skip_serializing_if = "BTreeMap::is_empty"
     )]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
+    pub metadata: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 /// A group of bindings that realize a shape (or constraint) as a
@@ -64,7 +64,7 @@ pub struct Evidence {
         deserialize_with = "null_to_default",
         skip_serializing_if = "BTreeMap::is_empty"
     )]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
+    pub metadata: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 /// A provenance record linking a node to a decision-history artifact.
@@ -81,5 +81,5 @@ pub struct Provenance {
         deserialize_with = "null_to_default",
         skip_serializing_if = "BTreeMap::is_empty"
     )]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
+    pub metadata: BTreeMap<String, serde_yaml_ng::Value>,
 }

@@ -91,7 +91,7 @@ pub trait DagNode: GraphNode + DeserializeOwned + Clone {
     fn provenance(&self) -> &[Provenance];
 
     /// Returns the open metadata map.
-    fn metadata(&self) -> &BTreeMap<String, serde_yml::Value>;
+    fn metadata(&self) -> &BTreeMap<String, serde_yaml_ng::Value>;
 
     /// Produces a display label for tree printing.
     ///

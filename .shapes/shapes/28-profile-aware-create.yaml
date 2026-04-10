@@ -35,7 +35,7 @@ realization:
   - scheme: path
     value: src/main.rs
     metadata:
-      summary: '--profile <id> arg on CreateCommand::Shape and CreateCommand::Constraint, kept as a per-call override of the store''s active profile (resolved at meta.yaml time).'
+      summary: --profile <id> arg on CreateCommand::Shape and CreateCommand::Constraint, kept as a per-call override of the store's active profile (resolved at meta.yaml time).
   role: supporting
 amendment_log:
 - 23

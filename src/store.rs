@@ -156,7 +156,7 @@ impl FileStore {
         // Point meta.yaml at the seeded profile.
         let meta = Meta::new(profile_id);
         let meta_path = root.join(META_FILE);
-        let yaml = serde_yml::to_string(&meta)?;
+        let yaml = serde_yaml_ng::to_string(&meta)?;
         fs::write(&meta_path, yaml).context("failed to write meta.yaml")?;
 
         Ok(FileStore { root })
@@ -168,7 +168,7 @@ impl FileStore {
         let path = self.root.join(META_FILE);
         let content = fs::read_to_string(&path)
             .with_context(|| format!("failed to read {}", path.display()))?;
-        Ok(serde_yml::from_str(&content)?)
+        Ok(serde_yaml_ng::from_str(&content)?)
     }
 
     /// Saves a node by writing a pre-formatted YAML string directly.
@@ -200,15 +200,15 @@ impl FileStore {
     pub fn save<T: Serialize>(&self, node_type: NodeType, id: u64, node: &T) -> Result<PathBuf> {
         // If a file with this id already exists, overwrite it.
         if let Ok(existing) = self.find_file(node_type, id) {
-            let yaml = serde_yml::to_string(node)?;
+            let yaml = serde_yaml_ng::to_string(node)?;
             fs::write(&existing, yaml)
                 .with_context(|| format!("failed to write {}", existing.display()))?;
             return Ok(existing);
         }
 
         // New node — serialize to extract the name for the filename.
-        let yaml = serde_yml::to_string(node)?;
-        let slug = if let Ok(parsed) = serde_yml::from_str::<JustName>(&yaml) {
+        let yaml = serde_yaml_ng::to_string(node)?;
+        let slug = if let Ok(parsed) = serde_yaml_ng::from_str::<JustName>(&yaml) {
             slugify(&parsed.name)
         } else {
             id.to_string()
@@ -243,7 +243,7 @@ impl FileStore {
         for path in self.yaml_files(node_type)? {
             let content = fs::read_to_string(&path)
                 .with_context(|| format!("failed to read {}", path.display()))?;
-            if let Ok(parsed) = serde_yml::from_str::<IdOnly>(&content)
+            if let Ok(parsed) = serde_yaml_ng::from_str::<IdOnly>(&content)
                 && parsed.id == id
             {
                 return Ok(path);
@@ -258,7 +258,7 @@ impl NodeStore for FileStore {
         let path = self.find_file(node_type, id)?;
         let content = fs::read_to_string(&path)
             .with_context(|| format!("failed to read {}", path.display()))?;
-        Ok(serde_yml::from_str(&content)?)
+        Ok(serde_yaml_ng::from_str(&content)?)
     }
 
     fn list_ids(&self, node_type: NodeType) -> Result<Vec<u64>> {
@@ -266,7 +266,7 @@ impl NodeStore for FileStore {
         for path in self.yaml_files(node_type)? {
             let content = fs::read_to_string(&path)
                 .with_context(|| format!("failed to read {}", path.display()))?;
-            if let Ok(parsed) = serde_yml::from_str::<IdOnly>(&content) {
+            if let Ok(parsed) = serde_yaml_ng::from_str::<IdOnly>(&content) {
                 ids.push(parsed.id);
             }
         }

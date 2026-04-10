@@ -37,7 +37,7 @@ pub fn create_profile(
 
     if let Some(path) = args.from {
         let content = read_from(&path)?;
-        let mut p: Profile = serde_yml::from_str(&content)?;
+        let mut p: Profile = serde_yaml_ng::from_str(&content)?;
         p.id = id;
         let saved_path = store.save(NodeType::Profile, id.get(), &p)?;
         report_created(id_only, &id.to_string(), &saved_path, &p, format)?;
@@ -58,7 +58,7 @@ pub fn create_profile(
         eprintln!("Created {}", saved_path.display());
         // Re-serialize for display so the caller sees exactly what
         // landed on disk.
-        print!("{}", serde_yml::to_string(&profile)?);
+        print!("{}", serde_yaml_ng::to_string(&profile)?);
     }
     Ok(())
 }

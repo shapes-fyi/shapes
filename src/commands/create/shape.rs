@@ -43,7 +43,7 @@ pub fn create_shape(
 
     if let Some(path) = args.from {
         let content = read_from(&path)?;
-        let mut s: Shape = serde_yml::from_str(&content)?;
+        let mut s: Shape = serde_yaml_ng::from_str(&content)?;
         s.id = id;
         let saved_path = store.save(NodeType::Shape, id.get(), &s)?;
         report_created(id_only, &id.to_string(), &saved_path, &s, format)?;

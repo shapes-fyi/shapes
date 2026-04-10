@@ -46,7 +46,7 @@ realization:
   - scheme: path
     value: src/commands/mod.rs
     metadata:
-      summary: '514-line bag of command implementations to be split into commands/{create,get,list}/{shape,constraint,amendment,profile}.rs'
+      summary: 514-line bag of command implementations to be split into commands/{create,get,list}/{shape,constraint,amendment,profile}.rs
   role: supporting
 - bindings:
   - scheme: path
@@ -86,7 +86,7 @@ realization:
   role: supporting
 - bindings:
   - scheme: path
-    value: '.github/workflows/ci.yml'
+    value: .github/workflows/ci.yml
     metadata:
       summary: New GitHub Actions workflow running fmt, clippy, test, doc, deny, and machete on every PR; wires constraints 24, 28, 29, 31, 32 into CI
   role: supporting

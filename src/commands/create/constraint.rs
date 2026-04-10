@@ -48,7 +48,7 @@ pub fn create_constraint(
 
     if let Some(path) = args.from {
         let content = read_from(&path)?;
-        let mut c: Constraint = serde_yml::from_str(&content)?;
+        let mut c: Constraint = serde_yaml_ng::from_str(&content)?;
         c.id = id;
         let saved_path = store.save(NodeType::Constraint, id.get(), &c)?;
         report_created(id_only, &id.to_string(), &saved_path, &c, format)?;

@@ -22,7 +22,7 @@ impl MockStore {
     }
 
     fn insert<T: Serialize>(&mut self, node_type: NodeType, id: u64, node: &T) {
-        let yaml = serde_yml::to_string(node).unwrap();
+        let yaml = serde_yaml_ng::to_string(node).unwrap();
         self.nodes.insert((node_type, id), yaml);
     }
 }
@@ -33,7 +33,7 @@ impl NodeStore for MockStore {
             .nodes
             .get(&(node_type, id))
             .ok_or_else(|| anyhow::anyhow!("{} {} not found", node_type, id))?;
-        Ok(serde_yml::from_str(yaml)?)
+        Ok(serde_yaml_ng::from_str(yaml)?)
     }
 
     fn list_ids(&self, node_type: NodeType) -> Result<Vec<u64>> {
@@ -60,7 +60,7 @@ fn make_shape(id: u64) -> Shape {
         intent: Intent {
             kind: "feature".into(),
             summary: format!("shape-{id}"),
-            source: serde_yml::Value::String("human".into()),
+            source: serde_yaml_ng::Value::String("human".into()),
             uris: vec![],
             extra: Default::default(),
         },
@@ -108,7 +108,7 @@ fn make_amendment(id: u64, shape_targets: Vec<u64>) -> Amendment {
         intent: Intent {
             kind: "amendment".into(),
             summary: format!("amendment-{id}"),
-            source: serde_yml::Value::String("ai".into()),
+            source: serde_yaml_ng::Value::String("ai".into()),
             uris: vec![],
             extra: Default::default(),
         },

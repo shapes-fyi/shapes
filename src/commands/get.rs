@@ -63,9 +63,9 @@ fn emit_with_amendment_log<T: Serialize>(
     // regardless of whether any amendment happens to be archived.
     match format {
         OutputFormat::Yaml => {
-            let mut value = serde_yml::to_value(node)?;
+            let mut value = serde_yaml_ng::to_value(node)?;
             patch_yaml_amendment_log(&mut value, &archived_ids, show_archived);
-            print!("{}", serde_yml::to_string(&value)?);
+            print!("{}", serde_yaml_ng::to_string(&value)?);
             Ok(())
         }
         OutputFormat::Json => {
@@ -97,14 +97,14 @@ fn collect_archived_ids(store: &FileStore, amendment_log: &[AmendmentId]) -> BTr
 }
 
 fn patch_yaml_amendment_log(
-    value: &mut serde_yml::Value,
+    value: &mut serde_yaml_ng::Value,
     archived_ids: &BTreeSet<u64>,
     show_archived: bool,
 ) {
     let Some(mapping) = value.as_mapping_mut() else {
         return;
     };
-    let key = serde_yml::Value::String("amendment_log".into());
+    let key = serde_yaml_ng::Value::String("amendment_log".into());
     let Some(log) = mapping.get_mut(&key) else {
         return;
     };
@@ -115,14 +115,14 @@ fn patch_yaml_amendment_log(
         for entry in seq.iter_mut() {
             let Some(id) = entry.as_u64() else { continue };
             if archived_ids.contains(&id) {
-                let mut map = serde_yml::Mapping::new();
-                map.insert("id".into(), serde_yml::Value::Number(id.into()));
-                map.insert("archived".into(), serde_yml::Value::Bool(true));
-                *entry = serde_yml::Value::Mapping(map);
+                let mut map = serde_yaml_ng::Mapping::new();
+                map.insert("id".into(), serde_yaml_ng::Value::Number(id.into()));
+                map.insert("archived".into(), serde_yaml_ng::Value::Bool(true));
+                *entry = serde_yaml_ng::Value::Mapping(map);
             } else {
-                let mut map = serde_yml::Mapping::new();
-                map.insert("id".into(), serde_yml::Value::Number(id.into()));
-                *entry = serde_yml::Value::Mapping(map);
+                let mut map = serde_yaml_ng::Mapping::new();
+                map.insert("id".into(), serde_yaml_ng::Value::Number(id.into()));
+                *entry = serde_yaml_ng::Value::Mapping(map);
             }
         }
     } else {

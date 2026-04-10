@@ -77,7 +77,7 @@ pub struct Shape {
         deserialize_with = "crate::model::serde_helpers::null_to_default",
         skip_serializing_if = "BTreeMap::is_empty"
     )]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
+    pub metadata: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 impl Shape {
@@ -150,7 +150,7 @@ impl super::traits::DagNode for Shape {
         &self.provenance
     }
 
-    fn metadata(&self) -> &std::collections::BTreeMap<String, serde_yml::Value> {
+    fn metadata(&self) -> &std::collections::BTreeMap<String, serde_yaml_ng::Value> {
         &self.metadata
     }
 }

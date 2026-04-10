@@ -103,7 +103,7 @@ pub struct StatusDetail {
         deserialize_with = "null_to_default",
         skip_serializing_if = "BTreeMap::is_empty"
     )]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
+    pub metadata: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 /// Optional metadata attached to a terminal status, plus successor IDs.
@@ -134,7 +134,7 @@ pub struct TerminalDetail {
         deserialize_with = "null_to_default",
         skip_serializing_if = "BTreeMap::is_empty"
     )]
-    pub metadata: BTreeMap<String, serde_yml::Value>,
+    pub metadata: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 impl Serialize for Status {
@@ -248,9 +248,9 @@ mod tests {
     #[test]
     fn status_roundtrip_bare_string() {
         let status = Status::proposed();
-        let yaml = serde_yml::to_string(&status).unwrap();
+        let yaml = serde_yaml_ng::to_string(&status).unwrap();
         assert_eq!(yaml.trim(), "proposed");
-        let parsed: Status = serde_yml::from_str(&yaml).unwrap();
+        let parsed: Status = serde_yaml_ng::from_str(&yaml).unwrap();
         assert_eq!(parsed, status);
     }
 
@@ -261,13 +261,13 @@ mod tests {
             uris: vec![],
             metadata: BTreeMap::from([(
                 "date".into(),
-                serde_yml::Value::String("2025-12-01".into()),
+                serde_yaml_ng::Value::String("2025-12-01".into()),
             )]),
         });
-        let yaml = serde_yml::to_string(&status).unwrap();
+        let yaml = serde_yaml_ng::to_string(&status).unwrap();
         assert!(yaml.contains("canonical"));
         assert!(yaml.contains("passed review"));
-        let parsed: Status = serde_yml::from_str(&yaml).unwrap();
+        let parsed: Status = serde_yaml_ng::from_str(&yaml).unwrap();
         assert_eq!(parsed, status);
     }
 
@@ -293,9 +293,9 @@ mod tests {
             uris: vec![],
             metadata: BTreeMap::new(),
         });
-        let yaml = serde_yml::to_string(&status).unwrap();
+        let yaml = serde_yaml_ng::to_string(&status).unwrap();
         assert!(yaml.contains("superseded"));
-        let parsed: Status = serde_yml::from_str(&yaml).unwrap();
+        let parsed: Status = serde_yaml_ng::from_str(&yaml).unwrap();
         assert_eq!(parsed, status);
     }
 }

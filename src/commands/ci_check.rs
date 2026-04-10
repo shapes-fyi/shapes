@@ -165,7 +165,7 @@ fn collect_satisfied_targets(
         for path in disk_yaml_files(&amendment_dir)? {
             let text = std::fs::read_to_string(&path)
                 .with_context(|| format!("failed to read {}", path.display()))?;
-            let head_amend: Amendment = serde_yml::from_str(&text)
+            let head_amend: Amendment = serde_yaml_ng::from_str(&text)
                 .with_context(|| format!("failed to parse {}", path.display()))?;
             let rel = repo_relative_path(&path)?;
             head_map.insert(head_amend.id.get(), (rel, head_amend));
@@ -359,7 +359,7 @@ fn load_disk_map<T: DeserializeOwned>(dir: &Path) -> Result<BTreeMap<u64, T>> {
             .with_context(|| format!("failed to read {}", path.display()))?;
         let id = parse_id(&text)
             .with_context(|| format!("failed to read id from {}", path.display()))?;
-        let node: T = serde_yml::from_str(&text)
+        let node: T = serde_yaml_ng::from_str(&text)
             .with_context(|| format!("failed to parse {}", path.display()))?;
         map.insert(id, node);
     }
@@ -428,7 +428,7 @@ fn load_base_map<T: DeserializeOwned>(
         };
         let id = parse_id(&text)
             .with_context(|| format!("failed to read id from {}", path.display()))?;
-        let node: T = serde_yml::from_str(&text)
+        let node: T = serde_yaml_ng::from_str(&text)
             .with_context(|| format!("failed to parse {}", path.display()))?;
         map.insert(id, node);
     }
@@ -463,7 +463,7 @@ fn git_show(base: &str, path: &Path) -> Result<Option<String>> {
 
 fn parse_id(yaml: &str) -> Result<u64> {
     let id_only: crate::store::IdOnly =
-        serde_yml::from_str(yaml).context("YAML missing top-level `id` field")?;
+        serde_yaml_ng::from_str(yaml).context("YAML missing top-level `id` field")?;
     Ok(id_only.id)
 }
 

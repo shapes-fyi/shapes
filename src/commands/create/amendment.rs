@@ -44,7 +44,7 @@ pub fn create_amendment(
     let id = AmendmentId::new(store.next_id(NodeType::Amendment)?);
     let amendment: Amendment = if let Some(path) = args.from {
         let content = read_from(&path)?;
-        let mut a: Amendment = serde_yml::from_str(&content)?;
+        let mut a: Amendment = serde_yaml_ng::from_str(&content)?;
         a.id = id;
         a
     } else {
@@ -66,7 +66,7 @@ pub fn create_amendment(
             intent: Intent {
                 kind: "amendment".into(),
                 summary: args.summary.unwrap_or(name),
-                source: serde_yml::Value::String(args.source),
+                source: serde_yaml_ng::Value::String(args.source),
                 uris: vec![],
                 extra: BTreeMap::default(),
             },

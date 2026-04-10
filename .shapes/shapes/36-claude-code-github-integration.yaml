@@ -13,13 +13,13 @@ intent:
 realization:
 - bindings:
   - scheme: path
-    value: '.github/workflows/claude.yml'
+    value: .github/workflows/claude.yml
     metadata:
       summary: Interactive Claude workflow — triggers on @claude mentions in issue_comment, pull_request_review_comment, pull_request_review, and issues events. Gated by github.actor == snowmead.
   role: primary
 - bindings:
   - scheme: path
-    value: '.github/workflows/claude-code-review.yml'
+    value: .github/workflows/claude-code-review.yml
     metadata:
       summary: Automated PR review workflow — triggers on pull_request opened/synchronize/ready_for_review/reopened events. Runs the code-review plugin. Gated by github.actor == snowmead.
   role: primary

@@ -7,7 +7,7 @@ targets:
 status: canonical
 intent:
   kind: amendment
-  summary: '--profile still validates kinds and sets the profile field, but no longer drives intent field pre-population — that''s now the template''s job, and it works for every create call, not just profile-attached ones.'
+  summary: --profile still validates kinds and sets the profile field, but no longer drives intent field pre-population — that's now the template's job, and it works for every create call, not just profile-attached ones.
   source: ai
   goals: Keep --profile useful for opt-in kind validation. Remove the dead apply_profile_fields code path. Document the new division of labor (templates = hints, profiles = enforcement).
   non_goals: Does not remove the --profile flag itself. Does not change Profile semantics for downstream features (lifecycle gates, amendment rules). Does not migrate the existing repo's Profile.

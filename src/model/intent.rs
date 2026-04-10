@@ -24,7 +24,7 @@ pub struct Intent {
     /// One-line human-readable description.
     pub summary: String,
     /// Origin of the intent — typically `human`, `ai`, or `system`.
-    pub source: serde_yml::Value,
+    pub source: serde_yaml_ng::Value,
     /// External URIs documenting the intent.
     #[serde(
         default,
@@ -34,7 +34,7 @@ pub struct Intent {
     pub uris: Vec<String>,
     /// Profile-defined extra fields, flattened into the parent map.
     #[serde(flatten)]
-    pub extra: BTreeMap<String, serde_yml::Value>,
+    pub extra: BTreeMap<String, serde_yaml_ng::Value>,
 }
 
 #[cfg(test)]
@@ -46,16 +46,18 @@ mod tests {
         let intent = Intent {
             kind: "feature".into(),
             summary: "Add auth".into(),
-            source: serde_yml::Value::String("human".into()),
+            source: serde_yaml_ng::Value::String("human".into()),
             uris: vec![],
             extra: BTreeMap::from([(
                 "goals".into(),
-                serde_yml::Value::Sequence(vec![serde_yml::Value::String("SSO support".into())]),
+                serde_yaml_ng::Value::Sequence(vec![serde_yaml_ng::Value::String(
+                    "SSO support".into(),
+                )]),
             )]),
         };
-        let yaml = serde_yml::to_string(&intent).unwrap();
+        let yaml = serde_yaml_ng::to_string(&intent).unwrap();
         assert!(yaml.contains("goals"));
-        let parsed: Intent = serde_yml::from_str(&yaml).unwrap();
+        let parsed: Intent = serde_yaml_ng::from_str(&yaml).unwrap();
         assert_eq!(parsed, intent);
     }
 }

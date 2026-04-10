@@ -503,7 +503,7 @@ fn ci_003_modified_amendment_fires_and_does_not_satisfy_ci_002() {
     set_intent_summary(&yaml_path(&dir, "shapes", id), "rewritten");
     // Mutate a real field in the amendment yaml so the parsed
     // structure differs from base — comments would be stripped by
-    // serde_yml and CI-003 would not fire.
+    // serde_yaml_ng and CI-003 would not fire.
     let amend_path = yaml_path(&dir, "amendments", 1);
     let amend = fs::read_to_string(&amend_path).unwrap();
     let tampered = amend.replacen("PriorFix", "TamperedName", 1);

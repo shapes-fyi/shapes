@@ -2,7 +2,7 @@
 //! `shapes create constraint`.
 //!
 //! These emit YAML strings that:
-//!   1. Parse cleanly via `serde_yml` (so subsequent `shapes get`,
+//!   1. Parse cleanly via `serde_yaml_ng` (so subsequent `shapes get`,
 //!      `shapes validate`, etc. work without round-tripping issues), and
 //!   2. Are maximally informative when read directly from disk — every
 //!      expected field is present, either populated with `TODO: <hint>`
