@@ -7,7 +7,7 @@ intent:
   kind: module
   summary: YAML-based persistence layer managing .shapes/ directory, ID allocation, and node serialization
   source: human
-  goals: Provide reliable, atomic-ish file I/O for the shapes graph. Store resolves nodes by scanning files and matching the `id` field inside. Filenames are descriptive slugs derived from node names. Next ID is computed by `max(existing_ids) + 1`. meta.yaml contains only `version`. Generic load/save must work for any serde-compatible node type without per-type boilerplate.
+  goals: Provide reliable, atomic-ish file I/O for the shapes graph. Store resolves nodes by scanning files and matching the `id` field inside. Filenames are descriptive slugs derived from node names. Next ID is computed by `max(existing_ids) + 1`. meta.yaml carries `version` and `active_profile`. Generic load/save must work for any serde-compatible node type without per-type boilerplate.
   non_goals: Not designed for concurrent access — relies on git for conflict resolution. Not optimized for large graphs (hundreds of thousands of nodes).
   rationale: 'A file-based store was chosen over a database for three reasons: YAML files diff well in git, there are zero runtime dependencies, and agents can read/write files directly. The Store abstraction isolates all filesystem operations so commands and DAG algorithms never touch files directly.'
 constraints:
@@ -21,11 +21,12 @@ realization:
   - scheme: path
     value: src/store.rs
     metadata:
-      summary: NodeStore trait (load, list_ids, next_id, load_all) + FileStore impl. Scans YAML files by id field, generates {id}-{slug}.yaml filenames. Meta carries optional `template:` for the active scaffolding template. read_meta() returns parsed Meta; save_raw() writes a pre-formatted YAML string for the scaffold writer. MockStore in dag.rs tests.
+      summary: NodeStore trait (load, load_all, list_ids, next_id, plus typed convenience methods load_shape, load_constraint, load_amendment, load_profile) + FileStore impl. Scans YAML files by id field, generates {id}-{slug}.yaml filenames. Meta carries active_profile for the governing Profile. read_meta() returns parsed Meta; save_raw() writes a pre-formatted YAML string for the scaffold writer. MockStore in dag.rs tests.
   role: primary
 amendment_log:
 - 19
 - 40
+- 47
 parents:
 - id: 1
   role: component

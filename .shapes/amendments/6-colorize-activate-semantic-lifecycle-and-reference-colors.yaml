@@ -18,3 +18,4 @@ intent:
   verification: 'bun run format clean. bun run typecheck clean. shapes validate clean. Manual check in light and dark modes: lifecycle tags read as distinct categories, cross-references read as clearly secondary, nav Specification link shows active state on the /specification route, §NN prefixes pick up a subtle primary tint without making the label look garish. No new AI slop introduced — no gradients, no glows, no pure saturation bumps. Every colored element also has a non-color cue (bracketed text, arrow glyph, or position) so the site remains legible without color.'
 initiated_by:
   type: ai
+archived: true

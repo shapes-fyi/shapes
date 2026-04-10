@@ -37,6 +37,12 @@ realization:
   role: primary
 - bindings:
   - scheme: path
+    value: src/commands/ci_check.rs
+    metadata:
+      summary: 'CI gating logic using GraphNode trait bounds. Loads nodes generically via where T: DeserializeOwned + GraphNode, eliminating the old StatusedNode trait and stringly-typed dispatch. Checks CI-002 (amendment-on-promoted-change) and CI-003 (modified-amendment-immutability with archive-only carve-out).'
+  role: primary
+- bindings:
+  - scheme: path
     value: src/commands/shared.rs
     metadata:
       summary: Cross-verb helpers — output(yaml/json), read_from(stdin/path), open_store, report_created.
@@ -52,6 +58,7 @@ amendment_log:
 - 26
 - 32
 - 39
+- 47
 parents:
 - id: 1
   role: component

@@ -13,3 +13,4 @@ intent:
   rationale: Archival passes are infrequent maintenance tasks with their own decision framework. Bundling them in the maintain skill forced agents to load archival context they rarely need during routine graph maintenance. Extracting into a dedicated skill keeps maintain focused and gives archival a comprehensive, standalone home.
 initiated_by:
   type: ai
+archived: true

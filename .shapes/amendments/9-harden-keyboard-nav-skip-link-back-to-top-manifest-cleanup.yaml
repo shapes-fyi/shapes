@@ -17,3 +17,4 @@ intent:
   verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual keyboard test on the spec page — j and k jump sections, G jumps to bottom, g g jumps to top, focus is visible at every step, skip link appears on first Tab. Manifest test — open dev tools application panel, confirm name and theme_color match the brand. Reduced-motion test — keyboard nav uses instant scroll instead of smooth when prefers-reduced-motion is set. Long-text edge case — narrow the home page below the smallest cell and confirm In Practice and Install headings break gracefully instead of clipping.
 initiated_by:
   type: ai
+archived: true

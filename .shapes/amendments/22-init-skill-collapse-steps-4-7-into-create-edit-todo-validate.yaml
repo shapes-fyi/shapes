@@ -31,3 +31,4 @@ evidence:
   trusted: false
 initiated_by:
   type: ai
+archived: true

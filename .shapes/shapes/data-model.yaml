@@ -50,7 +50,7 @@ realization:
   - scheme: path
     value: src/model/ids.rs
     metadata:
-      summary: Newtype ID wrappers (ShapeId, ConstraintId, AmendmentId, ProfileId) with
+      summary: define_id! macro generating newtype ID wrappers (ShapeId, ConstraintId, AmendmentId, ProfileId) with Display, FromStr, serde(transparent), and NodeId trait impls
   - scheme: path
     value: src/model/node_type.rs
     metadata:
@@ -71,6 +71,10 @@ realization:
     value: src/model/bindings.rs
     metadata:
       summary: Binding, Realization, Evidence, Provenance — the value objects that connect a node to external artifacts
+  - scheme: path
+    value: src/model/traits.rs
+    metadata:
+      summary: GraphNode trait (raw_id, name, status, intent) and DagNode trait (parent_ids, child_ids, constraint_ids, profile_id, realization, evidence, provenance, metadata, tree_label). GraphNode is implemented by all four node types; DagNode extends GraphNode for Shape and Constraint only. amendment_log is NOT on GraphNode — accessed via direct struct fields on Shape, Constraint, and Profile.
   - scheme: path
     value: src/model/serde_helpers.rs
     metadata:

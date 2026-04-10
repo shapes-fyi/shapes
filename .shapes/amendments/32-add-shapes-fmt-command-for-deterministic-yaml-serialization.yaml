@@ -17,3 +17,4 @@ intent:
   verification: cargo test passes all 110 tests. shapes fmt --check exits 0 after normalization. shapes validate exits 0. shapes fmt is idempotent (second run produces no changes).
 initiated_by:
   type: ai
+archived: true

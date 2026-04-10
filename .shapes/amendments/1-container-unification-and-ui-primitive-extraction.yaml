@@ -17,3 +17,4 @@ intent:
   verification: bun run format clean. bun run typecheck clean. Visual parity expected — same borders, same content, same copy; only layout tokens were unified. Manual check on home and specification pages across mobile, tablet, and desktop viewports required before closing the amendment.
 initiated_by:
   type: ai
+archived: true

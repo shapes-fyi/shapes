@@ -17,3 +17,4 @@ intent:
   verification: 'bun run format clean. bun run typecheck clean. shapes validate clean. Manual browser check at 375 px, 768 px, 1024 px, 1440 px. At every viewport: In Practice YAML fully visible with no horizontal scroll, long string values wrap with indentation preserved. Install cargo command fully visible with no horizontal scroll, URL breaks across lines if needed. Section headings "Structured intent" and "One command." flow naturally on one or two lines without weird breaks. Hero and Two Graphs ASCII trees continue to render with proper box-drawing alignment. Spec page CodeBlocks unchanged.'
 initiated_by:
   type: ai
+archived: true

@@ -16,3 +16,4 @@ intent:
   source: ai
 initiated_by:
   type: ai
+archived: true

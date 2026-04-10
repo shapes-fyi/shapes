@@ -18,3 +18,4 @@ intent:
   verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual check in light and dark modes — spec body should read noticeably more confidently (higher contrast), line measure should be shorter and easier on the eye, metadata labels should read as sans chrome, home headings should hold their amplified scale but without drift. No visual regressions in Mermaid diagrams, code blocks, minimap, or schema explorer (those pull from independent styles).
 initiated_by:
   type: ai
+archived: true

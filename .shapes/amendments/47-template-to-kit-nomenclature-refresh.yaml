@@ -1,0 +1,16 @@
+id: 47
+name: Template-to-Kit nomenclature refresh
+description: Template-to-Kit nomenclature refresh
+targets:
+  shape_ids:
+  - 3
+  - 4
+  - 10
+  - 15
+status: proposed
+intent:
+  kind: amendment
+  summary: Refresh shapes 3, 4, 10 to reflect the Template→Kit/Profile consolidation. shape:3 Meta.template replaced by Meta.active_profile; shape:4 resolve_template() removed; shape:10 --template renamed to --kit on init, --template removed from create.
+  source: ai
+initiated_by:
+  type: ai

@@ -17,3 +17,4 @@ intent:
   verification: bun run format clean. bun run typecheck clean. shapes validate clean. Manual hover test on Two Graphs lifecycle tags in both columns — every tag shows its tooltip. Manual scroll test on the spec page — the browser tab title updates as sections change, and reverts to the home title when navigating away. Devtools test — the console greeting appears once on first paint, does not repeat on hot reload during a single session, and does not interfere with any error or warning logs. No animations introduced.
 initiated_by:
   type: ai
+archived: true

@@ -29,6 +29,12 @@ realization:
   role: primary
 - bindings:
   - scheme: path
+    value: src/commands/init.rs
+    metadata:
+      summary: Infrastructure scaffolds for `shapes init --ci` (writes .github/workflows/shapes.yml using the shapes-validate composite action) and `--hooks` (writes prek.toml and runs prek install). Both are non-destructive and skip if target files already exist.
+  role: primary
+- bindings:
+  - scheme: path
     value: tests/cli_scaffold.rs
     metadata:
       summary: 41 integration tests covering all four kits, --from regression, scaffold snapshots via insta, and the full profile_enforcement module (INV-012..INV-016).
