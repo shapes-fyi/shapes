@@ -1,6 +1,6 @@
 [package]
 name = "shapes-cli"
-version = "0.1.0"
+version = "0.3.0"
 edition = "2024"
 description = "Shapes Specification CLI — structured intent, constraints, and boundaries for software projects"
 repository = "https://github.com/shapes-fyi/shapes"
