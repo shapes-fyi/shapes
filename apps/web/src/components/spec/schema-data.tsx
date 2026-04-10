@@ -525,7 +525,9 @@ export const AMENDMENT_SCHEMA: SchemaDefinition = {
           under CI-003.
         </p>
       ),
-      lines: "  archived: boolean | {reason: string}?",
+      lines: `  archived?:
+    true
+    reason: string?`,
     },
     {
       key: "metadata",
