@@ -23,10 +23,10 @@ use std::fs;
 use std::path::PathBuf;
 
 use anyhow::{Result, anyhow, bail};
+use semver::Version;
 
 use crate::model::NodeType;
 use crate::store::{CURRENT_STORE_VERSION, FileStore};
-use crate::version::StoreVersion;
 
 /// Aggregated outcome of one or more migration steps.
 ///
@@ -45,9 +45,9 @@ pub struct MigrationResult {
 /// A single version-to-version migration step.
 struct Migration {
     /// Source version this step upgrades from.
-    from: StoreVersion,
+    from: Version,
     /// Target version this step upgrades to.
-    to: StoreVersion,
+    to: Version,
     /// Transformation function invoked by [`run_migrations`].
     run: fn(&FileStore) -> Result<MigrationResult>,
 }
@@ -60,8 +60,8 @@ struct Migration {
 /// `from` version, so the order here is for readability only.
 fn registry() -> Vec<Migration> {
     vec![Migration {
-        from: StoreVersion::new(0, 1, 0),
-        to: StoreVersion::new(0, 2, 0),
+        from: Version::new(0, 1, 0),
+        to: Version::new(0, 2, 0),
         run: migrate_0_1_to_0_2,
     }]
 }

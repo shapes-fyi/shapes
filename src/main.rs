@@ -16,7 +16,6 @@ mod migrate;
 mod model;
 mod store;
 mod templates;
-mod version;
 
 use std::path::PathBuf;
 use std::process::ExitCode;
