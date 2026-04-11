@@ -1,0 +1,16 @@
+id: 54
+name: Pass --comment to code-review plugin and revert over-restrictive allowedTools
+description: Adds --comment to the code-review plugin invocation so the plugin actually posts comments per its step-7 gate, and removes the claude_args --allowedTools block added by amendment:53 which was replacing the default tool allowlist and blocking the plugin's subagent launches, file reads, and internal gh calls.
+targets:
+  shape_ids:
+  - 36
+status: proposed
+version_impact: patch
+intent:
+  kind: amendment
+  summary: Pass --comment to the code-review plugin and revert the over-restrictive claude_args --allowedTools block from amendment:53.
+  source: ai
+  impact: After this amendment lands on main, the claude-review workflow on subsequent PRs will invoke the plugin with --comment, so the plugin's step-8 and step-9 logic will run and post inline review comments via the MCP tool it already has in its own frontmatter allowlist. No other behavior change. The github.actor gate to snowmead is unchanged.
+  rationale: Follow-up to amendment:53. After bumping pull-requests and issues to write scope in amendment:52 and adding claude_args --allowedTools in amendment:53, the claude-review workflow still posted nothing. On the run after amendment:53 landed, permission_denials_count actually INCREASED from 15 to 57 and the agent spent $4.74 thrashing against denied tool calls. Two root causes surfaced when I actually read the plugin source at anthropics/claude-code/plugins/code-review. First, the plugin command has its own frontmatter `allowed-tools` declaration (Bash gh issue view/search/list, Bash gh pr comment/diff/view/list, and mcp__github_inline_comment__create_inline_comment) and relies on default Claude Code tools (Task, Read, Grep, etc.) for its subagent launches and CLAUDE.md reads. The CLI's --allowedTools flag REPLACES the entire allowlist rather than adding to it, so the block added by amendment:53 nuked both the plugin's frontmatter tools AND the defaults, causing 57 denials. Second, and more fundamentally, step 7 of the plugin command is explicit — "If --comment argument was NOT provided, stop here. Do not post any GitHub comments." The plugin has always been in terminal-output-only mode on our runs because the slash command never received --comment. Both prior amendments (52 and 53) were necessary but insufficient work against a red herring. The actual fix is to pass --comment and leave the tool allowlist alone.
+initiated_by:
+  type: ai
