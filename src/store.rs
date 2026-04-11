@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize, de::DeserializeOwned};
 
 use crate::model::{NodeType, ProfileId};
 use crate::templates::StarterKit;
+use crate::version::StoreVersion;
 
 const SHAPES_DIR: &str = ".shapes";
 const META_FILE: &str = "meta.yaml";
@@ -24,7 +25,7 @@ const META_FILE: &str = "meta.yaml";
 /// Written into `meta.yaml` by `shapes init` and enforced by
 /// [`crate::commands::shared::open_store`]. Stores at an older version
 /// must be upgraded via `shapes migrate`.
-pub(crate) const CURRENT_STORE_VERSION: &str = "0.2.0";
+pub(crate) const CURRENT_STORE_VERSION: StoreVersion = StoreVersion::new(0, 2, 0);
 
 /// Read-side abstraction over a shapes graph store.
 ///
@@ -80,7 +81,7 @@ pub trait NodeStore {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Meta {
     /// Spec version this store conforms to.
-    pub version: String,
+    pub version: StoreVersion,
     /// ID of the active [`crate::model::Profile`] node.
     pub active_profile: ProfileId,
 }
@@ -88,7 +89,7 @@ pub struct Meta {
 impl Meta {
     fn new(active_profile: ProfileId) -> Self {
         Meta {
-            version: CURRENT_STORE_VERSION.into(),
+            version: CURRENT_STORE_VERSION,
             active_profile,
         }
     }

@@ -26,6 +26,7 @@ use anyhow::{Result, anyhow, bail};
 
 use crate::model::NodeType;
 use crate::store::{CURRENT_STORE_VERSION, FileStore};
+use crate::version::StoreVersion;
 
 /// Aggregated outcome of one or more migration steps.
 ///
@@ -44,9 +45,9 @@ pub struct MigrationResult {
 /// A single version-to-version migration step.
 struct Migration {
     /// Source version this step upgrades from.
-    from: &'static str,
+    from: StoreVersion,
     /// Target version this step upgrades to.
-    to: &'static str,
+    to: StoreVersion,
     /// Transformation function invoked by [`run_migrations`].
     run: fn(&FileStore) -> Result<MigrationResult>,
 }
@@ -59,8 +60,8 @@ struct Migration {
 /// `from` version, so the order here is for readability only.
 fn registry() -> Vec<Migration> {
     vec![Migration {
-        from: "0.1.0",
-        to: "0.2.0",
+        from: StoreVersion::new(0, 1, 0),
+        to: StoreVersion::new(0, 2, 0),
         run: migrate_0_1_to_0_2,
     }]
 }
@@ -70,19 +71,30 @@ fn registry() -> Vec<Migration> {
 ///
 /// After each step succeeds, `meta.yaml` is bumped to that step's
 /// target version so an interrupted migration can be resumed by
-/// re-invoking the command.
+/// re-invoking the command. If the on-disk version is strictly newer
+/// than what the CLI knows about, the migration aborts rather than
+/// attempting to downgrade.
 pub fn run_migrations(store: &FileStore) -> Result<MigrationResult> {
     let mut meta = store.read_meta()?;
     let mut aggregate = MigrationResult::default();
 
     while meta.version != CURRENT_STORE_VERSION {
+        if meta.version > CURRENT_STORE_VERSION {
+            bail!(
+                "store version {} is newer than this CLI supports ({}). \
+                 Upgrade the `shapes` binary instead of downgrading the store.",
+                meta.version,
+                CURRENT_STORE_VERSION,
+            );
+        }
+
         let step = registry()
             .into_iter()
             .find(|m| m.from == meta.version)
             .ok_or_else(|| {
                 anyhow!(
-                    "unknown store version '{}'. This CLI knows how to migrate to {} \
-                     but has no registered step from '{}'.",
+                    "unknown store version {}. This CLI knows how to migrate to {} \
+                     but has no registered step from {}.",
                     meta.version,
                     CURRENT_STORE_VERSION,
                     meta.version,
@@ -91,7 +103,7 @@ pub fn run_migrations(store: &FileStore) -> Result<MigrationResult> {
 
         let result = (step.run)(store)?;
 
-        meta.version = step.to.into();
+        meta.version = step.to;
         store.write_meta(&meta)?;
 
         aggregate.changed_files.extend(result.changed_files);
@@ -197,5 +209,17 @@ mod tests {
             last.to, CURRENT_STORE_VERSION,
             "last migration step must terminate at CURRENT_STORE_VERSION"
         );
+    }
+
+    #[test]
+    fn registry_steps_only_upgrade_forward() {
+        for step in registry() {
+            assert!(
+                step.from < step.to,
+                "migration step {} -> {} must move forward",
+                step.from,
+                step.to,
+            );
+        }
     }
 }

@@ -72,6 +72,10 @@ realization:
     value: src/store.rs
     metadata:
       summary: CURRENT_STORE_VERSION constant, write_meta() writer, Meta::new() bumped to current version
+  - scheme: path
+    value: src/version.rs
+    metadata:
+      summary: StoreVersion newtype — parses major.minor.patch triples, implements total ordering so the migration runner can compare versions numerically instead of stringly
   role: primary
 - bindings:
   - scheme: path
