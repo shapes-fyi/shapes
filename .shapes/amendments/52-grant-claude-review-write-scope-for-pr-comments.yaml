@@ -1,0 +1,16 @@
+id: 52
+name: Grant claude-review write scope for PR comments
+description: Bumps pull-requests and issues from read to write on the claude-code-review workflow job permissions block so the Claude Code action can actually post its review to PRs.
+targets:
+  shape_ids:
+  - 36
+status: proposed
+version_impact: patch
+intent:
+  kind: amendment
+  summary: Bumps pull-requests and issues from read to write on the claude-code-review workflow job so the Claude Code action can actually post its review.
+  source: ai
+  impact: No user-visible behavior change outside of PR review surface. After this amendment lands on main, the automated claude-review workflow on subsequent PRs will post its generated review as a real PR review comment instead of silently failing. The workflow's github.actor gate to snowmead is unchanged, so blast radius is still a single user.
+  rationale: Observed on PR 62 — the claude-review check went green (is_error false, ~6m33s, $3.24 spend) but no review was posted. Job log showed permission_denials_count of 20, meaning the Claude agent's internal GitHub API tool calls (create_pull_request_review, create_issue_comment, etc.) were all 403'd by the read-only GITHUB_TOKEN. The action itself exits 0 because the Claude agent's internal tool failures are not surfaced as job failures, so the CI check showed green while nothing landed on the PR. Bumping the two scopes the action actually writes to — pull-requests and issues — is the minimum fix. contents stays read because the action does not push code.
+initiated_by:
+  type: ai
