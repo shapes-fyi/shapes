@@ -619,10 +619,7 @@ fn report(issues: &[ValidationIssue], format: OutputFormat) -> Result<(), CliErr
         }
     }
     if error_count > 0 {
-        Err(CiCheckError::IssuesFound {
-            count: error_count,
-        }
-        .into())
+        Err(CiCheckError::IssuesFound { count: error_count }.into())
     } else {
         Ok(())
     }

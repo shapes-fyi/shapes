@@ -23,6 +23,8 @@ realization:
     metadata:
       summary: Automated PR review workflow — triggers on pull_request opened/synchronize/ready_for_review/reopened events. Runs the code-review plugin. Gated by github.actor == snowmead.
   role: primary
+amendment_log:
+- 52
 parents:
 - id: 1
   role: component
