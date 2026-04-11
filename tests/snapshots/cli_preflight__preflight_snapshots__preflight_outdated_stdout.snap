@@ -1,0 +1,7 @@
+---
+source: tests/cli_preflight.rs
+expression: normalize(&stdout)
+---
+Shapes CLI v[X.Y.Z]
+
+MIGRATION NEEDED: Run `shapes migrate` — .shapes/ store is at version 0.1.0 but this CLI expects 0.2.0.

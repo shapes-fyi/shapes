@@ -93,7 +93,7 @@ realization:
   - scheme: path
     value: src/commands/preflight.rs
     metadata:
-      summary: Handler for shapes preflight — prints skill preamble with version, update check, and shape tree
+      summary: Handler for shapes preflight — prints skill preamble with version, update check, schema-drift warning, and shape tree. On drift, short-circuits after the warning so the migration prompt is the sole call to action. Honors SHAPES_SKIP_UPDATE_CHECK to pin test output.
   role: primary
 - bindings:
   - scheme: path
@@ -131,6 +131,8 @@ amendment_log:
 - 32
 - 39
 - 47
+- 51
+- 55
 parents:
 - id: 1
   role: component
@@ -142,4 +144,6 @@ children:
 - shape: 28
   role: feature
 - shape: 32
+  role: feature
+- shape: 39
   role: feature

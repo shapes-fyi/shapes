@@ -1,6 +1,6 @@
 [package]
 name = "shapes-cli"
-version = "0.3.0"
+version = "0.4.0"
 edition = "2024"
 description = "Shapes Specification CLI — structured intent, constraints, and boundaries for software projects"
 repository = "https://github.com/shapes-fyi/shapes"
@@ -45,6 +45,7 @@ clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 anyhow = "1"
+semver = { version = "1", features = ["serde"] }
 serde_yaml_ng = "0.10"
 thiserror = "2"
 which = "8"

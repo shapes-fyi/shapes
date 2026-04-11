@@ -12,6 +12,7 @@
 
 mod commands;
 mod error;
+mod migrate;
 mod model;
 mod store;
 mod templates;
@@ -226,6 +227,21 @@ enum Command {
         #[arg(long)]
         check: bool,
     },
+
+    /// Upgrade the `.shapes/` store from an older schema version to the
+    /// current one.
+    ///
+    /// Reads `.shapes/meta.yaml` to detect the current store version,
+    /// then runs every registered migration step in order to bring the
+    /// store up to the version this CLI expects. Each migration prints
+    /// the files it modified and any follow-up action items the user
+    /// should address (for example, filling in placeholder archival
+    /// reasons introduced by the 0.1.0 -> 0.2.0 migration).
+    ///
+    /// Safe to re-run: completed steps are skipped, and the version in
+    /// `meta.yaml` is bumped after each successful step so an
+    /// interrupted migration can be resumed.
+    Migrate,
 }
 
 #[derive(Subcommand)]
@@ -479,6 +495,8 @@ fn run(cli: Cli) -> Result<(), CliError> {
         Command::Preflight { init } => commands::preflight(init)?,
 
         Command::Fmt { check } => commands::fmt(check)?,
+
+        Command::Migrate => commands::migrate()?,
     }
 
     Ok(())

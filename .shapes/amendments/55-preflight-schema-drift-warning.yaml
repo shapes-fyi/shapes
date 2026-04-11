@@ -1,0 +1,46 @@
+id: 55
+name: Preflight schema-drift warning
+description: |
+  Teaches `shapes preflight` to detect schema drift between
+  `.shapes/meta.yaml` and the CLI's `CURRENT_STORE_VERSION` and to
+  print a warning in place of the shape tree when they diverge.
+  Previously the version gate in `src/commands/shared.rs::open_store`
+  caught drift only when a normal command was run — preflight itself
+  bypassed the gate, so every Shapes skill loaded a normal-looking
+  preamble on outdated stores and agents only discovered the
+  mismatch later when a gated command bailed. This amendment
+  updates the `src/commands/preflight.rs` binding summary on shape 4
+  (Command Layer) to describe the new drift-warning behavior and the
+  accompanying `SHAPES_SKIP_UPDATE_CHECK` test hook.
+targets:
+  shape_ids:
+  - 4
+status: proposed
+intent:
+  kind: amendment
+  summary: Adds a schema-drift warning to shapes preflight output so agents see a migration prompt as the first actionable line of context, rather than discovering it later when a gated command bails.
+  source: ai
+  goals: |
+    Close the gap between `open_store`'s version gate and `shapes
+    preflight`'s bypass of it. Every Shapes skill loads preflight
+    output as its first context; if the store has drifted, the
+    agent must see the `shapes migrate` prompt in that first
+    output, not several commands later. The warning uses an
+    imperative-first phrasing so a task-focused agent cannot scroll
+    past it as a passive suggestion, and short-circuits the tree so
+    the migration call to action is the only thing on screen.
+  rationale: |
+    `src/commands/shared.rs::open_store` already fails commands on
+    drifted stores with an actionable message, but preflight calls
+    into `tree()` directly without going through that gate — by
+    design, because preflight must still run on stores it cannot
+    fully read. The cleanest fix is a best-effort drift check that
+    lives inside preflight, silently skipping itself when
+    `.shapes/meta.yaml` is missing or unreadable (so the existing
+    init-guidance path stays reachable) and short-circuiting the
+    tree walk otherwise. Pairs with `SHAPES_SKIP_UPDATE_CHECK`, a
+    one-line test hook in `check_latest_version`, so integration
+    tests can pin preflight output to a byte-stable form without
+    insta filter gymnastics.
+initiated_by:
+  type: ai
