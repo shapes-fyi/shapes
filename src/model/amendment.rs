@@ -235,4 +235,35 @@ initiated_by:
         assert!(!amendment.is_archived());
         assert!(amendment.archived.is_none());
     }
+
+    /// Documents the failure mode that motivates `shapes migrate`: the
+    /// legacy 0.1.0 boolean `archived: true` format cannot deserialize
+    /// against the current `Option<ArchivedDetail>` typed field. Users
+    /// on outdated stores will see this serde error until they run the
+    /// migration command.
+    #[test]
+    fn legacy_boolean_archived_fails_to_deserialize() {
+        let yaml = r#"
+id: 1
+name: test
+description: test amendment
+targets:
+  shape_ids:
+  - 1
+status: proposed
+intent:
+  kind: amendment
+  summary: test
+  source: ai
+initiated_by:
+  type: ai
+archived: true
+"#;
+        let parsed: std::result::Result<Amendment, _> = serde_yaml_ng::from_str(yaml);
+        assert!(
+            parsed.is_err(),
+            "legacy `archived: true` must fail typed deserialization — \
+             `shapes migrate` is the documented escape hatch"
+        );
+    }
 }

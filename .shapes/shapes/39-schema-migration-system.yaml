@@ -1,0 +1,84 @@
+id: 39
+name: Schema Migration System
+description: |
+  Detects outdated `.shapes/` store versions via `meta.yaml` and runs a
+  chain of registered migration steps to bring them up to the current
+  CLI version. Each migration step is a self-contained function that
+  transforms YAML files in place, reports the files it changed, and
+  records follow-up action items for the user. The system is extensible:
+  adding a new migration is a matter of writing one function and
+  appending a single entry to the registry. Every command that opens a
+  store gates on the version — stores at older versions fail fast with
+  an actionable "run `shapes migrate`" message instead of surfacing
+  cryptic serde deserialization errors.
+profile: 1
+status: proposed
+intent:
+  kind: feature
+  summary: Detects outdated .shapes/ store versions and runs registered migrations to upgrade them in-place
+  source: ai
+  goals: |
+    Provide a `shapes migrate` CLI command that (1) detects the current
+    store schema version from `meta.yaml`, (2) chains all applicable
+    migration steps in order from the current version to
+    `CURRENT_STORE_VERSION`, (3) reports every file that was modified,
+    and (4) surfaces structured follow-up action items the user must
+    address (e.g. filling in placeholder archival reasons). Gate every
+    store-opening command on the version so outdated stores fail with
+    an actionable error pointing at `shapes migrate`. Make the migration
+    registry trivially extensible so adding a new 0.N → 0.N+1 step is
+    one function plus one tuple.
+  non_goals: |
+    Not a general-purpose YAML transformation engine, not a schema
+    validator, not a backwards-compatibility shim that keeps the typed
+    deserializers accepting old formats. Does not preserve YAML comments
+    across migration (files are re-serialized through serde). Does not
+    provide `--dry-run` or atomic-transaction semantics — crash recovery
+    relies on per-file idempotent checks plus per-step meta.yaml version
+    bumps.
+  rationale: |
+    PR #61 changed the amendment `archived` field from a boolean to a
+    structured object with a required `reason` string. Users with old
+    `.shapes/` stores will hit raw serde errors when their first command
+    tries to load an amendment. A dedicated migration command is the
+    standard escape hatch — it keeps the typed model clean (no fallback
+    deserializers or custom visitors) while giving users a one-shot
+    upgrade path. The engine is designed as a registry from day one
+    because schema changes are expected to recur as the project evolves,
+    and retrofitting extensibility after-the-fact is always more painful
+    than designing for it upfront. The registry is a plain `Vec` of
+    function-pointer tuples — no trait, no enum, no macros — following
+    the project's Minimal Complexity constraint.
+constraints:
+- 8
+- 9
+- 14
+- 30
+realization:
+- bindings:
+  - scheme: path
+    value: src/migrate.rs
+    metadata:
+      summary: Migration engine — MigrationResult, Migration struct, registry(), run_migrations(), migrate_0_1_to_0_2()
+  - scheme: path
+    value: src/commands/migrate.rs
+    metadata:
+      summary: Thin CLI handler — opens the store, calls run_migrations, formats changed files and action items to stderr
+  - scheme: path
+    value: src/commands/shared.rs
+    metadata:
+      summary: open_store() enforces the version gate and returns an actionable error for outdated stores
+  - scheme: path
+    value: src/store.rs
+    metadata:
+      summary: CURRENT_STORE_VERSION constant, write_meta() writer, Meta::new() bumped to current version
+  role: primary
+- bindings:
+  - scheme: path
+    value: tests/cli_migrate.rs
+    metadata:
+      summary: Integration tests covering happy path, idempotency, version gate, and mixed-state stores
+  role: test
+parents:
+- id: 4
+  role: component

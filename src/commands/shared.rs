@@ -9,11 +9,11 @@ use std::env;
 use std::io::Read;
 use std::path::Path;
 
-use anyhow::Result;
+use anyhow::{Result, bail};
 use serde::Serialize;
 
 use crate::OutputFormat;
-use crate::store::FileStore;
+use crate::store::{CURRENT_STORE_VERSION, FileStore};
 
 /// Serializes `value` to stdout in the requested [`OutputFormat`].
 pub fn output<T: Serialize>(value: &T, format: OutputFormat) -> Result<()> {
@@ -39,9 +39,26 @@ pub fn read_from(path: &str) -> Result<String> {
     }
 }
 
-/// Opens the [`FileStore`] anchored at the current working directory.
+/// Opens the [`FileStore`] anchored at the current working directory
+/// and enforces the schema-version gate.
+///
+/// Stores whose `meta.yaml` version does not match
+/// [`CURRENT_STORE_VERSION`] are rejected with an actionable error
+/// pointing at `shapes migrate`. This catches outdated stores before
+/// any typed deserialization runs, so users never see cryptic serde
+/// errors for schemas the current CLI no longer understands.
 pub fn open_store() -> Result<FileStore> {
-    FileStore::open(&env::current_dir()?)
+    let store = FileStore::open(&env::current_dir()?)?;
+    let meta = store.read_meta()?;
+    if meta.version != CURRENT_STORE_VERSION {
+        bail!(
+            ".shapes/ store is at version {} but this CLI expects {}. \
+             Run `shapes migrate` to upgrade.",
+            meta.version,
+            CURRENT_STORE_VERSION,
+        );
+    }
+    Ok(store)
 }
 
 /// Helper used by every `create` branch to print the result of a

@@ -19,6 +19,13 @@ use crate::templates::StarterKit;
 const SHAPES_DIR: &str = ".shapes";
 const META_FILE: &str = "meta.yaml";
 
+/// Current `.shapes/` store schema version.
+///
+/// Written into `meta.yaml` by `shapes init` and enforced by
+/// [`crate::commands::shared::open_store`]. Stores at an older version
+/// must be upgraded via `shapes migrate`.
+pub(crate) const CURRENT_STORE_VERSION: &str = "0.2.0";
+
 /// Read-side abstraction over a shapes graph store.
 ///
 /// Concrete implementations (currently [`FileStore`]) decide where the
@@ -81,7 +88,7 @@ pub struct Meta {
 impl Meta {
     fn new(active_profile: ProfileId) -> Self {
         Meta {
-            version: "0.1.0".into(),
+            version: CURRENT_STORE_VERSION.into(),
             active_profile,
         }
     }
@@ -171,6 +178,14 @@ impl FileStore {
         Ok(serde_yaml_ng::from_str(&content)?)
     }
 
+    /// Writes the store's `meta.yaml`. Used by `shapes migrate` to bump
+    /// the schema version after each successful migration step.
+    pub fn write_meta(&self, meta: &Meta) -> Result<()> {
+        let path = self.root.join(META_FILE);
+        let yaml = serde_yaml_ng::to_string(meta)?;
+        fs::write(&path, yaml).context("failed to write meta.yaml")
+    }
+
     /// Saves a node by writing a pre-formatted YAML string directly.
     ///
     /// Used by the scaffold writers, which emit YAML with comments and
@@ -223,7 +238,7 @@ impl FileStore {
         self.root.join(node_type.dir_name())
     }
 
-    fn yaml_files(&self, node_type: NodeType) -> Result<Vec<PathBuf>> {
+    pub(crate) fn yaml_files(&self, node_type: NodeType) -> Result<Vec<PathBuf>> {
         let dir = self.type_dir(node_type);
         let mut files = Vec::new();
         for entry in

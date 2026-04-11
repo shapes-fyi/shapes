@@ -15,6 +15,7 @@
 //! - [`mod@amendment`] — `shapes amendment {archive, unarchive}`
 //! - [`mod@fmt`] — `shapes fmt`
 //! - [`mod@preflight`] — `shapes preflight`
+//! - [`mod@migrate`] — `shapes migrate`
 //!
 //! Plus the verb-internal helper modules [`scaffold`] (YAML scaffold
 //! writers), [`shared`] (output helpers, store opening), and [`dag`]
@@ -28,6 +29,7 @@ mod fmt;
 mod get;
 mod init;
 mod list;
+mod migrate;
 mod preflight;
 mod query;
 mod scaffold;
@@ -42,6 +44,7 @@ pub use fmt::fmt;
 pub use get::get;
 pub use init::init;
 pub use list::list;
+pub use migrate::migrate;
 pub use preflight::preflight;
 pub use query::query;
 pub use tree::tree;

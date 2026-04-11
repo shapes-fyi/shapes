@@ -1,0 +1,36 @@
+id: 51
+name: Add Schema Migration System as child
+description: |
+  Registers shape 39 (Schema Migration System) as a child feature of
+  Command Layer, adds the corresponding realization bindings for the
+  new `src/migrate.rs` engine and `src/commands/migrate.rs` handler,
+  and notes the new version gate in `src/commands/shared.rs::open_store`.
+  This amendment tracks the addition of the `shapes migrate` CLI
+  subcommand and the supporting schema-version detection that
+  protects every other command from cryptic serde errors when a
+  store falls behind the current CLI version.
+targets:
+  shape_ids:
+  - 4
+status: proposed
+intent:
+  kind: amendment
+  summary: Adds shape 39 (Schema Migration System) as a child feature of Command Layer to house the new shapes migrate command and migration engine
+  source: ai
+  goals: |
+    Wire shape 39 into shape 4 as a child feature with reciprocal
+    parent/child links, extend Command Layer realization bindings to
+    reference the new migration engine and handler files, and document
+    the version-gate behavior added to shared.rs::open_store so future
+    readers understand why every command now fails early on outdated
+    stores.
+  rationale: |
+    PR #61 introduced a breaking schema change to the amendment
+    `archived` field. Instead of retrofitting tolerant deserializers,
+    the project adds a dedicated `shapes migrate` command with an
+    extensible registry so future breaking changes follow the same
+    pattern. This amendment records why Command Layer is growing a new
+    child feature and points at the realization files where the
+    implementation lives.
+initiated_by:
+  type: ai
