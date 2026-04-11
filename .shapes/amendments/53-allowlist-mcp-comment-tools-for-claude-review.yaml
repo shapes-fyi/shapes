@@ -1,0 +1,16 @@
+id: 53
+name: Allowlist MCP comment tools for claude-review
+description: Adds claude_args with --allowedTools to the claude-code-review workflow so the code-review plugin can actually call mcp__github_inline_comment__create_inline_comment and the gh CLI pr subcommands, which are the only documented post pathways for anthropics/claude-code-action@v1.
+targets:
+  shape_ids:
+  - 36
+status: proposed
+version_impact: patch
+intent:
+  kind: amendment
+  summary: Adds claude_args --allowedTools to the claude-code-review workflow so the plugin can post its review.
+  source: ai
+  impact: After this amendment lands on main, the claude-review workflow on subsequent PRs will have the MCP inline-comment tool and the gh CLI pr subcommands in its allowlist, so the code-review plugin can actually post its findings. No other behavior change. The github.actor gate to snowmead is unchanged.
+  rationale: Follow-up to amendment:52. After bumping pull-requests and issues to write scope, the claude-review run dropped permission_denials_count from 20 to 15 but still posted nothing. Reading the official docs for anthropics/claude-code-action@v1 (usage.md, solutions.md, action.yml, examples/pr-review-comprehensive.yml) clarified the architecture. The code-review plugin does NOT auto-post. It analyzes the PR and then the agent must explicitly call either mcp__github_inline_comment__create_inline_comment (inline review comments on diff lines, buffered and classified by Haiku via classify_inline_comments at the end of the run) or Bash(gh pr comment) (top-level PR comment) to post. These tools are gated by the Claude Code SDK's own tool allowlist, which is what drives permission_denials_count in the run result. The action's security layer restores .claude and .mcp.json from origin/main before running because PR head is treated as untrusted, and this repo does not track .claude on main, so the agent runs with no project-level allowlist. That leaves claude_args as the only reliable surface to grant the commenting tools. additional_permissions is unrelated — that input maps to GitHub API scopes, not Claude tool allowlists. The exact claude_args value is copied from the official examples/pr-review-comprehensive.yml in the claude-code-action repo.
+initiated_by:
+  type: ai
