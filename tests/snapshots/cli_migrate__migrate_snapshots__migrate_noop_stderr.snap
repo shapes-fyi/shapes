@@ -1,0 +1,5 @@
+---
+source: tests/cli_migrate.rs
+expression: stderr
+---
+Store is already at version 0.2.0 — nothing to migrate.

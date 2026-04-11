@@ -75,6 +75,7 @@ fn registry() -> Vec<Migration> {
 /// than what the CLI knows about, the migration aborts rather than
 /// attempting to downgrade.
 pub fn run_migrations(store: &FileStore) -> Result<MigrationResult> {
+    let all_steps = registry();
     let mut meta = store.read_meta()?;
     let mut aggregate = MigrationResult::default();
 
@@ -88,8 +89,8 @@ pub fn run_migrations(store: &FileStore) -> Result<MigrationResult> {
             );
         }
 
-        let step = registry()
-            .into_iter()
+        let step = all_steps
+            .iter()
             .find(|m| m.from == meta.version)
             .ok_or_else(|| {
                 anyhow!(
@@ -103,7 +104,7 @@ pub fn run_migrations(store: &FileStore) -> Result<MigrationResult> {
 
         let result = (step.run)(store)?;
 
-        meta.version = step.to;
+        meta.version = step.to.clone();
         store.write_meta(&meta)?;
 
         aggregate.changed_files.extend(result.changed_files);
@@ -169,8 +170,7 @@ fn migrate_0_1_to_0_2(store: &FileStore) -> Result<MigrationResult> {
 
         let yaml = serde_yaml_ng::to_string(&doc)
             .map_err(|e| anyhow!("failed to serialize {}: {}", path.display(), e))?;
-        fs::write(&path, yaml)
-            .map_err(|e| anyhow!("failed to write {}: {}", path.display(), e))?;
+        fs::write(&path, yaml).map_err(|e| anyhow!("failed to write {}: {}", path.display(), e))?;
 
         result.changed_files.push(path);
     }

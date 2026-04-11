@@ -273,3 +273,51 @@ fn migrate_followed_by_list_works_end_to_end() {
     shapes_in(&dir).arg("migrate").assert().success();
     shapes_in(&dir).arg("list").assert().success();
 }
+
+/// Insta snapshot coverage for `shapes migrate` stderr per constraint
+/// 30. Locks the exact wording of the happy-path migration report and
+/// the idempotent no-op path. Any copy drift in `src/commands/migrate.rs`
+/// surfaces as a reviewable `.snap` diff. Update with `cargo insta
+/// review` after an intentional change.
+mod migrate_snapshots {
+    use super::*;
+
+    /// Strips both the canonical and non-canonical tempdir prefixes
+    /// from `stderr` so snapshots are stable across platforms (macOS
+    /// symlinks `/var` to `/private/var`, which sometimes defeats
+    /// `strip_prefix` in the command handler and leaves an absolute
+    /// path in the "Modified files" block).
+    fn normalize(stderr: &str, dir: &Path) -> String {
+        let canonical = dir.canonicalize().unwrap_or_else(|_| dir.to_path_buf());
+        stderr
+            .replace(canonical.to_str().unwrap_or_default(), "[TMPDIR]")
+            .replace(dir.to_str().unwrap_or_default(), "[TMPDIR]")
+    }
+
+    /// Happy path: legacy `archived: true` rewritten to the structured
+    /// form. Locks the full stderr layout — header, modified-files
+    /// block, action-items block, and completion summary.
+    #[test]
+    fn migrate_rewrites_legacy_archived_stderr() {
+        let dir = fresh_store();
+        downgrade_meta_to_0_1(dir.path());
+        write_legacy_archived_amendment(dir.path(), 100);
+
+        let assert = shapes_in(&dir).arg("migrate").assert().success();
+        let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+        let stderr = normalize(&stderr, dir.path());
+        insta::assert_snapshot!(stderr);
+    }
+
+    /// No-op path: store is already at the current version. Locks the
+    /// "Store is already at version … — nothing to migrate." line.
+    #[test]
+    fn migrate_noop_stderr() {
+        let dir = fresh_store();
+
+        let assert = shapes_in(&dir).arg("migrate").assert().success();
+        let stderr = String::from_utf8_lossy(&assert.get_output().stderr).into_owned();
+        let stderr = normalize(&stderr, dir.path());
+        insta::assert_snapshot!(stderr);
+    }
+}

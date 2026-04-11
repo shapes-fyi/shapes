@@ -22,9 +22,9 @@ const META_FILE: &str = "meta.yaml";
 
 /// Current `.shapes/` store schema version.
 ///
-/// Written into `meta.yaml` by `shapes init` and enforced by
-/// [`crate::commands::shared::open_store`]. Stores at an older version
-/// must be upgraded via `shapes migrate`.
+/// Written into `meta.yaml` by `shapes init` and enforced by the
+/// version gate in `open_store`. Stores at an older version must be
+/// upgraded via `shapes migrate`.
 pub(crate) const CURRENT_STORE_VERSION: Version = Version::new(0, 2, 0);
 
 /// Read-side abstraction over a shapes graph store.

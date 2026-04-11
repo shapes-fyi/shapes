@@ -1,0 +1,15 @@
+---
+source: tests/cli_migrate.rs
+expression: stderr
+---
+Migrating store from version 0.1.0 to 0.2.0...
+
+Modified files:
+  .shapes/amendments/100-legacy.yaml
+
+1 file(s) migrated.
+
+Action items:
+  1. Review and update the `archived.reason` field on each migrated amendment — a placeholder string was inserted and should be replaced with a real explanation of why the amendment was archived.
+
+Migration complete. Store is now at version 0.2.0.

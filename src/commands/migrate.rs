@@ -16,17 +16,16 @@ use crate::store::{CURRENT_STORE_VERSION, FileStore};
 /// Runs all pending migrations on the `.shapes/` store in the current
 /// working directory and prints a human-readable report to stderr.
 ///
-/// Intentionally bypasses [`super::shared::open_store`] because the
+/// Intentionally bypasses the `open_store` version gate because the
 /// whole point of this command is to handle stores whose version does
 /// not match [`CURRENT_STORE_VERSION`].
 pub fn migrate() -> Result<()> {
-    let store = FileStore::open(&env::current_dir()?)?;
+    let cwd = env::current_dir()?;
+    let store = FileStore::open(&cwd)?;
     let meta = store.read_meta()?;
 
     if meta.version == CURRENT_STORE_VERSION {
-        eprintln!(
-            "Store is already at version {CURRENT_STORE_VERSION} — nothing to migrate."
-        );
+        eprintln!("Store is already at version {CURRENT_STORE_VERSION} — nothing to migrate.");
         return Ok(());
     }
 
@@ -37,7 +36,6 @@ pub fn migrate() -> Result<()> {
 
     let result = run_migrations(&store)?;
 
-    let cwd = env::current_dir().unwrap_or_default();
     if result.changed_files.is_empty() {
         eprintln!();
         eprintln!("No files were modified.");
